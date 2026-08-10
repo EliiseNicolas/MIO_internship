@@ -1,0 +1,86 @@
+---
+title: "CART-2021-multivars"
+author: "Elise Nicolas"
+date: "2026-07-22"
+output: html_document
+---
+
+```{r}
+# librairies
+library(ncdf4)
+library(rpart)
+library(rpart.plot)
+```
+
+## Description
+
+CART 
+y = NASC 2021 (station) 200kHz
+x = {fod_1, ..., fod_k, FTLE, pig1, ..., pig9, (J/N)}
+
+TODO
+- calculer fod
+- download ftle
+- regarder les coordonnées des stations 
+- vérifier que les coordonnées sont les mêmes entre les stations
+
+- regarder importance des variables
+- faire bootstrap
+
+# 1) Lire et calculer la variable de sortie : NASC
+## 1.a lire et extraire variable Sv de dataset
+```{r}
+nc_data <- nc_open("/run/media/mmolinet/DATA1/data/processed/acoustics/Echointegration2021.nc")
+
+# var acoustiques
+Sv <- ncvar_get(nc_data, "Sv") # Sv de shape (depth, time, channel)
+Sv_200 <- Sv[,,5] # Sv (log) a 200kHz
+sv_200 <- 10^(Sv_200/10) # Sv (lin) a 200kHz
+
+# coordonnées
+lon <- ncvar_get(nc_data, "longitude")
+lat <- ncvar_get(nc_data, "latitude")
+depths <- ncvar_get(nc_data, "depth")
+```
+
+## 1.b calcul du NASC (variable de sortie Y)
+
+```{r}
+int <- colSums(sv_200, na.rm = TRUE)
+length(int)
+sa_200 <- int * 10 # car on a un pas de profondeur de 10m 
+NASC <- 4 * pi * 1852**2 * sa_200 # integration sur la profondeur
+```
+
+## 1.c distribution du NASC
+
+/!\ NASC = possibilité de le passer au log pour spread d'avantage la distribution.
+
+```{r}
+# histogramme
+hist(NASC,
+     probability = TRUE,   # densité au lieu des effectifs
+     breaks = 30,
+     xlab = "Valeur",
+     ylab = "Densité")
+
+# courbe
+d <- density(NASC)
+plot(d,
+     xlab = "Valeur",
+     ylab = "Densité")
+```
+
+# 2) Colocaliser les variables d'entrées (FTLE, pigments, FOD)
+## Pigments
+```{r}
+folder_pigs = "/run/media/mmolinet/DATA1/data/raw/PIGMeANN/daily"
+
+time = ncdim_get("time")
+lon_approx <- numeric(length(lon))
+lat_approx <- numeric(length(lat))
+length(lon)
+
+ilon <- findInterval(lon, lon_temp)
+ilat <- findInterval(lat, lat_temp)
+```
