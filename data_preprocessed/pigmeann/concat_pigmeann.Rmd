@@ -1,0 +1,63 @@
+---
+title: "concat_pigmeann"
+output: html_document
+date: "2026-07-30"
+---
+# Description
+
+# Libraries
+```{r}
+library(dplyr)
+```
+
+# Path to dataset containing pigmeann data from year of OC
+```{r}
+rm(list = ls())
+m <- 100 # taille du mask 10x10=100 ou 5x5=25 ou 3x3=9
+path_pigm2021 <- paste0("/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/pigmeann/pig_mask", m, "_1d_2021.rds")
+path_pigm2022 <- paste0("/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/pigmeann/pig_mask", m, "_1d_2022.rds")
+path_pigm2023 <- paste0("/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/pigmeann/pig_mask", m, "_1d_2023.rds")
+```
+
+# concat
+```{r}
+pigm2021 <- readRDS(path_pigm2021)
+pigm2022 <- readRDS(path_pigm2022)
+pigm2023 <- readRDS(path_pigm2023)
+
+r <- pigm2022$lat_pig - pigm2022$lat_sv
+r <- pigm2022$lon_pig - pigm2022$lon_sv
+r <- pigm2023$lon_pig - pigm2023$lon_sv
+summary(r)
+
+pigm_all <- bind_rows(
+  pigm2021,
+  pigm2022, 
+  pigm2023
+)
+pigm_all
+nrow(pigm_all)
+
+# filtrer : retirer sv_points qui ont lat > -30°N et lon <40°E
+pigm_all<- pigm_all[pigm_all$lat_sv < -30, ]
+pigm_all<- pigm_all[pigm_all$lon_sv > 40, ]
+print(pigm_all)
+
+# VERIFS
+range(pigm_all$time)
+
+nrow(pigm2021)
+nrow(pigm2022)
+nrow(pigm2023)
+nrow(pigm_all)
+
+# verif ecart de lat/lon entre sv et pigm
+r <- pigm_all$lat_pig - pigm_all$lat_sv
+r <- pigm_all$lon_pig - pigm_all$lon_sv
+summary(r)# ok
+
+saveRDS(
+  pigm_all,
+  file = paste0("/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/pigmeann/pig_mask",m,"_1d_2021_2022_2023.rds")
+)
+```

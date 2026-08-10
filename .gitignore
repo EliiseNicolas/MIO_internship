@@ -1,0 +1,11 @@
+# Fichiers R temporaires
+.RDataTmp
+*.RData
+.Rhistory
+
+# Fichiers RStudio
+.Rproj.user/
+
+# Fichiers temporaires
+*.tmp
+*.log

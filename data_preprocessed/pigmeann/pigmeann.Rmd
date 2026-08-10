@@ -1,0 +1,262 @@
+---
+title: "pigmeann data"
+output: html_document
+date: "2026-07-27"
+---
+# Packages
+```{r}
+library(ncdf4)
+library(ggplot2)
+```
+
+# Extract 2021 pigmeann data
+```{r}
+rm(list=ls())
+folder_path <- "/run/media/mmolinet/KER22/données elise/raw/PIGMeANN/daily"
+year <- 2018
+```
+
+# Get times of 2021 oceanographic campaign
+```{r}
+# Sv_path <- paste0("/run/media/mmolinet/KER22/données elise/raw/acoustic/Acoustique_obsaus_", year, "_-100_-50dB_50ESU_10m.nc")
+Sv_path <- "/run/media/mmolinet/KER22/données elise/raw/acoustic/LOCEAN_SOOP-BA_A_20180105T121559Z_MARIONDUFRESNE_FV02_EchointegrationAcoustic-18-38-70-120-200_END-20180201T103636Z_C-20260522T153853Z.nc"
+ds_Sv <- nc_open(Sv_path)
+
+lat_sv <- ncvar_get(ds_Sv, "latitude")
+lon_sv <- ncvar_get(ds_Sv, "longitude")
+
+time <- ncvar_get(ds_Sv, "time")
+
+time_bis <- as.POSIXct(
+  time * 86400,
+  origin = "1950-01-01",
+  tz = "UTC"
+) 
+dates <- as.Date(time_bis)
+
+dates_unique <- unique(dates)
+
+# create string matching pigmean filenames "YYYYMMDD"
+dates_unique_str <- format(dates_unique, "%Y%m%d")
+dates_all_str <-  format(dates, "%Y%m%d") # pour tous les jours de l'année donnée
+print(dates_unique_str)
+```
+
+# colocate time from oceanographic campaign and pigmeann data
+
+```{r}
+# parse every folder and only keep ones from year of interest
+files <- list.files(
+  path = folder_path,
+  pattern = paste0(".*(", paste(dates_unique_str, collapse = "|"), ")\\.nc$"),
+  full.names = TRUE
+)
+
+# verif all dates found
+n_dates_found <- length(files)
+n_dates <- length(dates_unique)
+print(c(n_dates, n_dates_found)) # ok 2018 (23) 2021 (45), 2022 (25); 2023 OK (25) missing
+```
+
+# Access pigmeann data
+For the concentrations use: c_cond_{pigm}, and the following 2 masks
+in the following order:
+  - Where use_{pigm} == 0, set the pigment concentration to 0, this is based on the probability of absence of each pigment.
+  - Where in_domain == 0, set the pixel to NaN (NOT 0), regardless of use_{pigm}, this is based on the mahalanobis distance to control extrapolation risk. It removes any pixel where the RRS does not resemble anything seen during the training of the algorithm. It is also based on pixels masked based on the RRS signal (optically complex waters).
+  
+
+
+# Colocaliser les pigments avec les stations : analyse des pigments + précise
+
+- Par coordonnée de station 
+- avec/sans voisinage temporel et spatial
+
+```{r}
+for (p in list(3, 5, 10)){
+  # Initialisation dataframe
+  list_pigs = c("Chla", "Per", "But", "Fuco", "Hex", "Allo", "Zea", "Chlb", "DvChla")
+  pig_cond <- data.frame(
+    time = time_bis,
+    lat_sv = lat_sv,
+    lon_sv = lon_sv,
+    lat_pig = NA_real_,
+    lon_pig = NA_real_
+  )
+  
+  # Ajouter les colonnes pigments
+  pig_cond[list_pigs] <- NA_real_
+  
+  
+  length(dates_unique)
+  
+  for(date_i in dates_unique_str){
+      # indice ESU à cette date
+      ind <- which(dates_all_str == date_i)
+  
+      # ouvrir le fichier du jour i
+      filename <- list.files(
+        folder_path,
+        pattern = paste0(".*(", paste(dates_unique_str, collapse = "|"), ")\\.nc$"),
+        full.names = TRUE
+      )
+  
+      
+      if(length(filename)==0)
+          next
+  
+      ds <- nc_open(filename[1])
+      
+      # récupérer les coordonnées PIGMeANN du jour
+      lat_pig <- ds$dim$lat$vals
+      lon_pig <- ds$dim$lon$vals
+      
+      # trouver les pixels PIGMeANN les plus proches des stations
+      idx_lon <- sapply(
+        lon_sv[ind],
+        function(x) which.min(abs(lon_pig - x))
+      )
+  
+      idx_lat <- sapply(
+        lat_sv[ind],
+        function(x) which.min(abs(lat_pig - x))
+      )
+  
+      # enregistrer les coordonnées PIGMeANN associées
+      pig_cond$lat_pig[ind] <- lat_pig[idx_lat]
+      pig_cond$lon_pig[ind] <- lon_pig[idx_lon]
+  
+  
+      for (pig in list_pigs){
+  
+          # lire les variables
+          c_cond <- ncvar_get(
+            ds,
+            paste0("c_cond_", pig)
+          )
+          use <- ncvar_get(
+            ds,
+            paste0("use_", pig)
+          )
+  
+          in_domain <- ncvar_get(
+            ds,
+            "in_domain"
+          )
+  
+  
+          # filtrage
+          q <- quantile(
+            c_cond,
+            c(0.01,0.99),
+            na.rm = TRUE
+          )
+  
+          c_cond[c_cond < q[1] | c_cond > q[2]] <- NA
+          c_cond[use == 0] <- 0
+          c_cond[in_domain == 0] <- NA
+  
+          # print(c(
+          #   dim(c_cond),
+          #   length(lat_pig),
+          #   length(lon_pig),
+          #   colSums(!is.na(pig_cond[list_pigs]))
+          # ))
+          
+          
+  
+          # extraction au voisinage du point
+          for(j in seq_along(ind)){
+  
+              i <- ind[j]
+  
+              ilon <- idx_lon[j]
+              ilat <- idx_lat[j]
+  
+  
+              r <- (p - 1) / 2          # rayon
+              
+              lon_win <- max(1, ilon - r):min(nrow(c_cond), ilon + r)
+              lat_win <- max(1, ilat - r):min(ncol(c_cond), ilat + r)
+              
+              pig_cond[i, pig] <- mean(
+                  c_cond[lon_win, lat_win],
+                  na.rm = TRUE
+              )
+          }
+      }
+  
+      nc_close(ds)
+  
+  }
+  saveRDS(pig_cond,file = paste0("pig_mask", p*p, "_1d_", year, ".rds"))
+  idx <- which(!is.na(pig_cond$Chla))
+  print(idx)
+  print(unique(as.Date(pig_cond$time)[idx]))
+}
+
+
+
+```
+
+
+# Affichage des distributions des concentration de pigments
+```{r}
+
+
+cols <- rainbow(length(list_pigs)) 
+# Premier pigment 
+par(mfrow=c(3,3)) 
+for(pig in list_pigs){ 
+  vals <- pig_cond[,pig] 
+  vals <- vals[!is.na(vals)] 
+  plot( density(vals), main = pig, xlab = "c_cond" ) 
+} 
+
+par(mfrow=c(1,1))
+
+
+
+par(mfrow = c(3,3))
+
+for (pig in list_pigs) {
+
+  vals <- na.omit(pig_cond[[pig]])
+
+  hist(
+    vals,
+    breaks = 30,
+    main = pig,
+    
+    xlab = "c_cond"
+  )
+}
+
+par(mfrow = c(1,1))
+```
+
+# affichage de la distribution des valeurs manquantes
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+
+# Proportion de valeurs manquantes par pigment
+na_pig <- pig_cond %>%
+  summarise(across(all_of(list_pigs), ~ mean(is.na(.)) * 100)) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "Pigment",
+    values_to = "NA_percent"
+  )
+
+# Graphique
+ggplot(na_pig, aes(x = Pigment, y = NA_percent)) +
+  geom_col() +
+  theme_minimal() +
+  labs(
+    x = "Pigment",
+    y = "Valeurs manquantes (%)",
+    title = "Proportion de valeurs manquantes par pigment"
+  ) +
+  ylim(0, 100)
+```

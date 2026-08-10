@@ -1,0 +1,732 @@
+---
+title: "FOD (fpca bivariée + clustering GMM)"
+author: "Elise Nicolas"
+date: "2026-07-22"
+output: html_document
+---
+## librairies
+```{r}
+# librairies
+library(ncdf4)
+library(rpart)
+library(splines)
+library(fda)
+library(zoo)
+library(pbapply)
+library(glue)
+library(mclust)
+library(fields)
+```
+
+## Ouverture des datasets
+
+```{r}
+rm(list = ls())
+path = "G:/données elise/raw/temperature_salinite/cmems_mod_glo_phy_my_0.083deg_P1D-m_thetao-so_40.00E-95.00E_60.00S-20.00S_0.49-5727.92m_2021-01-09-2021-03-03.nc"
+ds <- nc_open(path)
+time <- ncvar_get(ds, "time")
+time_bis <- as.POSIXct(
+  time*3600,
+  origin = "1950-01-01",
+  tz = "UTC"
+)
+thetao <- ncvar_get(ds, "thetao") # (lon, lat, depth, time)
+so <- ncvar_get(ds, "so") # (lon, lat, depth, time)
+depth <- ncvar_get(ds, "depth")
+lat <- ncvar_get(ds, "latitude")
+lon <- ncvar_get(ds, "longitude")
+
+# libérer esoace mémoire
+rm(ds)
+gc()
+
+# small ds
+# thetao = thetao[,,,1:4]
+# so = so[,,,1:4]
+```
+
+## Cropper les données à 500m (et a 40eS)
+
+```{r}
+i_500m <- which.min(abs(depth - 500))
+i_20m <-  which.min(abs(depth - 20))
+depth <- depth[i_20m:i_500m]
+depth
+i_lat30 <- which.min(abs(lat+30))
+lat <- lat[1:i_lat30]
+lat
+
+thetao <- thetao[, 1:i_lat30 , i_20m:i_500m,]
+so <- so[, 1:i_lat30, i_20m:i_500m,] 
+
+gc()
+```
+
+## Applatir et retirer les nans
+
+```{r}
+# -------------- applatir les mats de temp et sal
+dim_ds <- dim(thetao)
+
+nlon   <- dim_ds[1]
+nlat   <- dim_ds[2]
+ndepth   <- dim_ds[3]
+ntime   <- dim_ds[4]
+
+thetao_flat <- matrix(aperm(thetao, c(1,2,4,3)), ncol = ndepth)
+so_flat <- matrix(aperm(so, c(1,2,4,3)), ncol = ndepth)
+dim(thetao_flat)
+
+# vérifier impact de retirer tous les profils nans
+sum(rowSums(is.na(thetao_flat)) > 0)/nrow(thetao_flat) #0.02
+sum(rowSums(is.na(so_flat)) > 0)/nrow(so_flat) #0.02
+
+# mask
+mask_common <- !apply(is.na(thetao_flat), 1, any) &
+               !apply(is.na(so_flat), 1, any)
+sum(!mask_common)/length(mask_common)
+
+# apply mask
+thetao_flat_clean <-thetao_flat[mask_common,]
+so_flat_clean <- so_flat[mask_common,]
+sum(is.na(so_flat_clean))
+
+# rm(thetao_flat, so_flat)
+gc()
+rm(so, thetao)
+save(mask_common, file = "mask_common.RData")
+```
+
+## Estimation fonctionelle
+```{r}
+# -------------- projection sur base de B-spline
+# hyperparams
+K <- 25 # nombre de fonction de base
+r <- 4 # ordre de la fonction de base
+lambda_spline <- 0.25 # poids de la pénalisation
+
+length(depth)
+# base de Bsplines
+phi <- bs(
+    depth,
+    df = K,
+    degree = r-1,
+    intercept = TRUE
+)
+
+phi <- as.matrix(phi)
+
+# penalisation
+D2 <- diff(diag(K), differences = 2)
+R <- t(D2) %*% D2
+
+# résolution 
+A <- crossprod(phi) + lambda_spline * R
+qr(A)$rank
+B <- solve(A, t(phi))
+
+coef_thetao <- thetao_flat_clean %*% t(B)
+coef_so <- so_flat_clean %*% t(B)
+
+gc()
+
+# save(
+#   coef_thetao,
+#   coef_so,
+#   phi,
+#   B,
+#   depth,
+#   K,
+#   r,
+#   lambda_spline,
+#   file = sprintf(
+#     "coefs_bivariate_bspline_K%d_r%d_lambda%f.RData",
+#     K, r, lambda
+#   )
+# )
+# gc()
+```
+
+## Check profils Bspline
+```{r}
+# load("C:/Users/mmolinet/elisou_ta_stagiaire_pref/fod/FOD_2021/coefs_bivariate_bspline_K25_r4_lambda0.250000_2021.RData")
+# so_rec <- coef_so %*% t(phi)
+thetao_rec <- coef_thetao %*% t(phi)
+# i <- 170  # numéro du profil à regarder
+
+
+for (i in 1:10){
+  print(c(min(thetao_flat_clean[i, ]), max(thetao_flat_clean[i, ])))
+  png(
+    paste0("temperature_bspline_profile_", format(time_bis[i], "%Y-%m-%d"), ".png"),
+    width = 800,
+    height = 1600,
+    res = 200
+  )
+  
+  plot(
+    thetao_flat_clean[i, ], 
+    depth,
+    type = "l",
+    ylim = rev(range(depth)),
+    xlab = "Temp(°C)",
+    ylab = "Profondeur (m)"
+  )
+  
+  lines(
+    thetao_rec[i, ],
+    depth,
+    col = "red",
+    lwd = 2
+  )
+  
+  legend(
+    "bottomright",
+    legend = c("Original", "B-spline"),
+    col = c("black", "red"),
+    lty = 1,
+    lwd = c(1, 2)
+  )
+  
+  title(
+    main = paste(
+      "Salinité, Estimation fonctionnelle base de B-splines, K = ",
+      K,
+      " Lambda = ",
+      lambda_spline,
+      " r = ",
+      r,
+      " - ",
+      format(time_bis[i], "%Y-%m-%d")
+    ),
+    cex.main = 0.45
+  )
+  dev.off()
+}
+
+
+
+```
+
+## fPCA
+```{r}
+# load("C:/Users/mmolinet/elisou_ta_stagiaire_pref/fod/FOD_2021/coefs_bivariate_bspline_K25_r4_lambda0.250000_2021.RData")
+
+# concatener
+coef_biv <- cbind(
+  coef_thetao,
+  coef_so
+)
+dim(coef_biv)
+
+# centrage
+alpha_mean <- colMeans(coef_biv)
+
+Xc <- scale(
+  coef_biv,
+  center = alpha_mean,
+  scale = FALSE
+)
+
+# covariance des coefficients
+V <- crossprod(Xc) / (nrow(Xc)-1)
+
+# décomposition spectrale
+eig <- eigen(V, symmetric = TRUE)
+
+# tri décroissant
+ord <- order(eig$values, decreasing = TRUE)
+
+
+# choisir le nombre de PC
+# for (nharm in list(8, 6, 4)){
+#   print(cum_var[nharm])
+#   lambda <- eig$values[ord] # val propres
+#   U <- eig$vectors[, ord] # vect propres
+#   U <- U[,1:nharm]
+#   lambda <- lambda[1:nharm]
+#   
+#   # scores FPCA
+#   scores <- Xc %*% U # (n, n_harm)
+#   
+#   # reconstruction des coefficients de B spline
+#   alpha_rec <- sweep(scores %*% t(U), 2, alpha_mean, "+") # reconstruction des scores de B splines
+#   dim(alpha_rec) # (n_data, n_harm)
+#   diff_coef <- abs(alpha_rec - coef_biv) 
+#   
+#   png(
+#     filename = paste0("hist_erreur_reconstruction_nharm",nharm, ".png"),
+#     width = 1200,
+#     height = 800,
+#     res = 150
+#   )
+#   
+#   hist(
+#     as.vector(diff_coef),
+#     breaks = 30,
+#     main = paste("Distribution des erreurs de reconstruction, nharm =", nharm),
+#     xlab = "|alpha_rec - coef_biv|"
+#   )
+#   
+#   dev.off()
+#   
+#   print(c(min(diff_coef), max(diff_coef)))
+#   
+#   # séparation Temperature salinité
+#   coef_temp_rec <- alpha_rec[,1:K] # (n_data=16759224, K=25)
+#   coef_sal_rec  <- alpha_rec[,(K+1):(2*K)] # (n_data=16759224, K=25)
+#   dim(phi) # (n_depth=32, K=25)
+#   
+#   # reconstrucion des profils : projection des coefs reconstruits sur base de Bspline
+#   temp_rec <- coef_temp_rec %*% t(phi) # (n_data=16759224, n_depth=32)
+#   sal_rec <- coef_sal_rec %*% t(phi)
+#   dim(sal_rec)
+#   
+#   for (i in 1:10){
+#     png(
+#       paste0("temperature_profile_nharm_", nharm, "_", format(time_bis[i], "%Y-%m-%d"), ".png"),
+#       width = 800,
+#       height = 1600,
+#       res = 200
+#     )
+#     
+#     plot(
+#       thetao_flat_clean[i, ], 
+#       depth,
+#       type = "l",
+#       ylim = rev(range(depth)),
+#       xlab = "Temperature (°C)",
+#       ylab = "Profondeur (m)"
+#     )
+#     
+#     lines(
+#       temp_rec[i, ],
+#       depth,
+#       col = "red",
+#       lwd = 2
+#     )
+#     
+#     legend(
+#       "bottomright",
+#       legend = c("Original", "B-spline + FPCA"),
+#       col = c("black", "red"),
+#       lty = 1,
+#       lwd = c(1, 2)
+#     )
+#     
+#     title(
+#       main = paste("Temperature - Estimation fonctionnelle base de B-splines + FPCA, K = ",
+#         K,
+#         " Lambda = ",
+#         lambda_spline,
+#         " r = ",
+#         r,
+#         " - ",
+#         format(time_bis[i], "%Y-%m-%d")
+#       ),
+#       cex.main = 0.4
+#     )
+#     dev.off()
+#     
+#     png(
+#       paste0("salinite_profile_nharm_", nharm, "_", format(time_bis[i], "%Y-%m-%d"), ".png"),
+#       width = 800,
+#       height = 1600,
+#       res = 200
+#     )
+#     
+#     plot(
+#       so_flat_clean[i, ], 
+#       depth,
+#       type = "l",
+#       ylim = rev(range(depth)),
+#       xlab = "Salinite (PSU)",
+#       ylab = "Profondeur (m)"
+#     )
+#     
+#     lines(
+#       sal_rec[i, ],
+#       depth,
+#       col = "red",
+#       lwd = 2
+#     )
+#     
+#     legend(
+#       "bottomright",
+#       legend = c("Original", "B-spline + FPCA"),
+#       col = c("black", "red"),
+#       lty = 1,
+#       lwd = c(1, 2)
+#     )
+#     
+#     title(
+#       main = paste("Salinite - Estimation fonctionnelle base de B-splines + FPCA, K = ",
+#         K,
+#         " Lambda = ",
+#         lambda_spline,
+#         " r = ",
+#         r,
+#         " - ",
+#         format(time_bis[i], "%Y-%m-%d")
+#       ),
+#       cex.main = 0.4
+#     )
+#     dev.off()
+#   }
+# }
+
+
+# garder les n premières composantes
+
+lambda <- eig$values[ord] # val propres
+U <- eig$vectors[, ord] # vect propres
+
+prop_var <- lambda / sum(lambda) # explained var
+cum_var <- cumsum(prop_var) # cum explained var
+# nharm <- which(cum_var >= 0.90)[1] # n PC explaining 90% var
+
+nharm <- 6
+U <- U[,1:nharm]
+lambda <- lambda[1:nharm]
+
+# scores FPCA
+scores <- Xc %*% U # (n, n_harm)
+
+# reconstruction des coefficients de B spline
+alpha_rec <- sweep(scores %*% t(U), 2, alpha_mean, "+") # reconstruction des scores de B splines
+coef_temp_rec <- alpha_rec[,1:K] # (n_data, K=25)
+coef_sal_rec  <- alpha_rec[,(K+1):(2*K)] # (n_data, K=25)
+
+# temp_rec <- coef_temp_rec %*% t(phi) # (n_data, n_depth)
+# sal_rec <- coef_sal_rec %*% t(phi)
+  
+# afficher pc1 vs pc2
+# plot(
+#   scores[,1],
+#   scores[,2],
+#   xlab="PC1",
+#   ylab="PC2",
+#   pch=19,
+#   cex = 0.05
+# )
+```
+
+## GMM clustering
+```{r}
+gmm <- Mclust( #objet modele
+  scores,
+  G=4:6,
+  model = "VVV"
+)
+saveRDS(gmm,file = "mclust_2021_results_nharm6.rds")
+
+# gmm <- readRDS("C:/Users/mmolinet/elisou_ta_stagiaire_pref/fod/mclust_results_nharm2.rds")
+
+# summary(gmm) # resultat
+nclust <- gmm$G # nb de cluster choisit par bic
+
+# creer softclasses
+seuil <- 0.75 # seuil soft class
+max_prob <- apply(gmm$z, 1, max)# probabilité max pour chaque profil
+cluster <- gmm$classification # classe la plus probable
+
+# création d'une classe "incertaine"
+cluster_soft <- cluster
+cluster_soft[max_prob < seuil] <- 0
+
+# flatten cluster
+cluster_flat <- rep(NA_integer_, length(mask_common))
+cluster_flat[mask_common] <- cluster_soft
+
+length(cluster_flat)
+dim(scores)
+length(cluster_soft)
+```
+
+# score moyen par cluster
+```{r}
+## Reconstruction de tous les profils
+temp_rec <- coef_thetao %*% t(phi)
+sal_rec  <- coef_so %*% t(phi)
+dim(temp_rec)
+## Listes des statistiques par cluster
+mean_temp_cl <- list()
+q1_temp_cl   <- list()
+q3_temp_cl   <- list()
+
+mean_sal_cl <- list()
+q1_sal_cl   <- list()
+q3_sal_cl   <- list()
+
+for (cl in sort(unique(cluster_soft))) {
+
+  ind <- cluster_soft == cl
+  
+  ## Température
+  mean_temp_cl[[cl + 1]] <- colMeans(temp_rec[ind, , drop = FALSE])
+
+  q1_temp_cl[[cl + 1]] <- apply(
+    temp_rec[ind, , drop = FALSE],
+    2,
+    quantile,
+    probs = 0.25
+  )
+
+  q3_temp_cl[[cl + 1]] <- apply(
+    temp_rec[ind, , drop = FALSE],
+    2,
+    quantile,
+    probs = 0.75
+  )
+
+  ## Salinité
+  mean_sal_cl[[cl + 1]] <- colMeans(sal_rec[ind, , drop = FALSE])
+
+  q1_sal_cl[[cl + 1]] <- apply(
+    sal_rec[ind, , drop = FALSE],
+    2,
+    quantile,
+    probs = 0.25
+  )
+
+  q3_sal_cl[[cl + 1]] <- apply(
+    sal_rec[ind, , drop = FALSE],
+    2,
+    quantile,
+    probs = 0.75
+  )
+}
+
+cols <- 1:7
+cols_fill <- adjustcolor(cols, alpha.f = 0.25)
+
+png(
+  "temperature_clusters.png",
+  width = 1800,
+  height = 2800,
+  res = 300
+)
+
+plot(
+  NULL,
+  xlim = range(unlist(q1_temp_cl), unlist(q3_temp_cl)),
+  ylim = rev(range(depth)),
+  xlab = "Temperature (°C)",
+  ylab = "Depth (m)"
+)
+
+for (cl in sort(unique(cluster_soft))) {
+
+  polygon(
+    x = c(q1_temp_cl[[cl+1]], rev(q3_temp_cl[[cl+1]])),
+    y = c(depth, rev(depth)),
+    col = cols_fill[cl+1],
+    border = NA
+  )
+
+  lines(
+    mean_temp_cl[[cl+1]],
+    depth,
+    col = cols[cl+1],
+    lwd = 3
+  )
+}
+
+legend(
+  "bottomright",
+  legend = paste("Cluster", sort(unique(cluster_soft))),
+  col = cols,
+  lwd = 3,
+  bty = "n"
+)
+
+dev.off()
+
+cols <- 1:7
+cols_fill <- adjustcolor(cols, alpha.f = 0.25)
+
+png(
+  "temperature_clusters.png",
+  width = 1800,
+  height = 2800,
+  res = 300
+)
+
+plot(
+  NULL,
+  xlim = range(unlist(q1_temp_cl), unlist(q3_temp_cl)),
+  ylim = rev(range(depth)),
+  xlab = "Temperature (°C)",
+  ylab = "Depth (m)"
+)
+
+for (cl in sort(unique(cluster_soft))) {
+
+  polygon(
+    x = c(q1_temp_cl[[cl+1]], rev(q3_temp_cl[[cl+1]])),
+    y = c(depth, rev(depth)),
+    col = cols_fill[cl+1],
+    border = NA
+  )
+
+  lines(
+    mean_temp_cl[[cl+1]],
+    depth,
+    col = cols[cl+1],
+    lwd = 3
+  )
+}
+
+legend(
+  "bottomright",
+  legend = paste("Cluster", sort(unique(cluster_soft))),
+  col = cols,
+  lwd = 3,
+  bty = "n"
+)
+
+dev.off()
+
+cols <- 1:7
+cols_fill <- adjustcolor(cols, alpha.f = 0.25)
+
+png(
+  "salinity_clusters.png",
+  width = 1800,
+  height = 2800,
+  res = 300
+)
+
+plot(
+  NULL,
+  xlim = range(unlist(q1_sal_cl), unlist(q3_sal_cl)),
+  ylim = rev(range(depth)),
+  xlab = "Salinity (PSU)",
+  ylab = "Depth (m)"
+)
+
+for (cl in sort(unique(cluster_soft))) {
+
+  polygon(
+    x = c(q1_sal_cl[[cl + 1]], rev(q3_sal_cl[[cl + 1]])),
+    y = c(depth, rev(depth)),
+    col = cols_fill[cl + 1],
+    border = NA
+  )
+
+  lines(
+    mean_sal_cl[[cl + 1]],
+    depth,
+    col = cols[cl + 1],
+    lwd = 3
+  )
+}
+
+legend(
+  "bottomright",
+  legend = paste("Cluster", sort(unique(cluster_soft))),
+  col = cols,
+  lwd = 3,
+  bty = "n"
+)
+
+dev.off()
+```
+
+# FOD map
+```{r}
+# remettre dans bonnes dimensions (spatiales et temporelles)
+nlon <- length(lon)
+nlat <- length(lat)
+cluster_map <- array(
+  cluster_flat,
+  dim = c(nlon, nlat, ntime)
+)
+saveRDS(cluster_map,file = "mclust_result_2021_4dims.rds")
+
+# cluster_map <- readRDS("C:/Users/mmolinet/elisou_ta_stagiaire_pref/fod/FOD_2021/mclust_result_2021_4dims.rds")
+
+# display fod map by day
+
+for(i in seq_along(time_bis)) {
+
+  png(
+    sprintf("cluster_map_%s.png", format(time_bis[i], "%Y%m%d")),
+    width = 2000,
+    height = 1500,
+    res = 300
+  )
+
+  image.plot(
+    x = lon,
+    y = lat,
+    z = cluster_map[,,i],
+    col = cols,
+    breaks = seq(-0.5, nclust + 0.5, 1),
+    legend.only = FALSE,
+    axis.args = list(
+      at = 0:nclust,
+      labels = c("Transition", 1:nclust)
+    )
+  )
+
+  title(main = paste("FOD map -", format(time_bis[i], "%Y-%m-%d")))
+
+  dev.off()
+}
+
+
+# ============================================================
+# Sauvegarde complète avec masque spatial
+# ============================================================
+
+results_FOD <- list(
+
+  # Grille spatiale/temporelle
+  lon = lon,
+  lat = lat,
+  depth = depth,
+  time = time_bis,
+
+  # Masque utilisé pour flatten
+  mask = mask_common,                  # matrice nlon x nlat TRUE/FALSE
+  valid_idx = which(mask_common),      # indices des points gardés
+
+  # Dimensions
+  dimensions = list(
+    nlon = length(lon),
+    nlat = length(lat),
+    ntime = ntime
+  ),
+
+  # Résultats clustering
+  nclust = nclust,
+  cluster_soft = cluster_soft,
+  cluster_map = cluster_map,
+
+  # Reconstruction EOF
+  coef_thetao = coef_thetao,
+  coef_so = coef_so,
+  phi = phi,
+
+  # Profils reconstruits
+  temp_rec = temp_rec,
+  sal_rec = sal_rec,
+
+  # Statistiques clusters
+  mean_temp_cl = mean_temp_cl,
+  q1_temp_cl = q1_temp_cl,
+  q3_temp_cl = q3_temp_cl,
+
+  mean_sal_cl = mean_sal_cl,
+  q1_sal_cl = q1_sal_cl,
+  q3_sal_cl = q3_sal_cl
+)
+
+
+saveRDS(
+  results_FOD,
+  "FOD_results_complete_2021.rds"
+)
+```
+

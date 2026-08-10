@@ -1,0 +1,187 @@
+---
+title: "Concatenation_temp_sal_datas"
+output: html_document
+date: "2026-07-30"
+---
+# Description 
+1) Croppper les données temératures et salinité Copernicus : 
+- garder 40-69°S latitude, all longitude et 20-500m depth
+
+2) Concaténer les données 2021 2022 2023 selon le temps 
+3) Sauvegarder dans un nouveau netcdf
+
+# Libraries
+```{r}
+library(ncdf4)
+```
+
+#Paths
+
+```{r}
+rm(list = ls())
+path2021 <- "G:/données elise/raw/temperature_salinite/cmems_mod_glo_phy_my_0.083deg_P1D-m_thetao-so_40.00E-95.00E_60.00S-20.00S_0.49-5727.92m_2021-01-09-2021-03-03.nc"
+path2022 <- "G:/données elise/raw/temperature_salinite/cmems_mod_glo_phy_my_0.083deg_P1D-m_thetao-so_40.00E-95.00E_60.00S-20.00S_0.49-5727.92m_2022-01-09-2022-03-03.nc"
+path2023 <- "G:/données elise/raw/temperature_salinite/cmems_mod_glo_phy_my_0.083deg_P1D-m_thetao-so_40.00E-95.00E_60.00S-20.00S_0.49-5727.92m_2023-01-09-2023-03-03.nc"
+```
+
+# Ouvrir et cropper
+``` {r}
+# Fonction de lecture + crop
+read_crop_nc <- function(path){
+
+  nc <- nc_open(path)
+
+  time <- ncvar_get(nc, "time")
+
+  thetao <- ncvar_get(nc, "thetao")
+  so <- ncvar_get(nc, "so")
+
+  depth <- ncvar_get(nc, "depth")
+  lat <- ncvar_get(nc, "latitude")
+  lon <- ncvar_get(nc, "longitude")
+
+  nc_close(nc)
+
+  # indices profondeur
+  i_20m <- which.min(abs(depth - 20))
+  i_500m <- which.min(abs(depth - 500))
+
+  # indices latitude
+  i_lat30 <- which.min(abs(lat + 30))
+
+  # crop
+  depth_crop <- depth[i_20m:i_500m]
+  lat_crop <- lat[1:i_lat30]
+
+  thetao_crop <- thetao[, 1:i_lat30, i_20m:i_500m, ]
+  so_crop <- so[, 1:i_lat30, i_20m:i_500m, ]
+
+  return(list(
+    thetao = thetao_crop,
+    so = so_crop,
+    time = time,
+    lon = lon,
+    lat = lat_crop,
+    depth = depth_crop
+  ))
+}
+
+ds2021 <- read_crop_nc(path2021)
+ds2022 <- read_crop_nc(path2022)
+ds2023 <- read_crop_nc(path2023)
+
+all.equal(ds2021$depth, ds2022$depth)
+all.equal(ds2021$depth, ds2023$depth)
+
+# latitude
+all.equal(ds2021$lat, ds2022$lat)
+all.equal(ds2021$lat, ds2023$lat)
+
+# longitude
+all.equal(ds2021$lon, ds2022$lon)
+all.equal(ds2021$lon, ds2023$lon)
+
+ds2022$time
+ds2021$time
+ds2023$time
+
+
+# concaténer
+thetao_all <- abind::abind(
+  ds2021$thetao,
+  ds2022$thetao,
+  ds2023$thetao,
+  along = 4
+)
+
+so_all <- abind::abind(
+  ds2021$so,
+  ds2022$so,
+  ds2023$so,
+  along = 4
+)
+
+time_all <- c(
+  ds2021$time,
+  ds2022$time,
+  ds2023$time
+)
+```
+
+# telecharger dans netcdf
+
+```{r}
+# dimensions NetCDF
+dim_lon <- ncdim_def(
+  name = "longitude",
+  units = "degrees_east",
+  vals = ds2021$lon
+)
+
+dim_lat <- ncdim_def(
+  name = "latitude",
+  units = "degrees_north",
+  vals = ds2021$lat
+)
+
+dim_depth <- ncdim_def(
+  name = "depth",
+  units = "m",
+  vals = ds2021$depth
+)
+
+dim_time <- ncdim_def(
+  name = "time",
+  units = "hours since 1950-01-01 00:00:00",
+  vals = time_all,
+  unlim = TRUE
+)
+
+# variables
+var_thetao <- ncvar_def(
+  name = "thetao",
+  units = "degC",
+  dim = list(dim_lon, dim_lat, dim_depth, dim_time),
+  missval = -9999,
+  prec = "float"
+)
+
+var_so <- ncvar_def(
+  name = "so",
+  units = "psu",
+  dim = list(dim_lon, dim_lat, dim_depth, dim_time),
+  missval = -9999,
+  prec = "float"
+)
+
+var_time <- ncvar_def(
+  name = "time",
+  units = "hours since 1950-01-01 00:00:00",
+  dim = list(dim_time),
+  prec = "double"
+)
+
+nc_out <- nc_create(
+  "thetao_so_crop_2021_2023.nc",
+  vars = list(var_thetao, var_so)
+)
+
+ncvar_put(
+  nc_out,
+  var_thetao,
+  thetao_all
+)
+
+ncvar_put(
+  nc_out,
+  var_so,
+  so_all
+)
+
+nc <- nc_open("thetao_so_crop_2021_2023.nc")
+
+thetao <- ncvar_get(nc, "thetao")
+dim(thetao)
+
+nc_close(nc)
+```
