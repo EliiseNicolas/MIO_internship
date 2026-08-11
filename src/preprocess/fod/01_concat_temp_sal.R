@@ -6,6 +6,7 @@
 #   4) Keep only 6PCs
 #   5) bivariate fpca
 
+# rm(list=ls())
 library(ncdf4)
 
 session <- "mmolinet"
@@ -60,20 +61,23 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
   
   ds <- nc_open(path)
   
-  # Coordinates
+  # ---- Coordinates ----------------------------------------------------
+  
   lat_all <- ds$dim$latitude$vals
   lon_all <- ds$dim$longitude$vals
   depth_all <- ds$dim$depth$vals
   time <- ds$dim$time$vals
   
-  # Spatial selection
+  # ---- Spatial selection ----------------------------------------------
+  
   idx_lat <- which(lat_all < -30)
   idx_lon <- which(lon_all > 40)
   
   lat <- lat_all[idx_lat]
   lon <- lon_all[idx_lon]
   
-  # Depth selection
+  # ---- Depth selection ------------------------------------------------
+  
   idx_depth <- which(
     depth_all >= min_depth &
       depth_all <= max_depth
@@ -81,7 +85,8 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
   
   depth <- depth_all[idx_depth]
   
-  # Dimensions
+  # ---- Dimensions -----------------------------------------------------
+  
   n_lon <- length(idx_lon)
   n_lat <- length(idx_lat)
   n_depth <- length(idx_depth)
@@ -95,7 +100,7 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
     n_time, "time\n"
   )
   
-  # ---- Read thetao --------------------------------------------------
+  # ---- Read thetao ----------------------------------------------------
   
   thetao <- ncvar_get(
     ds,
@@ -114,7 +119,7 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
     )
   )
   
-  # ---- Read so ------------------------------------------------------
+  # ---- Read so --------------------------------------------------------
   
   so <- ncvar_get(
     ds,
@@ -135,7 +140,7 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
   
   nc_close(ds)
   
-  # ---- Dates --------------------------------------------------------
+  # ---- Dates ----------------------------------------------------------
   
   dates <- as.POSIXct(
     time * 3600,
@@ -143,7 +148,7 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
     tz = "UTC"
   )
   
-  # ---- Flatten thetao ----------------------------------------------
+  # ---- Flatten thetao -------------------------------------------------
   
   thetao_mat <- matrix(
     aperm(thetao, c(1, 2, 4, 3)),
@@ -153,7 +158,7 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
   rm(thetao)
   gc()
   
-  # ---- Flatten so ---------------------------------------------------
+  # ---- Flatten so -----------------------------------------------------
   
   so_mat <- matrix(
     aperm(so, c(1, 2, 4, 3)),
@@ -163,7 +168,7 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
   rm(so)
   gc()
   
-  # ---- Coordinates --------------------------------------------------
+  # ---- Coordinates ----------------------------------------------------
   
   lat_lon_dates <- expand.grid(
     lon = lon,
@@ -172,23 +177,71 @@ open_ds <- function(path, year, min_depth = 1, max_depth = 500) {
     KEEP.OUT.ATTRS = FALSE
   )
   
-  # ---- Checks -------------------------------------------------------
+  # ---- Checks before filtering ---------------------------------------
   
   stopifnot(
     nrow(thetao_mat) == nrow(so_mat),
     nrow(thetao_mat) == nrow(lat_lon_dates)
   )
   
-  # ---- Return -------------------------------------------------------
+  # =====================================================================
+  # Remove profiles containing at least one NA
+  # =====================================================================
+  
+  # TRUE = profile contains no NA in thetao
+  mask_thetao <- rowSums(is.na(thetao_mat)) == 0
+  
+  # TRUE = profile contains no NA in so
+  mask_so <- rowSums(is.na(so_mat)) == 0
+  
+  # Keep only profiles valid for BOTH variables
+  mask <- mask_thetao & mask_so
+  
+  cat(
+    "Profiles before filtering:",
+    length(mask), "\n"
+  )
+  
+  cat(
+    "Profiles removed:",
+    sum(!mask), "\n"
+  )
+  
+  cat(
+    "Profiles retained:",
+    sum(mask), "\n"
+  )
+  
+  # ---- Apply mask -----------------------------------------------------
+  
+  thetao_mat <- thetao_mat[mask, , drop = FALSE]
+  
+  so_mat <- so_mat[mask, , drop = FALSE]
+  
+  lat_lon_dates <- lat_lon_dates[mask, , drop = FALSE]
+  
+  # ---- Final checks ---------------------------------------------------
+  
+  stopifnot(
+    nrow(thetao_mat) == nrow(so_mat),
+    nrow(thetao_mat) == nrow(lat_lon_dates),
+    all(!is.na(thetao_mat)),
+    all(!is.na(so_mat))
+  )
+  
+  # ---- Return ---------------------------------------------------------
   
   list(
     year = year,
     thetao = thetao_mat,
     so = so_mat,
     lat_lon_dates = lat_lon_dates,
-    depth = depth
+    depth = depth,
+    mask_NA = mask
   )
 }
+
+
 
 
 # ---- Output directory ------------------------------------------------

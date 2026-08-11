@@ -29,30 +29,104 @@ path <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/c
 bspline_estim <- function(path, K, lambda){
   # load data 
   df <- readRDS(path)
+  print(dim(df$thetao)) # (depth, n_profile)
   n_profiles <- ncol(df$thetao)
   
   # create Bspline basis
   basis <- create.bspline.basis(rangeval = range(df$depth), nbasis = K, norder = 4)
   
   # Bspline estimation thetao
-  yfd <- Data2fd(
-    argvals = depth,
+  yfd_thetao <- Data2fd(
+    argvals = df$depth,
     y = t(df$thetao),
     basisobj = basis,
     lambda = lambda,
     fdnames = c("depth", "profiles", "thetao")
   )
-  coefs_thetao <- yfd$coefs
+  coefs_thetao <- yfd_thetao$coefs
+  thetao_reconstructed <- eval.fd(df$depth, yfd_thetao)
   
-  # Bspline estimation so
-  yfd <- Data2fd(
-    argvals = depth,
-    y = t(df$so),
-    basisobj = basis,
-    lambda = lambda,
-    fdnames = c("depth", "profiles", "so")
-  )
-  coefs_so <- array(NA, dim = c(K, n_profiles))
+  # # Bspline estimation so
+  # yfd_so <- Data2fd(
+  #   argvals = df$depth,
+  #   y = t(df$so),
+  #   basisobj = basis,
+  #   lambda = lambda,
+  #   fdnames = c("depth", "profiles", "so")
+  # )
+  # coefs_so <- yfd_so$coefs
+  # so_reconstructed <- eval.fd(df$depth, yfd_so)
+  # 
+  # 
+  # # -------------------------
+  # # Plot thetao
+  # # -------------------------
+  # profile_id <- 1
+  # 
+  # plot(
+  #   df$thetao[, profile_id],
+  #   df$depth,
+  #   type = "p",
+  #   pch = 16,
+  #   xlab = "Temperature (°C)",
+  #   ylab = "Depth (m)",
+  #   main = paste("Profile", profile_id, "- thetao"),
+  #   ylim = rev(range(df$depth))
+  # )
+  # 
+  # lines(
+  #   thetao_reconstructed[, profile_id],
+  #   df$depth,
+  #   lwd = 2
+  # )
+  # 
+  # legend(
+  #   "topright",
+  #   legend = c("Observed", "B-spline reconstructed"),
+  #   pch = c(16, NA),
+  #   lty = c(NA, 1),
+  #   lwd = c(NA, 2)
+  # )
+  # 
+  # # -------------------------
+  # # Plot so
+  # # -------------------------
+  # 
+  # plot(
+  #   df$so[, profile_id],
+  #   df$depth,
+  #   type = "p",
+  #   pch = 16,
+  #   xlab = "Salinity",
+  #   ylab = "Depth (m)",
+  #   main = paste("Profile", profile_id, "- so"),
+  #   ylim = rev(range(df$depth))
+  # )
+  # 
+  # lines(
+  #   so_reconstructed[, profile_id],
+  #   df$depth,
+  #   lwd = 2
+  # )
+  # 
+  # legend(
+  #   "topright",
+  #   legend = c("Observed", "B-spline reconstructed"),
+  #   pch = c(16, NA),
+  #   lty = c(NA, 1),
+  #   lwd = c(NA, 2)
+  # )
+  
+  # Return results
+  return(list(
+    thetao_fd = yfd_thetao,
+    # so_fd = yfd_so,
+    coefs_thetao = coefs_thetao,
+    # coefs_so = coefs_so,
+    basis = basis, 
+    K=K, 
+    lambda=lambda
+  ))
 }
 
-bspline_estim(path, K, lambda)
+results <- bspline_estim(path, K, lambda)
