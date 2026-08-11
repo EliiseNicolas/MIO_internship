@@ -9,3 +9,6 @@
 # Fichiers temporaires
 *.tmp
 *.log
+
+# Données prétraitées volumineuses
+data_preprocessed/concat_temp_sal/*.rds
