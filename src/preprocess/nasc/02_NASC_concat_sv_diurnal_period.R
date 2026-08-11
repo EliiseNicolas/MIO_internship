@@ -20,8 +20,13 @@
 
 # Packages
 library(dplyr)
+rm(list=ls())
+diurnal_period = "night"
 
 # Paths
+path2018 <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_", diurnal_period, "_200kHz_2018.rds")
+path2021 <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_", diurnal_period, "_200kHz_2021.rds")
+path2023 <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_", diurnal_period, "_200kHz_2023.rds")
 
 # Read data
 df2018 <- readRDS(path2018)
@@ -35,11 +40,11 @@ stopifnot(
 )
 
 # Concatenate Sv profiles
-Sv_all <- cbind(
+Sv_all <- rbind(
   df2018$profiles,
   df2021$profiles,
   df2023$profiles
-)
+) #(n_profiles, depth)
 
 # Concatenate metadata
 metadata_all <- bind_rows(
@@ -62,8 +67,25 @@ metadata_all <- bind_rows(
 
 # Check dimensions
 stopifnot(
-  ncol(Sv_all) == nrow(metadata_all)
+  nrow(Sv_all) == nrow(metadata_all)
 )
 
 # Depth vector
 depth <- df2018$depth
+
+Sv_concat <- list(
+  profiles = Sv_all,
+  lat = metadata_all$lat,
+  lon = metadata_all$lon,
+  time = metadata_all$time,
+  depth = depth
+)
+
+saveRDS(
+  Sv_concat,
+  file = paste0(
+    "/run/media/mmolinet/KER22/MIO_internship_III/",
+    "data_preprocessed/NASC/transect_2018_2022_2023/",
+    "Sv_2018_2021_2023_", diurnal_period, "_200kHz.rds"
+  )
+)

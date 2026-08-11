@@ -51,7 +51,7 @@ gc()
 # Fichier RDS contenant thetao, so, time, lon, lat, depth
 # ------------------------------------------------------------
 
-path_data <- "C:/Users/mmolinet/elisou_ta_stagiaire_pref/prepross/concat_temp_sal/thetao_so_crop_2018_2023.rds"
+path_data <- "/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/concat_temp_sal/thetao_so_crop_2018_2023.rds"
 
 # ------------------------------------------------------------
 # Dossier de sortie
