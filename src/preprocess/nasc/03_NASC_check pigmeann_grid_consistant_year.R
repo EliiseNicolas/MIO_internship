@@ -20,10 +20,11 @@
 #   8) compute NASC for each mean profile 
 # => save intermediary rds file : nasc_mean_pig_grid_2018_2021_2023_day.rds,..
 
+# rm(list=ls())
 # library
 library(ncdf4)
 
-folder_path <- ""
+folder_path <- "/mnt/KER22/data_elise/raw/PIGMeANN/daily"
 
 years <- c(2018, 2021, 2022, 2023)
 
@@ -62,8 +63,8 @@ for (y in years) {
   
   # Stocker
   grilles[[as.character(y)]] <- list(
-    lat = lat,
-    lon = lon
+    lat = lat[lat >= -60 & lat <= -30],
+    lon = lon[lon > 44.97 & lon <= 90]
   )
 }
 
@@ -72,15 +73,38 @@ reference_year <- as.character(years[1])
 for (y in years[-1]) {
   
   y <- as.character(y)
+  cat(
+    "\n", reference_year, "vs", y, "\n",
+    "lat :", length(grilles[[reference_year]]$lat), "vs", length(grilles[[y]]$lat), "\n",
+    "lon :", length(grilles[[reference_year]]$lon), "vs", length(grilles[[y]]$lon), "\n"
+  )
+  
+  
+  
+  lat_diff <- grilles[[y]]$lat - grilles[[reference_year]]$lat
+  lon_diff <- grilles[[y]]$lon - grilles[[reference_year]]$lon
+  
+  
+  cat(
+    "LAT : max =", max(abs(lat_diff), na.rm = TRUE),
+    " | mean =", mean(abs(lat_diff), na.rm = TRUE),
+    "\n"
+  )
+  
+  cat(
+    "LON : max =", max(abs(lon_diff), na.rm = TRUE),
+    " | mean =", mean(abs(lon_diff), na.rm = TRUE),
+    "\n"
+  )
   
   same_lat <- identical(
-    grilles[[reference_year]]$lat,
-    grilles[[y]]$lat
+    round(grilles[[reference_year]]$lat, 4),
+    round(grilles[[y]]$lat, 4)
   )
   
   same_lon <- identical(
-    grilles[[reference_year]]$lon,
-    grilles[[y]]$lon
+    round(grilles[[reference_year]]$lon, 4),
+    round(grilles[[y]]$lon, 4)
   )
   
   cat(
@@ -90,15 +114,19 @@ for (y in years[-1]) {
     "\n"
   )
   
-  # save reference year grid
-  pig_grid <- list(
-    lat = grilles[["2018"]]$lat,
-    lon = grilles[["2018"]]$lon
-  )
-  
-  saveRDS(
-    pig_grid,
-    file = "pigmeann_grid.rds"
-  )
-  
 }
+
+# save reference year grid
+pig_grid <- list(
+  lat = grilles[["2018"]]$lat,
+  lon = grilles[["2018"]]$lon
+)
+saveRDS(
+  pig_grid,
+  file = "/home/elise/Documents/stage_MIO/pt_III/data_preprocessed/NASC/transect_2018_2022_2023/pigmeann_grid.rds"
+)
+
+
+# Test OK => same grid if we filter enough to keep 
+# lat = lat[lat >= -60 & lat <= -30],
+# lon = lon[lon > 44.97 & lon <= 90]
