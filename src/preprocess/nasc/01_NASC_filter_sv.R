@@ -18,54 +18,38 @@
 
 # Packages
 library(ncdf4)
-rm (list=ls())
-# Paths
-path2018 <- "/run/media/mmolinet/KER22/data_elise/raw/acooustic/LOCEAN_SOOP-BA_A_20180105T121559Z_MARIONDUFRESNE_FV02_EchointegrationAcoustic-18-38-70-120-200_END-20180201T103636Z_C-20260522T153853Z.nc"
-path2021 <- "/run/media/mmolinet/KER22/data_elise/raw/acooustic/LOCEAN_SOOP-BA_A_20210122T143044Z_MARIONDUFRESNE_FV02_EchointegrationAcoustic-18-38-70-120-200_END-20210307T041919Z_C-20260609T160140Z.nc"
-path2023 <- "/run/media/mmolinet/KER22/data_elise/raw/acooustic/LOCEAN_SOOP-BA_A_20230123T103153Z_MARIONDUFRESNE_FV02_EchointegrationAcoustic-18-38-70-120-200_END-20230227T021804Z_C-20260728T105027Z.nc"
 
-# Hyperparameters
-year <- 2023
+# Global variables
+year <- 2018
+path <- "/run/media/elise/KER22/data_elise/raw/acooustic/LOCEAN_SOOP-BA_A_20180105T121559Z_MARIONDUFRESNE_FV02_EchointegrationAcoustic-18-38-70-120-200_END-20180201T103636Z_C-20260522T153853Z.nc"
 freq <- 200
 thr_depth <- 165 #m
 
 # Part I - filtering
-ds <- nc_open(path2023)
-Sv <- ncvar_get(ds, "Sv") # (depths, time, frequency)
-print(dim(Sv))
+ds <- nc_open(path)
+Sv <- ncvar_get(ds, "Sv") # (time, depths, frequency)
 time <- ncvar_get(ds, "time")
 depth <- ncvar_get(ds, "depth")
 
 # filter by channel
 idx_freq <- which(ncvar_get(ds, "instrument_frequency")==freq)
-Sv <- Sv[,,idx_freq] # (depths, time,)
+Sv <- Sv[,,idx_freq] # (time, depths,)
 
 # filter by latitude and longitude
 lat <- ncvar_get(ds, "latitude") # (time,)
 lon <- ncvar_get(ds, "longitude") # (time,)
 
-idx <- which(lon > 40 & lat < -30)
-
-n_total <- length(lon)
-n_gardees <- length(idx)
-n_supprimees <- n_total - n_gardees
-
-cat("Latitudes totales :", n_total, "\n")
-cat("Latitudes gardées :", n_gardees, "\n")
-cat("Latitudes supprimées :", n_supprimees, "\n")
-cat("Proportion gardée :", n_gardees / n_total, "\n")
-cat("Proportion supprimée :", n_supprimees / n_total, "\n")
-
+idx <- which(lat < -30 & lon > 40)
 
 lat <- lat[idx]
 lon <- lon[idx]
-Sv <- Sv[,idx]
-print(dim(Sv))
-time <- time[idx]
+
+Sv <- Sv[idx,]
+
 # filter depth 
 depth_idx <- which.min(abs(depth - thr_depth))
 depth <- depth[1:depth_idx]
-Sv <- Sv[1:depth_idx,]
+Sv <- Sv[,1:depth_idx]
 
 # filter by diurnal period (day/night)
 diurnal_period <- ncvar_get(ds, "day")
@@ -74,12 +58,8 @@ diurnal_period <- diurnal_period[idx] # filtrage lat/lon
 idx_day <- which(diurnal_period == 3)
 idx_night <- which(diurnal_period == 1)
 
-print(dim(Sv))
-print(idx_day)
-Sv_day <- Sv[, idx_day]
-Sv_night <- Sv[, idx_night]
-print(dim(Sv_day))
-print(dim(Sv_night))
+Sv_day <- Sv[idx_day, ]
+Sv_night <- Sv[idx_night, ]
 
 time_day <- time[idx_day]
 lat_day <- lat[idx_day]
@@ -107,9 +87,7 @@ df_night <- list(
   time = time_night
 )
 
-rm(Sv, Sv_day, Sv_night, ds)
-
 # Save intermediary rds files
-saveRDS(df_day, paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_day_", freq, "kHz_", year, ".rds"))
-saveRDS(df_night, paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_night_", freq, "kHz_", year, ".rds"))
+saveRDS(df_day, paste0("/Sv_day_", year, ".rds"))
+saveRDS(df_night, paste0("/Sv_night_", year, ".rds"))
 
