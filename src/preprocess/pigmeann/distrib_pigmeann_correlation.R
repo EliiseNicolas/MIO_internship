@@ -234,5 +234,62 @@ for (year in years_to_plot) {
     )
 }
 
-# Affichage
 wrap_plots(plots, ncol = 2)
+
+# Distribution spatiale des pigments 
+
+library(dplyr)
+library(ggplot2)
+
+pig_vars <- c(
+  "Chla", "Per", "But", "Fuco", "Hex",
+  "Allo", "Zea", "Chlb", "DvChla"
+)
+
+pigs <- pigs %>%
+  mutate(year = format(time, "%Y"))
+
+for (pig in pig_vars) {
+  
+  data_pig <- pigs %>%
+    filter(
+      is.finite(.data[[pig]]),
+      is.finite(lat_pig),
+      is.finite(lon_pig)
+    )
+  
+  ggplot(
+    data_pig,
+    aes(
+      x = lon_pig,
+      y = lat_pig,
+      color = .data[[pig]]
+    )
+  ) +
+    geom_point(size = 2) +
+    facet_wrap(~year) +
+    coord_fixed() +
+    scale_color_viridis_c(
+      name = paste0(pig, " concentration")
+    ) +
+    theme_bw() +
+    labs(
+      title = paste0("Spatial distribution of ", pig),
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    theme(
+      plot.title = element_text(face = "bold"),
+      strip.text = element_text(face = "bold")
+    ) -> p
+  
+  print(p)
+  
+  ggsave(
+    filename = paste0("~/Documents/stage_MIO/pt_III/src_figures_github/figures/Pigmeann/spatial_distrib_pigment_", pig, ".png"),
+    plot = p,
+    width = 10,
+    height = 7,
+    dpi = 300
+  )
+}
