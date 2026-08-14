@@ -1,0 +1,511 @@
+# Description
+#
+# Analysis of PIGMeANN data :
+#   1 - create small ds of PIGMeANN
+#      -30 to 60 °N
+#       45 to 90 °E
+#   2 - pigment distributions for every year
+#   3 - correlation of pigments
+#   4 - correlation of neighbouring pigments on grid
+
+library(ncdf4)
+library(arrow)
+
+
+# ===========================================================================
+# PARAMETERS
+# ===========================================================================
+
+path_sv <- "/mnt/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_2018_2021_2023_day_200kHz.rds"
+
+path_folder <- "/mnt/KER22/data_elise/raw/PIGMeANN/daily"
+
+years <- c(2018, 2021, 2023)
+
+list_pigs <- c(
+  "Chla", "Per", "But", "Fuco", "Hex",
+  "Allo", "Zea", "Chlb", "DvChla"
+)
+
+lat_min <- -30
+lat_max <- 60
+
+lon_min <- 45
+lon_max <- 90
+
+out_folder <- "~/Documents/stage_MIO/pt_III/data_preprocessed/pigmeann/transect"
+
+out_file <- file.path(
+  out_folder,
+  "pigments_2018_2021_2023.parquet"
+)
+
+dir.create(
+  out_folder,
+  recursive = TRUE,
+  showWarnings = FALSE
+)
+
+
+# ===========================================================================
+# GET DATES FROM SV
+# ===========================================================================
+
+ds_sv <- readRDS(path_sv)
+
+time_sv <- ds_sv$time
+
+time_sv <- as.POSIXct(
+  time_sv * 86400,
+  origin = "1950-01-01",
+  tz = "UTC"
+)
+
+dates_sv <- as.Date(time_sv)
+
+dates_sv_unique <- unique(dates_sv)
+
+dates_sv_str <- format(
+  dates_sv_unique,
+  "%Y%m%d"
+)
+
+rm(
+  ds_sv,
+  time_sv,
+  dates_sv,
+  dates_sv_unique
+)
+
+gc()
+
+
+# ===========================================================================
+# FILES
+# ===========================================================================
+
+files <- list.files(
+  path_folder,
+  pattern = "\\.nc$",
+  recursive = TRUE,
+  full.names = TRUE
+)
+
+message(
+  "Nombre total de fichiers NetCDF : ",
+  length(files)
+)
+
+
+# ===========================================================================
+# DATE FROM NETCDF
+# ===========================================================================
+
+extract_date <- function(nc) {
+  
+  units <- nc$dim$time$units
+  
+  origin <- as.POSIXct(
+    sub(".*since ", "", units),
+    tz = "UTC"
+  )
+  
+  origin +
+    nc$dim$time$vals * 86400
+}
+
+
+# ===========================================================================
+# OUTPUT
+# ===========================================================================
+
+# Supprimer l'ancien fichier s'il existe
+if (file.exists(out_file)) {
+  
+  message(
+    "Suppression de l'ancien fichier : ",
+    out_file
+  )
+  
+  file.remove(out_file)
+}
+
+
+# ===========================================================================
+# PROCESS FILES
+# ===========================================================================
+
+writer <- NULL
+
+n_processed <- 0
+
+
+for (date in dates_sv_str) {
+  
+  message("\n")
+  message("========================================")
+  message("DATE : ", date)
+  message("========================================")
+  
+  
+  # -------------------------------------------------------------------------
+  # Find NetCDF corresponding to date
+  # -------------------------------------------------------------------------
+  
+  files_date <- files[
+    grepl(
+      date,
+      basename(files),
+      fixed = TRUE
+    )
+  ]
+  
+  
+  if (length(files_date) == 0) {
+    
+    warning(
+      "Aucun fichier trouvé pour ",
+      date
+    )
+    
+    next
+  }
+  
+  
+  # -------------------------------------------------------------------------
+  # Process files of this date
+  # -------------------------------------------------------------------------
+  
+  for (i in seq_along(files_date)) {
+    
+    f <- files_date[i]
+    
+    message(
+      "\nFichier ",
+      i,
+      "/",
+      length(files_date),
+      " : ",
+      basename(f)
+    )
+    
+    
+    # =======================================================================
+    # OPEN NETCDF
+    # =======================================================================
+    
+    nc <- nc_open(f)
+    
+    
+    # =======================================================================
+    # COORDINATES
+    # =======================================================================
+    
+    lat_vals <- nc$dim$lat$vals
+    lon_vals <- nc$dim$lon$vals
+    
+    
+    lat_idx <- which(
+      lat_vals >= lat_min &
+        lat_vals <= lat_max
+    )
+    
+    
+    lon_idx <- which(
+      lon_vals >= lon_min &
+        lon_vals <= lon_max
+    )
+    
+    
+    if (
+      length(lat_idx) == 0 ||
+      length(lon_idx) == 0
+    ) {
+      
+      message(
+        "Aucune donnée dans le domaine."
+      )
+      
+      nc_close(nc)
+      
+      rm(nc)
+      gc(verbose = FALSE)
+      
+      next
+    }
+    
+    
+    lat_sub <- lat_vals[lat_idx]
+    lon_sub <- lon_vals[lon_idx]
+    
+    nlon <- length(lon_sub)
+    nlat <- length(lat_sub)
+    
+    
+    message(
+      "nlon = ", nlon,
+      " | nlat = ", nlat
+    )
+    
+    
+    # =======================================================================
+    # TIME
+    # =======================================================================
+    
+    date_f <- extract_date(nc)
+    
+    date_current <- as.Date(
+      date_f[1]
+    )
+    
+    
+    message(
+      "Date NetCDF : ",
+      date_current
+    )
+    
+    
+    # =======================================================================
+    # NETCDF INDICES
+    # =======================================================================
+    
+    start_ll <- c(
+      min(lon_idx),
+      min(lat_idx),
+      1
+    )
+    
+    count_ll <- c(
+      nlon,
+      nlat,
+      1
+    )
+    
+    
+    # =======================================================================
+    # IN_DOMAIN
+    # =======================================================================
+    
+    in_domain <- ncvar_get(
+      nc,
+      "in_domain",
+      start = start_ll,
+      count = count_ll
+    )
+    
+    in_domain <- drop(in_domain)
+    
+    
+    # =======================================================================
+    # GRID
+    # =======================================================================
+    
+    grid <- expand.grid(
+      lon = lon_sub,
+      lat = lat_sub
+    )
+    
+    grid$date <- date_current
+    
+    
+    # =======================================================================
+    # PIGMENTS
+    # =======================================================================
+    
+    for (pig in list_pigs) {
+      
+      message(
+        "  Pigment : ",
+        pig
+      )
+      
+      
+      # ---------------------------------------------------------------------
+      # Concentration
+      # ---------------------------------------------------------------------
+      
+      c_cond <- ncvar_get(
+        nc,
+        paste0("c_cond_", pig),
+        start = start_ll,
+        count = count_ll
+      )
+      
+      c_cond <- drop(c_cond)
+      
+      
+      # ---------------------------------------------------------------------
+      # Use
+      # ---------------------------------------------------------------------
+      
+      use <- ncvar_get(
+        nc,
+        paste0("use_", pig),
+        start = start_ll,
+        count = count_ll
+      )
+      
+      use <- drop(use)
+      
+      
+      # ---------------------------------------------------------------------
+      # Quality filtering
+      # ---------------------------------------------------------------------
+      
+      q <- quantile(
+        c_cond,
+        probs = c(0.01, 0.99),
+        na.rm = TRUE
+      )
+      
+      
+      c_cond[
+        c_cond < q[1] |
+          c_cond > q[2]
+      ] <- NA_real_
+      
+      
+      c_cond[
+        use == 0
+      ] <- 0
+      
+      
+      c_cond[
+        in_domain == 0
+      ] <- NA_real_
+      
+      
+      # ---------------------------------------------------------------------
+      # Add directly to dataframe
+      # ---------------------------------------------------------------------
+      
+      grid[[pig]] <- as.vector(
+        c_cond
+      )
+      
+      
+      # ---------------------------------------------------------------------
+      # Free memory immediately
+      # ---------------------------------------------------------------------
+      
+      rm(
+        c_cond,
+        use,
+        q
+      )
+      
+      gc(
+        verbose = FALSE
+      )
+    }
+    
+    
+    # =======================================================================
+    # CLOSE NETCDF
+    # =======================================================================
+    
+    nc_close(nc)
+    
+    rm(nc)
+    
+    
+    # =======================================================================
+    # WRITE TO DISK
+    # =======================================================================
+    
+    if (is.null(writer)) {
+      
+      message(
+        "Création du fichier Parquet..."
+      )
+      
+      writer <- ParquetFileWriter$create(
+        schema = schema(
+          as_arrow_table(grid)
+        ),
+        where = out_file,
+        compression = "zstd"
+      )
+    }
+    
+    
+    writer$write_table(
+      as_arrow_table(grid)
+    )
+    
+    
+    n_processed <- n_processed + 1
+    
+    
+    message(
+      "  -> ",
+      nrow(grid),
+      " lignes écrites"
+    )
+    
+    message(
+      "  -> fichiers traités : ",
+      n_processed
+    )
+    
+    
+    # =======================================================================
+    # FREE MEMORY
+    # =======================================================================
+    
+    rm(
+      grid,
+      in_domain,
+      lat_vals,
+      lon_vals,
+      lat_idx,
+      lon_idx,
+      lat_sub,
+      lon_sub,
+      date_f,
+      date_current,
+      start_ll,
+      count_ll
+    )
+    
+    gc(
+      verbose = FALSE
+    )
+  }
+}
+
+
+# ===========================================================================
+# CLOSE PARQUET
+# ===========================================================================
+
+if (!is.null(writer)) {
+  
+  writer$close()
+  
+  rm(writer)
+  
+  gc(
+    verbose = FALSE
+  )
+}
+
+
+# ===========================================================================
+# END
+# ===========================================================================
+
+message("\n")
+message("========================================")
+message("TERMINÉ")
+message("========================================")
+
+message(
+  "Fichiers traités : ",
+  n_processed
+)
+
+message(
+  "Dataset final : ",
+  out_file
+)
