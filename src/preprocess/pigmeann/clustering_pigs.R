@@ -1,7 +1,7 @@
 # # Description 
 # 
 # from pigment concentrations along 2018-2021-2023 obsaustral oceanographic campain (day only)
-# 1 - we normalize igment concentration
+# 1 - we normalize pigment concentration
 # 2 - we do a PCA on pigment concentrations
 # 3 - we clusterize PCA scores to get groups of phytoplanctonic communities
 # 4 - we observe NASC along those distribs
@@ -10,18 +10,21 @@
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(factoextra)
 
 # Global variables
 path <- "~/Documents/stage_MIO/pt_III/data_preprocessed/pigmeann/transect/pigs_transect_day_2018_2021_2023/pig_mask9_1d_2018_2021_2023.rds"
+pig <- readRDS(path)
+str(pig)
 pig_vars <- c(
   "Chla", "Per", "But", "Fuco", "Hex",
   "Allo", "Zea", "Chlb", "DvChla"
 )
+n_cluster <- 5
 
-pig <- readRDS(path)
-str(pig)
 
-# 1 - pigment concentration normalization
+
+# --------------------------------------- 1 - pigment concentration normalization
 # garder seulement les données ou il y a des pigments partout
 data_pca <- pig %>%
   filter(
@@ -47,7 +50,7 @@ data_pca <- data_pca %>%
     )
   )
 
-# 2 - PCA
+# ------------------------------------------ 2 - PCA
 pca <- prcomp(
   data_pca %>%
     select(all_of(pig_vars)),
@@ -56,8 +59,6 @@ pca <- prcomp(
 )
 
 summary(pca)
-
-library(factoextra)
 
 fviz_eig(
   pca,
@@ -168,7 +169,7 @@ ggplot(data_long, aes(x = pigment, y = proportion)) +
     axis.text.x = element_text(angle = 45, hjust = 1)
   )
 
-# coloration des distrib par PFT
+# coloration des distrib par Phytoplakton Functional Type (PFT)
 data_long <- data_pca %>%
   select(community, all_of(pig_vars)) %>%
   pivot_longer(
@@ -238,38 +239,6 @@ p_pigments <- ggplot(
 
 p_pigments
 
-# p_pigments <- ggplot(
-#   data_long,
-#   aes(x = pigment, y = proportion)
-# ) +
-#   geom_boxplot(
-#     outlier.shape = NA,
-#     width = 0.7
-#   ) +
-#   geom_jitter(
-#     width = 0.15,
-#     alpha = 0.5,
-#     size = 1.5
-#   ) +
-#   facet_wrap(
-#     ~ community,
-#     ncol = 1,
-#     axes = "all_x"
-#   ) +
-#   labs(
-#     x = "Pigment",
-#     y = "Proportion",
-#     title = "Distribution des pigments par communauté"
-#   ) +
-#   theme_minimal() +
-#   theme(
-#     axis.text.x = element_text(
-#       angle = 45,
-#       hjust = 1
-#     )
-#   )
-# 
-# p_pigments
 
 ggsave(
   "~/Documents/stage_MIO/distribution_pigments_communautes_kmeans_k5_PFT.png",
@@ -281,7 +250,7 @@ ggsave(
 )
 
 
-# distribution spatiale des clusters 
+# ----------------------------------------------------------------  distribution spatiale des clusters 
 install.packages("rnaturalearth")
 library(sf)
 library(rnaturalearth)

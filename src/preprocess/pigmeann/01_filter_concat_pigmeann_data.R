@@ -2,7 +2,7 @@
 #
 # Analysis of PIGMeANN data :
 #   1 - create small ds of PIGMeANN
-#      -30 to 60 °N
+#      -30 to - 60 °N
 #       45 to 90 °E
 #   2 - pigment distributions for every year
 #   3 - correlation of pigments
