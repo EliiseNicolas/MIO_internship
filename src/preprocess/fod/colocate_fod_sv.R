@@ -5,29 +5,30 @@
 # campaigns of interest (2021 2022 2023)
 
 rm(list = ls())
+
 # Librairies
 library(ncdf4)
 
 # Paths
-path_gmm_2021_2022_2023 <- "/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/fod/FOD_2021_2022_2023/FOD_results_complete_2021_2022_2023.rds"
-path_nasc_2021_2022_2023 <- "/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/NASC/ds_nasc_2021_2022_2023.rds"
+path_clusters_2018_2021_2022_2023 <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/cluster_map.rds"
+lon_path <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/lon.rds"
+lat_path <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/lat.rds"
+time_path <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/time.rds"
+path_nasc <- "F:/data_elise/NASC/120kHz/NASC_mean_pig_grid_by_year_2018_2021_2023_day_120kHz.rds"
 
 # Open RDS
-gmm_2021_2022_2023 <- readRDS(path_gmm_2021_2022_2023)
-cls <- gmm_2021_2022_2023$cluster_map #(lon, lat, time)
-
-lon_fod <- gmm_2021_2022_2023$lon
-lat_fod <- gmm_2021_2022_2023$lat
-time_fod <- gmm_2021_2022_2023$time
-time_fod <- as.Date(time_fod)
-
+clusters <- readRDS(path_clusters_2018_2021_2022_2023)
+lat_fod <- readRDS(lat_path)
+lon_fod <- readRDS(lon_path)
+time_fod <- readRDS(time_path)
+date_fod <- as.Date(time_fod)
 
 # Open NASC
-nasc_ds <- readRDS(path_nasc_2021_2022_2023)
-nasc_ds <- nasc_ds[nasc_ds$lat < -30 & nasc_ds$lon > 40, ]
+nasc_ds <- readRDS(path_nasc)
 time_nasc <- nasc_ds$time
 
 date_nasc_all <- as.Date(time_nasc)
+print(date_nasc_all)
 date_nasc_unique <- unique(date_nasc_all)
 date_nasc_unique
 lat_nasc <- nasc_ds$lat
@@ -40,9 +41,10 @@ lat_fod_match <- rep(NA, length(time_nasc))
 lon_fod_match <- rep(NA, length(time_nasc))
 
 for (d in date_nasc_unique){
-  d <- as.Date(d, origin = "1970-01-01") # remettre dans le bon format car boucle for le détruit
-  
-  idx_time_fod <- which(time_fod == d)
+  print(head(time_fod))
+  d <- as.Date(d, origin = "1970-01-01")
+  print(d)
+  idx_time_fod <- which(date_fod == d)
   
   if(length(idx_time_fod) == 0){
     print(paste("Jour non trouvé dans FOD :", format(d, "%Y-%m-%d")))
@@ -60,9 +62,9 @@ for (d in date_nasc_unique){
   for(i in seq_along(lat_nasc_day)){
     idx_lon_day_fod <- which.min(abs(lon_fod - lon_nasc_day[i]))
     idx_lat_day_fod <- which.min(abs(lat_fod - lat_nasc_day[i]))
-    fod_cl <- cls[idx_lon_day_fod, idx_lat_day_fod, idx_time_fod]
+    fod_cl <- clusters[idx_lon_day_fod, idx_lat_day_fod, idx_time_fod]
    
-    fod_all[idx_nasc_day[i]] <- cls[
+    fod_all[idx_nasc_day[i]] <- clusters[
       idx_lon_day_fod,
       idx_lat_day_fod,
       idx_time_fod
@@ -84,6 +86,7 @@ for (d in date_nasc_unique){
     lon_fod_match[idx_nasc_day[i]] <- lon_fod[idx_lon_day_fod]
   }
 }
+str(fod_all)
 print(unique(fod_all))
 length(lat_fod_match)
 length(lat_nasc)
@@ -99,9 +102,10 @@ nasc_fod_match <- data.frame(
   fod_cluster = fod_all
 )
 
+str(nasc_fod_match)
 saveRDS(
   nasc_fod_match,
-  "/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/fod/NASC_FOD_cluster_match_2021_2023.rds"
+  "F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2023_transect/NASC_FOD_cluster_match_2018_2021_2023_day_120kHz.rds"
 )
 
 # rm(list = ls())

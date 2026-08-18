@@ -5,8 +5,7 @@ library(tidyr)
 library(patchwork)
 rm(list = ls())
 
-folder_path <- "/mnt/KER22/data_elise/raw/PIGMeANN/daily"
-year <- 2018
+folder_path <- "G:/data_elise/raw/PIGMeANN/daily"
 
 # ---------------------------------------------------------
 # PARAMETRES
@@ -25,13 +24,13 @@ list_pigs <- c("Chla", "Per", "But", "Fuco", "Hex","Allo", "Zea", "Chlb", "DvChl
 # ---------------------------------------------------------
 # NASC
 # ---------------------------------------------------------
-nasc_path <- "~/Documents/stage_MIO/pt_III/data_preprocessed/NASC/transect_2018_2022_2023/NASC_mean_pig_grid_by_year_2018_2021_2023_day_200kHz.rds"
+nasc_path <- "F:/data_elise/NASC/120kHz/NASC_mean_pig_grid_by_year_2018_2021_2023_night_120kHz.rds"
 nasc_ds <- readRDS(nasc_path)
 print(head(nasc_ds$time))
 dates_all_str <- format(as.Date(nasc_ds$time), "%Y%m%d")
 dates_unique_str <- (unique(dates_all_str))
 
-print(length(dates_unique_str)) # 75
+print(length(dates_unique_str)) # nb de journées de données : 75 200kHz et 76 120kHz
 
 # ---------------------------------------------------------
 # FICHIERS PIGMeANN
@@ -52,7 +51,7 @@ files <- files[
   )
 ]
 
-print(length(files)) # 75 aussi donc OK
+print(length(files)) # OK 75 200kHz et 76 120kHz
 print(basename(files))
 
 
@@ -75,11 +74,6 @@ get_window <- function(index, n, p) {
 # ---------------------------------------------------------
 
 # Initialisation dataframe
-list_pigs = c(
-  "Chla", "Per", "But", "Fuco", "Hex",
-  "Allo", "Zea", "Chlb", "DvChla"
-)
-
 pig_cond <- data.frame(
   time = nasc_ds$time,
   lat_sv = nasc_ds$lat,
@@ -93,7 +87,7 @@ pig_cond[list_pigs] <- NA_real_
 
 
 for(date_i in dates_unique_str){
-  
+  print(date_i)
   # indice ESU à cette date
   ind <- which(dates_all_str == date_i)
   
@@ -246,12 +240,10 @@ for(date_i in dates_unique_str){
 
 saveRDS(
   pig_cond,
-  file = paste0(
-    "pig_mask",
+  file = paste0("F:/data_elise/pigmeann/pigs_transect_2018_2021_2023_120kHz/pig_mask",
     p*p,
     "_1d_",
-    year,
-    ".rds"
+    "2018_2021_2023_120kHz_night.rds"
   )
 )
 
@@ -319,7 +311,7 @@ p1 + p2 +
   plot_layout(widths = c(3, 1)) +
   plot_annotation(
     title = paste0(
-      "Distribution of pigment variables on 2018, 2021, 2023 transect day data"
+      "Distribution of pigment variables on 2018, 2021, 2023 transect 120kHz day data"
     ),
     subtitle = "Missing values are excluded from histograms"
   )
