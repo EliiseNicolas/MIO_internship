@@ -20,13 +20,13 @@
 
 # Packages
 library(dplyr)
+
+# Global Variables
 rm(list=ls())
 diurnal_period = "night"
-
-# Paths
-path2018 <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_", diurnal_period, "_200kHz_2018.rds")
-path2021 <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_", diurnal_period, "_200kHz_2021.rds")
-path2023 <- paste0("/run/media/mmolinet/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_", diurnal_period, "_200kHz_2023.rds")
+path2018 <- paste0("F:/data_elise/sv_cropped/120kHz/", "Sv_", diurnal_period, "_2018_120kHz.rds")
+path2021 <- paste0("F:/data_elise/sv_cropped/120kHz/", "Sv_", diurnal_period, "_2021_120kHz.rds")
+path2023 <- paste0("F:/data_elise/sv_cropped/120kHz/", "Sv_", diurnal_period, "_2023_120kHz.rds")
 
 # Read data
 df2018 <- readRDS(path2018)
@@ -84,8 +84,7 @@ Sv_concat <- list(
 saveRDS(
   Sv_concat,
   file = paste0(
-    "/run/media/mmolinet/KER22/MIO_internship_III/",
-    "data_preprocessed/NASC/transect_2018_2022_2023/",
-    "Sv_2018_2021_2023_", diurnal_period, "_200kHz.rds"
+    "F:/data_elise/sv_cropped/120kHz/",
+    "Sv_2018_2021_2023_", diurnal_period, "_120kHz.rds"
   )
 )

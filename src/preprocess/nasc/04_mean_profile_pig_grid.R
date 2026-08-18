@@ -23,24 +23,21 @@
 #   8) compute NASC for each mean profile 
 # => save intermediary rds file : nasc_mean_pig_grid_2018_2021_2023_day.rds,..
 
+# rm(list=ls())
+
 # packages
 library(ggplot2)
-
+install.packages("patchwork")
 # Paths
-path_pig_grid <- "~/Documents/stage_MIO/pt_III/data_preprocessed/NASC/transect_2018_2022_2023/pigmeann_grid.rds"
-diurnal_period <- "day"
-path_sv <- paste0("/mnt/KER22/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/Sv_2018_2021_2023_", diurnal_period,"_200kHz.rds")
+path_pig_grid <- "F:/data_elise/NASC/pigmeann_grid.rds"
+diurnal_period <- "night"
+path_sv <-paste0("F:/data_elise/sv_cropped/120kHz/Sv_2018_2021_2023_", diurnal_period, "_120kHz.rds")
 
 
 
 
 pig_grid <- readRDS(path_pig_grid)
 sv <- readRDS(path_sv)
-
-# j'avais oublié le filtrage des profondeurs de surface pour sv sur mes scipts précédents
-idx_depth <- which(sv$depth > 15)
-sv$profiles <- sv$profiles[, idx_depth]
-sv$depth <- sv$depth[idx_depth]
 
 # construire un data.frame propre à partir des coordonnées réelles
 df_sv <- data.frame(
@@ -52,8 +49,6 @@ df_sv <- data.frame(
 
 # retirer les NA éventuels
 df_sv <- df_sv[!is.na(df_sv$lon) & !is.na(df_sv$lat), ]
-
-
 df_sv$date <- as.Date(df_sv$time, origin = "1950-01-01")
 df_sv$year <- factor(format(df_sv$date, "%Y"))
 
@@ -93,7 +88,7 @@ ggplot() +
   coord_fixed() +
   
   labs(
-    title = paste0("Points Sv sur la grille PIGMeANN - ", diurnal_period),
+    title = paste0("Points Sv sur la grille PIGMeANN - ", diurnal_period, " 120kHz"),
     x = "Longitude (°E)",
     y = "Latitude (°)",
     color = "Année"
@@ -181,7 +176,7 @@ table(format(mean_dates, "%Y"))  # vérifier la répartition par année déduite
 # fichier global avec toutes les années (time moyen conservé)
 saveRDS(
   mean_pig_grid_by_year,
-  paste0("/home/elise/Documents/stage_MIO/pt_III/MIO_internship_III/data_preprocessed/NASC/transect_2018_2022_2023/mean_pig_grid_by_year_2018_2021_2023_", diurnal_period, ".rds")
+  paste0("F:/data_elise/NASC/120kHz/mean_sv_profile_pig_grid_by_year_2018_2021_2023_", diurnal_period, "_120kHz.rds", ".rds")
 )
 
 mean_dates <- as.Date(mean_pig_grid_by_year$time, origin = "1950-01-01")  # adapte l'origine si besoin

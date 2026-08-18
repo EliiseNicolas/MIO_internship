@@ -8,7 +8,7 @@
 # library
 
 # global variables
-path_mean_profile <- "~/Documents/stage_MIO/pt_III/data_preprocessed/NASC/transect_2018_2022_2023/mean_pig_grid_by_year_2018_2021_2023_day_200kHz.rds"
+path_mean_profile <- "F:/data_elise/NASC/120kHz/mean_sv_profile_pig_grid_by_year_2018_2021_2023_night_120kHz.rds.rds"
 
 # open file
 mean_profiles <- readRDS(path_mean_profile)
@@ -36,5 +36,5 @@ nasc_df <- data.frame(
   NASC = NASC,
   n_profils <- mean_profiles$n_profils
 )
-print(length(mean_profiles$NASC))
-saveRDS(nasc_df, "~/Documents/stage_MIO/pt_III/data_preprocessed/NASC/transect_2018_2022_2023/NASC_mean_pig_grid_by_year_2018_2021_2023_day_200kHz.rds")
+print(length(nasc_df$NASC))
+saveRDS(nasc_df, "F:/data_elise/NASC/120kHz/NASC_mean_pig_grid_by_year_2018_2021_2023_night_120kHz.rds")
