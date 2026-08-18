@@ -20,7 +20,8 @@ library(fields)
 
 # charger les données
 ```{r}
-path = "C:/Users/mmolinet/elisou_ta_stagiaire_pref/prepross/concat_temp_sal/thetao_so_crop_2021_2023.nc"
+path = "C:/Users/mmolinet/elisou_ta_stagiaire_pref/data_preprocessed/concat_temp_sal/thetao_so_crop_2018_2021_2022_2023.nc"
+out_path = "C:/Users/mmolinet/elisou_ta_stagiaire_pref/data_preprocessed/fod/FOD_2018_2021_2022_2023"
 ds <- nc_open(path)
 time <- ncvar_get(ds, "time")
 time_bis <- as.POSIXct(
@@ -66,7 +67,7 @@ sum(is.na(so_flat_clean))
 # rm(thetao_flat, so_flat)
 gc()
 rm(so, thetao)
-save(mask_common, file = "mask_common.RData")
+save(mask_common, file = paste0(out_path,"/mask_common.RData"))
 
 # ------------------------------------------------------- Bspline
 K <- 25 # nombre de fonction de base
@@ -98,7 +99,7 @@ coef_so <- so_flat_clean %*% t(B)
 
 gc()
 
-# ------------------------------------------------------- PCA
+# ------------------------------------------------------- PCA de alpha
 coef_biv <- cbind(
   coef_thetao,
   coef_so
@@ -147,7 +148,7 @@ gmm <- Mclust( #objet modele
   G=4:6,
   model = "VVV"
 )
-saveRDS(gmm,file = "mclust_2021_results_nharm6.rds")
+saveRDS(gmm,file = paste0(out_path, "/mclust_2021_results_nharm6.rds"))
 
 # gmm <- readRDS("C:/Users/mmolinet/elisou_ta_stagiaire_pref/fod/mclust_results_nharm2.rds")
 
@@ -170,11 +171,13 @@ cluster_flat[mask_common] <- cluster_soft
 length(cluster_flat)
 dim(scores)
 length(cluster_soft)
-# ------------------------------------------------- PLOT
+
+# ------------------------------------------------- PLOT profil T/S moyen + IQ par cluster
 ## Reconstruction de tous les profils
 temp_rec <- coef_thetao %*% t(phi)
 sal_rec  <- coef_so %*% t(phi)
 dim(temp_rec)
+
 ## Listes des statistiques par cluster
 mean_temp_cl <- list()
 q1_temp_cl   <- list()
@@ -184,6 +187,7 @@ mean_sal_cl <- list()
 q1_sal_cl   <- list()
 q3_sal_cl   <- list()
 
+# Calcul des profils T/S moyens par cluster et de IQ
 for (cl in sort(unique(cluster_soft))) {
 
   ind <- cluster_soft == cl
@@ -223,11 +227,12 @@ for (cl in sort(unique(cluster_soft))) {
   )
 }
 
+# Plot temperature
 cols <- 1:7
 cols_fill <- adjustcolor(cols, alpha.f = 0.25)
 
 png(
-  "temperature_clusters.png",
+  paste0(out_path,"/temperature_clusters.png"),
   width = 1800,
   height = 2800,
   res = 300
@@ -268,56 +273,13 @@ legend(
 
 dev.off()
 
+
+# Plot salinite
 cols <- 1:7
 cols_fill <- adjustcolor(cols, alpha.f = 0.25)
 
 png(
-  "temperature_clusters.png",
-  width = 1800,
-  height = 2800,
-  res = 300
-)
-
-plot(
-  NULL,
-  xlim = range(unlist(q1_temp_cl), unlist(q3_temp_cl)),
-  ylim = rev(range(depth)),
-  xlab = "Temperature (°C)",
-  ylab = "Depth (m)"
-)
-
-for (cl in sort(unique(cluster_soft))) {
-
-  polygon(
-    x = c(q1_temp_cl[[cl+1]], rev(q3_temp_cl[[cl+1]])),
-    y = c(depth, rev(depth)),
-    col = cols_fill[cl+1],
-    border = NA
-  )
-
-  lines(
-    mean_temp_cl[[cl+1]],
-    depth,
-    col = cols[cl+1],
-    lwd = 3
-  )
-}
-
-legend(
-  "bottomright",
-  legend = paste("Cluster", sort(unique(cluster_soft))),
-  col = cols,
-  lwd = 3,
-  bty = "n"
-)
-
-dev.off()
-
-cols <- 1:7
-cols_fill <- adjustcolor(cols, alpha.f = 0.25)
-
-png(
-  "salinity_clusters.png",
+  paste0(out_path, "/salinity_clusters.png"),
   width = 1800,
   height = 2800,
   res = 300
@@ -361,6 +323,8 @@ dev.off()
 
 
 
+#---------------------------------------------- PLOT : cartes de FOD
+
 # remettre dans bonnes dimensions (spatiales et temporelles)
 nlon <- length(lon)
 nlat <- length(lat)
@@ -368,7 +332,7 @@ cluster_map <- array(
   cluster_flat,
   dim = c(nlon, nlat, ntime)
 )
-saveRDS(cluster_map,file = "mclust_result_2021_4dims.rds")
+saveRDS(cluster_map,file = paste0(out_path, "/mclust_result_2021_4dims.rds"))
 
 # cluster_map <- readRDS("C:/Users/mmolinet/elisou_ta_stagiaire_pref/fod/FOD_2021/mclust_result_2021_4dims.rds")
 
@@ -377,7 +341,10 @@ saveRDS(cluster_map,file = "mclust_result_2021_4dims.rds")
 for(i in seq_along(time_bis)) {
 
   png(
-    sprintf("cluster_map_%s.png", format(time_bis[i], "%Y%m%d")),
+    sprintf(
+      paste0(out_path, "/cluster_map_%s.png"),
+      format(time_bis[i], "%Y%m%d")
+    ),
     width = 2000,
     height = 1500,
     res = 300
@@ -453,5 +420,231 @@ results_FOD <- list(
 saveRDS(
   results_FOD,
   "FOD_results_complete_2021.rds"
+)
+
+
+# ============================================================
+# DOSSIER DE SAUVEGARDE
+# ============================================================
+
+dir.create(
+  file.path("F:/fod_elise_2018_2021_2022_2023", "mclust_results_2018_2021_2022_2023"),
+  showWarnings = FALSE,
+  recursive = TRUE
+)
+
+save_path <- file.path("F:/fod_elise_2018_2021_2022_2023", "mclust_results_2018_2021_2022_2023")
+
+
+# ============================================================
+# 1. MODELE MCLUST
+# ============================================================
+
+saveRDS(
+  gmm,
+  file = file.path(save_path, "mclust_model.rds")
+)
+
+
+# ============================================================
+# 2. CLASSIFICATION ET PROBABILITES
+# ============================================================
+
+# Classe la plus probable
+saveRDS(
+  cluster,
+  file = file.path(save_path, "cluster.rds")
+)
+
+# Classification avec seuil de confiance
+saveRDS(
+  cluster_soft,
+  file = file.path(save_path, "cluster_soft.rds")
+)
+
+# Probabilité maximale pour chaque profil
+saveRDS(
+  max_prob,
+  file = file.path(save_path, "max_probability.rds")
+)
+
+# Probabilités d'appartenance à chaque cluster
+# lignes = profils
+# colonnes = clusters
+saveRDS(
+  gmm$z,
+  file = file.path(save_path, "cluster_probabilities.rds")
+)
+
+
+# ============================================================
+# 3. RESULTAT SPATIAL / TEMPOREL
+# ============================================================
+
+# Classification remise sur la grille 3D
+saveRDS(
+  cluster_map,
+  file = file.path(save_path, "cluster_map.rds")
+)
+
+# Classification flatten
+saveRDS(
+  cluster_flat,
+  file = file.path(save_path, "cluster_flat.rds")
+)
+
+# ============================================================
+# PROBABILITES DE CLASSIFICATION SUR LA GRILLE SPATIALE
+# ============================================================
+
+# Nombre de clusters
+nclust <- ncol(gmm$z)
+
+# Tableau : nprofils x nclust
+cluster_prob <- gmm$z
+
+# Liste pour stocker les cartes de probabilités
+prob_maps <- vector("list", nclust)
+
+for (cl in 1:nclust) {
+  
+  # vecteur des probabilités pour le cluster cl
+  prob_flat <- rep(NA_real_, length(mask_common))
+  
+  # uniquement les pixels/profils utilisés dans Mclust
+  prob_flat[mask_common] <- cluster_prob[, cl]
+  
+  # remise sur la grille spatiale + temporelle
+  prob_maps[[cl]] <- array(
+    prob_flat,
+    dim = c(nlon, nlat, ntime)
+  )
+}
+
+# Nommer les clusters
+names(prob_maps) <- paste0("cluster_", 1:nclust)
+
+saveRDS(
+  prob_maps,
+  file = file.path(save_path, "cluster_probability_maps.rds")
+)
+
+# ============================================================
+# 4. GRILLE ET MASQUE
+# ============================================================
+
+saveRDS(
+  lon,
+  file = file.path(save_path, "lon.rds")
+)
+
+saveRDS(
+  lat,
+  file = file.path(save_path, "lat.rds")
+)
+
+saveRDS(
+  depth,
+  file = file.path(save_path, "depth.rds")
+)
+
+saveRDS(
+  time_bis,
+  file = file.path(save_path, "time.rds")
+)
+
+saveRDS(
+  mask_common,
+  file = file.path(save_path, "mask_common.rds")
+)
+
+saveRDS(
+  which(mask_common),
+  file = file.path(save_path, "valid_idx.rds")
+)
+
+
+# ============================================================
+# 5. COEFFICIENTS EOF
+# ============================================================
+
+saveRDS(
+  coef_thetao,
+  file = file.path(save_path, "coef_thetao.rds")
+)
+
+saveRDS(
+  coef_so,
+  file = file.path(save_path, "coef_so.rds")
+)
+
+saveRDS(
+  phi,
+  file = file.path(save_path, "phi.rds")
+)
+
+
+# ============================================================
+# 6. PROFILS RECONSTRUITS
+# ============================================================
+
+saveRDS(
+  temp_rec,
+  file = file.path(save_path, "temperature_profiles.rds")
+)
+
+saveRDS(
+  sal_rec,
+  file = file.path(save_path, "salinity_profiles.rds")
+)
+
+
+# ============================================================
+# 7. STATISTIQUES PAR CLUSTER
+# ============================================================
+
+saveRDS(
+  mean_temp_cl,
+  file = file.path(save_path, "mean_temperature_clusters.rds")
+)
+
+saveRDS(
+  q1_temp_cl,
+  file = file.path(save_path, "q1_temperature_clusters.rds")
+)
+
+saveRDS(
+  q3_temp_cl,
+  file = file.path(save_path, "q3_temperature_clusters.rds")
+)
+
+saveRDS(
+  mean_sal_cl,
+  file = file.path(save_path, "mean_salinity_clusters.rds")
+)
+
+saveRDS(
+  q1_sal_cl,
+  file = file.path(save_path, "q1_salinity_clusters.rds")
+)
+
+saveRDS(
+  q3_sal_cl,
+  file = file.path(save_path, "q3_salinity_clusters.rds")
+)
+
+
+# ============================================================
+# 8. PARAMETRES DU CLUSTERING
+# ============================================================
+
+saveRDS(
+  nclust,
+  file = file.path(save_path, "nclust.rds")
+)
+
+saveRDS(
+  seuil,
+  file = file.path(save_path, "softclass_threshold.rds")
 )
 ```
