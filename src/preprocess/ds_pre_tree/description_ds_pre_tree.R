@@ -1,125 +1,307 @@
-# -----------  Description
-# We want to understand what is the distribution of each entry variable to our tree, 
-# and we want to know how many missing values we have per variable 
+# ============================================================
+# DESCRIPTION DU DATASET
+# ============================================================
 
-# -----------  Libraries
+# We want to understand the distribution of each entry variable
+# used in the regression tree / random forest,
+# and quantify missing values for each variable.
+
+# ------------------------------------------------------------
+# Libraries
+# ------------------------------------------------------------
+
 rm(list = ls())
+
 library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(patchwork)
 
-# -----------  Paths and open dataset
-path <- "/run/media/mmolinet/KER22/données elise/elisou_ta_stagiaire_pref/prepross/regression_ds_2021_2022_2023_m100.rds"
+
+# ------------------------------------------------------------
+# Path and dataset
+# ------------------------------------------------------------
+
+path <- "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_pig_ftle_fod_2018_2021_2023_transect_120kHz_day_mask9.rds"
+
 ds <- readRDS(path)
+
 print(nrow(ds))
 str(ds)
 
-# -----------  Distributions
-# FOD
-fod_vars <- paste0("fod", 0:6)
 
-# rebuild one vector containing all fod number intead of 6 onehot vectors
+# ============================================================
+# MISSING VALUES
+# ============================================================
+
+# Variables utilisées pour le modèle
+model_vars <- c(
+  "nasc",
+  "fod",
+  "Chla",
+  "Per",
+  "But",
+  "Fuco",
+  "Hex",
+  "Allo",
+  "Zea",
+  "Chlb",
+  "DvChla",
+  "ftle"
+)
+
+# Nombre de valeurs manquantes
+nb_missing <- sapply(
+  ds[model_vars],
+  function(x) sum(!is.finite(x))
+)
+
+# Pourcentage de valeurs manquantes
+pct_missing <- nb_missing / nrow(ds) * 100
+
+missing_df <- data.frame(
+  variable = model_vars,
+  missing = nb_missing,
+  percentage = pct_missing,
+  available = nrow(ds) - nb_missing
+)
+
+print(missing_df)
+
+
+# ============================================================
+# FOD
+# ============================================================
+
+# FOD est maintenant directement une variable numérique
+# et non plus des variables one-hot fod0 ... fod6.
+
+# On transforme FOD en facteur pour obtenir une distribution
+# par cluster.
+
 ds_fod <- ds %>%
   mutate(
-    fod_cluster = apply(select(., all_of(fod_vars)), 1, function(x) {
-      if(all(is.na(x)) || sum(x) == 0) {
-        return(NA)
-      } else {
-        return(which(x == 1) - 1)
-      }
-    })
+    fod_cluster = as.character(fod)
   )
 
-# replace NA by "NA" category
-ds_fod$fod_cluster <- as.character(ds_fod$fod_cluster)
-ds_fod$fod_cluster[is.na(ds_fod$fod_cluster)] <- "NA"
+# Remplacer les valeurs manquantes par "NA"
+ds_fod$fod_cluster[
+  is.na(ds_fod$fod_cluster)
+] <- "NA"
+
+# Distribution
 fod_distribution <- ds_fod %>%
   count(fod_cluster) %>%
   mutate(
     percentage = n / sum(n) * 100
   )
 
-# histogram of distribution
-ggplot(fod_distribution, aes(x = fod_cluster, y = percentage)) +
+print(fod_distribution)
+
+
+# ------------------------------------------------------------
+# Plot FOD
+# ------------------------------------------------------------
+
+ggplot(
+  fod_distribution,
+  aes(
+    x = fod_cluster,
+    y = percentage
+  )
+) +
   geom_col() +
   labs(
     x = "FOD cluster",
     y = "Percentage (%)",
-    title = "FOD Distribution on 2021, 2022, 2023 station datas"
+    title = "FOD distribution - 2021, 2022, 2023"
   ) +
   theme_bw()
 
+
+# ============================================================
 # FTLE
-ggplot(ds, aes(x = ftle, y = after_stat(count / sum(count) * 100))) +
-  geom_histogram(bins = 200) +
+# ============================================================
+
+ggplot(
+  ds,
+  aes(
+    x = ftle,
+    y = after_stat(count / sum(count) * 100)
+  )
+) +
+  geom_histogram(
+    bins = 200
+  ) +
   theme_bw() +
   labs(
     x = "FTLE",
-    y = "Pourcentage (%)",
-    title = "FTLE Distribution on 2021, 2022, 2023 station datas"
+    y = "Percentage (%)",
+    title = "FTLE distribution - 2021, 2022, 2023"
   )
 
-# PIGS
+
+# ============================================================
+# PIGMENTS
+# ============================================================
+
 pig_vars <- c(
   "Chla",
-  "Fuco",
-  "But",
   "Per",
+  "But",
+  "Fuco",
   "Hex",
   "Allo",
+  "Zea",
   "Chlb",
-  "Zea", 
   "DvChla"
 )
 
-p1 <- ds %>%
-  select(any_of(pig_vars)) %>%
+
+# ------------------------------------------------------------
+# Long format
+# ------------------------------------------------------------
+
+pig_long <- ds %>%
+  select(all_of(pig_vars)) %>%
   pivot_longer(
-    everything(),
+    cols = everything(),
     names_to = "pigment",
     values_to = "value"
   ) %>%
-  filter(is.finite(value)) %>%
-  ggplot(aes(x = value)) +
-  geom_histogram(bins = 50) +
-  facet_wrap(~pigment, scales="free") +
-  theme_bw()+
-  scale_x_continuous(n.breaks = 3)
+  filter(
+    is.finite(value)
+  )
 
-nb_missing <- sum(!is.finite(ds[[pig_vars[1]]]))
-pct_missing <- nb_missing / nrow(ds) * 100
+
+# ------------------------------------------------------------
+# Histograms
+# ------------------------------------------------------------
+
+p1 <- ggplot(
+  pig_long,
+  aes(x = value)
+) +
+  geom_histogram(
+    bins = 50
+  ) +
+  facet_wrap(
+    ~ pigment,
+    scales = "free"
+  ) +
+  theme_bw() +
+  scale_x_continuous(
+    n.breaks = 3
+  ) +
+  labs(
+    x = "Concentration",
+    y = "Count"
+  )
+
+
+# ------------------------------------------------------------
+# Missing values pigments
+# ------------------------------------------------------------
+
+# Nombre total de lignes
+n_total <- nrow(ds)
+
+# Nombre de lignes avec les 9 pigments disponibles
+n_complete <- sum(
+  complete.cases(ds[pig_vars])
+)
+
+# Nombre de lignes avec au moins une valeur manquante
+n_missing <- n_total - n_complete
+
+# Pourcentage de lignes avec au moins une valeur manquante
+pct_missing <- n_missing / n_total * 100
+
+# Pourcentage de lignes complètes
+pct_complete <- n_complete / n_total * 100
+
+
+# ------------------------------------------------------------
+# Text panel
+# ------------------------------------------------------------
 
 p2 <- ggplot() +
   annotate(
     "text",
     x = 0,
     y = 0,
-    label = paste0("Missing values :\n", nb_missing, " (", round(pct_missing, 2), "%)", "\n \n Considered values :\n", nrow(ds)-nb_missing),
+    label = paste0(
+      "Total rows :\n",
+      n_total,
+      
+      "\n\nRows with missing values :\n",
+      n_missing,
+      " (",
+      round(pct_missing, 2),
+      "%)",
+      
+      "\n\nRows with no missing values :\n",
+      n_complete,
+      " (",
+      round(pct_complete, 2),
+      "%)"
+    ),
     size = 4
   ) +
   theme_void()
 
-# affichage côte à côte
+
+# ------------------------------------------------------------
+# Combined pigment plot
+# ------------------------------------------------------------
+
 p1 + p2 +
-  plot_layout(widths = c(3, 1)) +
+  plot_layout(
+    widths = c(3, 1)
+  ) +
   plot_annotation(
-    title = "Distribution of pigment variables on 2021, 2022, 2023 station datas",
+    title = "Distribution of pigment variables - 2021, 2022, 2023",
     subtitle = "Missing values are excluded from histograms"
   )
 
 
-# nombre de jours où on a des données
-idx <- which(!is.na(ds$Chla))
-print(unique(as.Date(ds$time)[idx]))
-# ----------- NASC
+# ============================================================
+# DAYS WITH PIGMENT DATA
+# ============================================================
+
+idx <- is.finite(ds$Chla)
+
+dates_chla <- unique(
+  as.Date(ds$time_nasc[idx])
+)
+
+print(dates_chla)
+
+cat(
+  "Number of days with Chla data :",
+  length(dates_chla),
+  "\n"
+)
+
+
+# ============================================================
 # NASC
-ggplot(ds, aes(x = nasc, y = after_stat(count / sum(count) * 100))) +
-  geom_histogram(bins = 200) +
+# ============================================================
+
+ggplot(
+  ds,
+  aes(
+    x = nasc,
+    y = after_stat(count / sum(count) * 100)
+  )
+) +
+  geom_histogram(
+    bins = 200
+  ) +
   scale_x_log10() +
   theme_bw() +
   labs(
     x = "NASC (log10 scale)",
     y = "Percentage (%)",
-    title = "NASC Distribution (200kHz) on 2021, 2022, 2023 station data"
+    title = "NASC distribution - 2021, 2022, 2023"
   )

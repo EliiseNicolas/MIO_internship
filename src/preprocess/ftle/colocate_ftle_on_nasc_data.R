@@ -15,8 +15,9 @@ library(tidyr)
 library(patchwork)
 
 # Global variables 
-nasc_path <- "F:/data_elise/NASC/120kHz/NASC_mean_pig_grid_by_year_2018_2021_2023_night_120kHz.rds"
-folder_path <- "F:/data_elise/ftle"
+nasc_path <- "F:/data_elise/NASC/120kHz/NASC_mean_pig_grid_by_year_2018_2021_2023_day_120kHz.rds"
+folder_path <- "F:/data_elise/ftle/ftle_raw"
+p <- 3
 
 # ---------------------------------------------------------
 # NASC
@@ -64,7 +65,7 @@ ftle <- data.frame(
   ftle = NA_real_
 )
 
-p <- 3
+
 for(date_i in dates_unique_str){
   
   print(date_i)
@@ -206,13 +207,14 @@ for(date_i in dates_unique_str){
   gc()
 }
 
+dlat_ftle <- nasc_ds$lat - ftle$lat_ftle
+dlon_ftle <- nasc_ds$lon - ftle$lon_ftle
+summary(dlat_ftle)
+summary(dlon_ftle) # OK
 str(ftle)
 
 saveRDS(
   ftle,
-  file = paste0("F:/ftle_colocated_transect/120kHz/ftle",
-                p*p,
-                "_1d_",
-                "_colocated_with_NASC_transect_2018_2021_2023_120kHz_night.rds"
+  file = paste0("F:/data_elise/ftle/ftle_colocated_transect/120kHz/ftle_9_1d__colocated_with_NASC_transect_2018_2021_2023_120kHz_day.rds"
   )
 )
