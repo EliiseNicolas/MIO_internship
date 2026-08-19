@@ -14,6 +14,7 @@ datas <- readRDS(path_datas)
 df <- data.frame(
   NASC = datas$nasc,
   year = format(datas$time_nasc, "%Y"),
+  time = datas$time_nasc,
   fod = as.factor(datas$fod),
   chla = datas$Chla,
   per = datas$Per,
@@ -23,9 +24,10 @@ df <- data.frame(
   allo = datas$Allo,
   zea = datas$Zea,
   chlb = datas$Chlb,
-  dvchla = datas$DvChla,
   ftle = datas$ftle
 )
+# on retire DvChla des predicteurs car sa moyenne est 0 et sa variance est 0 aussi
+
 print(sum(!is.na(df$chla)))
 print(sum(!is.na(df$fod)))
 print(c("Nombre total de données", nrow(df)))
@@ -35,6 +37,158 @@ df <- df[!is.na(df$chla) & !is.na(df$fod) & !is.na(df$ftle) & !is.na(df$per) & !
 print(c("Nombre total de données", nrow(df))) # 215
 colSums(is.na(df))
 
+
+# ----------------------------------------------- vérifier le dataleakage 
+
+# -----------------------------------------------
+# Vérification du data leakage
+# Deux observations sont considérées comme proches
+# uniquement si elles sont à moins d'une heure
+# -----------------------------------------------
+
+# Vérifier s'il existe des lignes dupliquées
+any(duplicated(df)) # Aucune ligne identique
+
+# Variables utilisées pour calculer la similarité
+vars_num <- c(
+  "NASC", "chla", "per", "but", "fuco", "hex",
+  "allo", "zea", "chlb", "ftle"
+)
+
+# Standardisation
+df_scaled <- scale(df[, vars_num])
+
+# Matrice de distances
+dist_mat <- as.matrix(dist(df_scaled))
+
+# Matrice des différences temporelles en secondes
+time_diff <- abs(
+  outer(
+    as.numeric(df$time),
+    as.numeric(df$time),
+    FUN = "-"
+  )
+)
+
+# -----------------------------------------------
+# Ne garder que les paires :
+# 1. différentes
+# 2. à moins d'une heure
+# -----------------------------------------------
+
+dist_mat[time_diff > 3600] <- NA
+dist_mat[lower.tri(dist_mat, diag = TRUE)] <- NA
+
+# -----------------------------------------------
+# Récupérer les paires restantes
+# -----------------------------------------------
+
+pairs <- which(!is.na(dist_mat), arr.ind = TRUE)
+
+res <- data.frame(
+  ligne1 = pairs[, 1],
+  ligne2 = pairs[, 2],
+  distance = dist_mat[pairs]
+)
+
+# Trier par similarité
+res <- res[order(res$distance), ]
+
+# Les 50 paires les plus proches
+res <- head(res, 50)
+
+# -----------------------------------------------
+# Informations supplémentaires
+# -----------------------------------------------
+
+res$time1 <- df$time[res$ligne1]
+res$time2 <- df$time[res$ligne2]
+
+res$time_diff_min <- as.numeric(
+  difftime(res$time2, res$time1, units = "mins")
+)
+
+res$time_diff_min <- abs(res$time_diff_min)
+
+res$fod1 <- df$fod[res$ligne1]
+res$fod2 <- df$fod[res$ligne2]
+
+res$year1 <- df$year[res$ligne1]
+res$year2 <- df$year[res$ligne2]
+
+res
+
+# -----------------------------------------------
+# Créer un label pour chaque paire
+# -----------------------------------------------
+
+res$obs1_label <- paste0(
+  res$ligne1,
+  " | ",
+  format(res$time1, "%Y-%m-%d %H:%M"),
+  " | FOD=", res$fod1
+)
+
+res$obs2_label <- paste0(
+  res$ligne2,
+  " | ",
+  format(res$time2, "%Y-%m-%d %H:%M"),
+  " | FOD=", res$fod2
+)
+
+res$pair <- paste0(
+  res$obs1_label,
+  " ↔ ",
+  res$obs2_label
+)
+
+# Mettre les paires dans l'ordre de distance
+res$pair <- factor(
+  res$pair,
+  levels = rev(res$pair)
+)
+
+ggplot(res, aes(x = distance, y = pair)) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    x = "Distance",
+    y = "Paire d'observations",
+    title = "Observations les plus proches",
+  )
+
+sum(dist_mat < 0.5, na.rm = TRUE)
+
+# supprimer les doublons 
+pairs <- which(
+  dist_mat < 0.25,
+  arr.ind = TRUE
+)
+
+# Supprimer uniquement la 2e observation de chaque paire
+rows_to_remove <- unique(pairs[, 2])
+
+# Nettoyage
+df <- df[-rows_to_remove, ]
+
+cat("Nombre de lignes supprimées :", length(rows_to_remove), "\n")
+cat("Nombre de lignes restantes :", nrow(df), "\n")
+
+df_scaled <- scale(df[, vars_num])
+
+dist_mat <- as.matrix(dist(df_scaled))
+
+time_diff <- abs(
+  outer(
+    as.numeric(df$time),
+    as.numeric(df$time),
+    FUN = "-"
+  )
+)
+
+dist_mat[time_diff > 3600] <- NA
+dist_mat[lower.tri(dist_mat, diag = TRUE)] <- NA
+
 # ----------------- Split train/test 1 : random
 set.seed(123)
 n <- nrow(df)
@@ -42,8 +196,80 @@ train_index <- sample(seq_len(n), size = 0.8*n)
 
 train <- df[train_index, ]
 test  <- df[-train_index, ]
+
 train$year <- NULL
 test$year <- NULL
+train$time <- NULL
+test$time <- NULL
+
+# scale train and no data leakage
+vars_num <- c("chla", "per", "but", "fuco", "hex",
+              "allo", "zea", "chlb", "ftle")
+train_scaled <- scale(train[, vars_num])
+train_center <- attr(train_scaled, "scaled:center")
+train_scale  <- attr(train_scaled, "scaled:scale")
+test_scaled <- scale(
+  test[, vars_num],
+  center = train_center,
+  scale = train_scale
+)
+
+# remise en forme 
+ds_train_scaled <- train
+ds_train_scaled[, vars_num] <- train_scaled
+
+ds_test_scaled <- test
+ds_test_scaled[, vars_num] <- test_scaled
+
+colSums(is.na(ds_train_scaled)) # OK, pas de NA
+
+# verifier le dataleakage
+# Indiquer à quelle partie appartient chaque observation
+is_train <- seq_len(nrow(df)) %in% train_index
+is_test  <- !is_train
+
+# Garder uniquement les paires TRAIN <-> TEST
+train_test_pairs <- outer(
+  is_train,
+  is_test,
+  FUN = "&"
+)
+
+# Nombre de paires train-test avec distance < 0.25
+sum(
+  dist_mat < 0.25 & train_test_pairs,
+  na.rm = TRUE
+)
+
+pairs <- which(
+  dist_mat < 0.25 & train_test_pairs,
+  arr.ind = TRUE
+)
+
+leakage <- data.frame(
+  train = pairs[, 1],
+  test = pairs[, 2],
+  distance = dist_mat[pairs]
+)
+
+leakage$time_train <- df$time[leakage$train]
+leakage$time_test  <- df$time[leakage$test]
+
+leakage$time_diff_min <- abs(
+  as.numeric(
+    difftime(
+      leakage$time_train,
+      leakage$time_test,
+      units = "mins"
+    )
+  )
+)
+
+leakage
+print(nrow(ds_test_scaled)) 
+
+# leakage de 19/43 données 
+
 
 # --------------- Split train/test 2 : leave-one-year-out
 # cat("Nombre total de données :", nrow(df), "\n")
@@ -69,7 +295,7 @@ test$year <- NULL
 # Train model on train dataset only
 model <- rpart(
   NASC ~ ., # entries = all datas but not NASC
-  data = train,
+  data = ds_train_scaled,
   method = "anova"
 )
 
@@ -77,13 +303,11 @@ model <- rpart(
 rpart.plot(
   model,
   extra = 101,
-  main = "Regression tree - CART algorithm - LOYO(90/10)" # RS (80/20)
+  main = "Regression tree - CART algorithm - RS (80/20) - data scaled" # LOYO (90/10)
 )
 
-cp_table <- printcp(model)
-best_row <- which.min(model$cptable[, "xerror"])
-R2_approx <- 1 - model$cptable[best_row, "xerror"]
-print(R2_approx)
+# cp_table <- printcp(model)
+# best_row <- which.min(model$cptable[, "xerror"])
 
 # Importance des variables
 importance <- model$variable.importance
@@ -107,28 +331,39 @@ ggplot(importance_df, aes( # Plot
     x = "Variable",
     y = "Importance (%)",
     title = "Variable importance for NASC prediction - CART algorithm",
-    subtitle="split leave-one-year_out (90/10)" # "Random split (80/20)" #
+    subtitle="Random split (80/20) on scaled data" #  #
   )
 # --------------- Test Model
 
 prediction <- predict(
   model,
-  newdata = test
+  newdata = ds_test_scaled
 )
+
+observed <- ds_test_scaled$NASC
+
+RMSE <- sqrt(mean((prediction - observed)^2))
+
+R2 <- 1 - sum((observed - prediction)^2) /
+  sum((observed - mean(observed))^2)
+
+MAE <- mean(abs(prediction - observed))
+
+print(RMSE)
+print(R2)
+print(MAE)
 
 # --------------- Results analysis
 resultats <- data.frame(
-  NASC_reel = test$NASC,
+  NASC_reel = ds_test_scaled$NASC,
   NASC_predit = prediction
 )
 
 head(resultats)
 
-RMSE <- sqrt(mean((prediction - test$NASC)^2))
-print(RMSE)
 
 plot(
-  test$NASC,
+  ds_test_scaled$NASC,
   prediction,
   xlab = "True NASC",
   ylab = "Predicted NASC",
@@ -137,7 +372,7 @@ plot(
   cex = 0.5
 )
 mtext(
-  "split leave-one-year_out (90/10)", # "Random split (80/20)", # "Split: leave-one-year-out (90/10)",
+  "Random split (80/20) on scaled datas", # "Split: leave-one-year-out (90/10)",
   side = 3,
   line = 0.5,
   cex = 0.9
@@ -147,17 +382,17 @@ abline(0, 1, col = "red")
 
 legend(
   "topleft",
-  legend = c(paste0("Predictions (RMSE = ", round(RMSE, 2), ")"), "Identity line (y = x)"),
+  legend = c(paste0("Predictions (RMSE = ", round(RMSE, 2), ", R² =", round(R2, 2), ")"), "Identity line (y = x)"),
   col = c("black", "red"),
   pch = c(4, NA),
   lty = c(NA, 1)
 )
-print(model)
+
 
 # ------------------------------------------------------------ Random forest
 model_rf <- randomForest(
   NASC ~ .,
-  data = train,
+  data = ds_train_scaled,
   ntree = 500,
   importance = TRUE
 )
@@ -193,7 +428,7 @@ ggplot(
     x = "Variable",
     y = "% Increase in MSE",
     title = "Variable importance for NASC prediction - Random forest algorithm",
-    subtitle= "split leave-one-year_out (90/10)"# "Random split (80/20)" # "split leave-one-year_out (90/10)"
+    subtitle= "Random split (80/20) on scaled datas" # "split leave-one-year_out (90/10)"
   )
 
 
@@ -203,7 +438,7 @@ ggplot(
 
 prediction <- predict(
   model_rf,
-  newdata = test
+  newdata = ds_test_scaled
 )
 
 
@@ -212,7 +447,7 @@ prediction <- predict(
 # ---------------------------------------------------------
 
 resultats <- data.frame(
-  NASC_reel = test$NASC,
+  NASC_reel = ds_test_scaled$NASC,
   NASC_predit = prediction
 )
 
@@ -225,7 +460,7 @@ head(resultats)
 
 RMSE <- sqrt(
   mean(
-    (prediction - test$NASC)^2
+    (prediction - ds_test_scaled$NASC)^2
   )
 )
 
@@ -237,7 +472,7 @@ print(RMSE)
 # ---------------------------------------------------------
 
 MAE <- mean(
-  abs(prediction - test$NASC)
+  abs(prediction - ds_test_scaled$NASC)
 )
 
 print(MAE)
@@ -249,10 +484,10 @@ print(MAE)
 
 R2 <- 1 -
   sum(
-    (test$NASC - prediction)^2
+    (ds_test_scaled$NASC - prediction)^2
   ) /
   sum(
-    (test$NASC - mean(test$NASC))^2
+    (ds_test_scaled$NASC - mean(ds_test_scaled$NASC))^2
   )
 
 print(R2)
@@ -263,7 +498,7 @@ print(R2)
 # ---------------------------------------------------------
 
 plot(
-  test$NASC,
+  ds_test_scaled$NASC,
   prediction,
   xlab = "True NASC",
   ylab = "Predicted NASC",
@@ -278,7 +513,7 @@ abline(
   col = "red"
 )
 mtext(
-  "split leave-one-year_out (90/10)", # "Random split (80/20)", # "Split: leave-one-year-out (90/10)",
+  "Random split (80/20) on scaled datas", # "Split: leave-one-year-out (90/10)",
   side = 3,
   line = 0.5,
   cex = 0.9
