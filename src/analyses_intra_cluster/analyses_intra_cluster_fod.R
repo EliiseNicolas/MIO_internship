@@ -19,6 +19,7 @@ pigment_vars <- c(
   "Allo", "Zea", "Chlb", "DvChla"
 )
 
+#################################################### Distributions simples des FTLE, pigments et NASC
 # Keep only variables of interest
 ds_long <- ds %>%
   select(fod, nasc, ftle, all_of(pigment_vars)) %>%
@@ -28,7 +29,7 @@ ds_long <- ds %>%
     values_to = "value"
   )
 
-# Summary statistics per FOD cluster
+# Dsitribution générale des pigments
 pigment_summary <- ds_long %>%
   group_by(fod, pigment) %>%
   summarise(
@@ -61,6 +62,7 @@ ggplot(ds_long, aes(x = factor(fod), y = value)) +
   ) +
   theme_bw()
 
+# Dsitribution du NASC
 ggplot(ds, aes(x = factor(fod), y = log(nasc))) +
   geom_violin(
     aes(group = factor(fod)),
@@ -78,6 +80,7 @@ ggplot(ds, aes(x = factor(fod), y = log(nasc))) +
   ) +
   theme_bw()
 
+# Distribution du NASC
 ggplot(ds, aes(x = factor(fod), y = ftle)) +
   geom_violin(
     aes(group = factor(fod)),
@@ -96,6 +99,7 @@ ggplot(ds, aes(x = factor(fod), y = ftle)) +
   theme_bw()
 
 
+# Distribution individuelle des pigments par cluster
 pigments_long <- ds %>%
   select(fod, all_of(pigment_vars)) %>%
   pivot_longer(
@@ -226,10 +230,6 @@ letters_df <- data.frame(
 letters_df
 
 
-# -----------------------------
-# 5. Ordre des clusters
-#    selon la moyenne du NASC
-# -----------------------------
 # -----------------------------
 # 5. Ordre des clusters
 #    selon les groupes statistiques
@@ -939,3 +939,875 @@ ggplot(
     title = "Relative pigment composition across FOD clusters"
   ) +
   theme_classic()
+
+################################################################### ANALYSE par Année et par cluster
+
+# Vérifier les années disponibles
+year <- format(ds$time, "%Y")
+sort(unique(year))
+ds$year <- year
+# Nombre d'observations par année et cluster
+ds %>%
+  filter(!is.na(year), !is.na(fod)) %>%
+  count(year, fod)
+
+# NASC par année et FOD
+nasc_year_fod <- ds %>%
+  filter(
+    !is.na(year),
+    !is.na(fod),
+    !is.na(nasc),
+    is.finite(nasc),
+    nasc >= 0
+  ) %>%
+  mutate(
+    year = factor(year),
+    fod = factor(fod),
+    log_nasc = log10(nasc + 1)
+  )
+
+ggplot(
+  nasc_year_fod,
+  aes(
+    x = year,
+    y = nasc
+  )
+) +
+  geom_boxplot(
+    outlier.shape = NA,
+    width = 0.65
+  ) +
+  geom_jitter(
+    width = 0.15,
+    alpha = 0.12,
+    size = 0.7
+  ) +
+  facet_wrap(
+    ~ fod,
+    scales = "free_y"
+  ) +
+  scale_y_log10() +
+  labs(
+    x = "Year",
+    y = "NASC",
+    title = "NASC distribution within FOD clusters across years"
+  ) +
+  theme_classic()
+
+# graphique des moyennes seulement 
+
+nasc_summary <- nasc_year_fod %>%
+  group_by(fod, year) %>%
+  summarise(
+    n = n(),
+    mean = mean(nasc, na.rm = TRUE),
+    median = median(nasc, na.rm = TRUE),
+    sd = sd(nasc, na.rm = TRUE),
+    se = sd / sqrt(n),
+    .groups = "drop"
+  )
+
+nasc_summary
+
+ggplot(
+  nasc_summary,
+  aes(
+    x = year,
+    y = mean,
+    group = 1
+  )
+) +
+  geom_line() +
+  geom_point(size = 3) +
+  facet_wrap(
+    ~ fod,
+    scales = "free_y"
+  ) +
+  scale_y_log10() +
+  labs(
+    x = "Year",
+    y = "Mean NASC",
+    title = "Temporal evolution of mean NASC within FOD clusters"
+  ) +
+  theme_classic()
+
+# médiane 
+ggplot(
+  nasc_summary,
+  aes(
+    x = year,
+    y = median,
+    group = 1
+  )
+) +
+  geom_line() +
+  geom_point(size = 3) +
+  facet_wrap(
+    ~ fod,
+    scales = "free_y"
+  ) +
+  scale_y_log10() +
+  labs(
+    x = "Year",
+    y = "Median NASC",
+    title = "Temporal evolution of median NASC within FOD clusters"
+  ) +
+  theme_classic()
+
+# statistiques
+# ============================================================
+# NASC selon ANNEE et FOD
+# ANOVA + Tukey + groupes statistiques par année dans chaque FOD
+# ============================================================
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(emmeans)
+library(multcompView)
+library(multcomp)
+
+ds$year <- format(ds$time, "%Y")
+
+# ============================================================
+# 1. Préparation des données
+# ============================================================
+
+nasc_year_fod <- ds %>%
+  filter(
+    !is.na(year),
+    !is.na(fod),
+    !is.na(nasc),
+    is.finite(nasc),
+    nasc >= 0
+  ) %>%
+  mutate(
+    year = factor(year),
+    fod = factor(fod),
+    log_nasc = log10(nasc + 1)
+  )
+
+
+# Vérification
+table(
+  nasc_year_fod$year,
+  nasc_year_fod$fod
+)
+
+
+# ============================================================
+# 2. ANOVA avec interaction année × FOD
+# ============================================================
+
+nasc_model <- aov(
+  log_nasc ~ year * fod,
+  data = nasc_year_fod
+)
+
+summary(nasc_model)
+
+
+# ============================================================
+# 3. EMMEANS
+#    Comparaison des années à l'intérieur de chaque FOD
+# ============================================================
+
+nasc_emm <- emmeans(
+  nasc_model,
+  ~ year | fod
+)
+
+
+# ============================================================
+# 4. Comparaisons de Tukey
+# ============================================================
+
+nasc_pairs <- pairs(
+  nasc_emm,
+  adjust = "tukey"
+)
+
+nasc_pairs_df <- as.data.frame(nasc_pairs)
+
+nasc_pairs_df
+
+# ============================================================
+# 5. Groupes statistiques par année dans chaque FOD
+# ============================================================
+
+letters_list <- cld(
+  nasc_emm,
+  adjust = "tukey",
+  Letters = letters,
+  sort = FALSE
+)
+letters_list
+letters_df <- as.data.frame(letters_list) %>%
+  dplyr::select(
+    fod,
+    year,
+    .group
+  ) %>%
+  dplyr::mutate(
+    letter = gsub(" ", "", .group)
+  ) %>%
+  dplyr::select(
+    fod,
+    year,
+    letter
+  )
+
+letters_df
+
+# ============================================================
+# 6. Position des lettres
+# ============================================================
+
+y_pos <- nasc_year_fod %>%
+  group_by(fod) %>%
+  summarise(
+    y = max(nasc, na.rm = TRUE) * 1.20,
+    .groups = "drop"
+  )
+
+letters_df <- letters_df %>%
+  left_join(
+    y_pos,
+    by = "fod"
+  )
+
+# ============================================================
+# 7. Boxplots NASC année × FOD
+# ============================================================
+
+p <- ggplot(
+  nasc_year_fod,
+  aes(
+    x = year,
+    y = nasc
+  )
+) +
+  
+  # Boxplots
+  geom_boxplot(
+    outlier.shape = NA,
+    width = 0.65
+  ) +
+  
+  # Points individuels
+  geom_jitter(
+    width = 0.15,
+    alpha = 0.12,
+    size = 0.7
+  ) +
+  
+  # Lettres statistiques
+  geom_text(
+    data = letters_df,
+    aes(
+      x = year,
+      y = y,
+      label = letter
+    ),
+    inherit.aes = FALSE,
+    size = 3,
+    fontface = "bold"
+  ) +
+  
+  # Un panneau par FOD
+  facet_wrap(
+    ~ fod,
+    scales = "free_y"
+  ) +
+  
+  # Échelle logarithmique
+  scale_y_log10() +
+  
+  # Labels
+  labs(
+    x = "Year",
+    y = "NASC",
+    title = "NASC distribution within FOD clusters across years"
+  ) +
+  
+  theme_classic() +
+  
+  theme(
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 11),
+    strip.text = element_text(
+      size = 12,
+      face = "bold"
+    ),
+    plot.title = element_text(
+      size = 14,
+      face = "bold"
+    )
+  )
+
+p
+
+########################################################## Pigment et FTLE
+# ============================================================
+# PACKAGES
+# ============================================================
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(emmeans)
+library(multcompView)
+library(multcomp)
+
+
+# ============================================================
+# ANNEE
+# ============================================================
+
+ds$year <- format(ds$time, "%Y")
+
+# ============================================================
+# FONCTION D'ANALYSE
+# FTLE ou PIGMENT selon ANNEE et FOD
+# ============================================================
+
+analyse_year_fod <- function(
+    variable,
+    data,
+    y_label = variable
+) {
+  
+  # ----------------------------------------------------------
+  # 1. Préparation des données
+  # ----------------------------------------------------------
+  
+  dat <- data %>%
+    dplyr::select(
+      year,
+      fod,
+      value = all_of(variable)
+    ) %>%
+    dplyr::filter(
+      !is.na(year),
+      !is.na(fod),
+      !is.na(value),
+      is.finite(value)
+    ) %>%
+    dplyr::mutate(
+      year = factor(year),
+      fod = factor(fod)
+    )
+  
+  
+  # ----------------------------------------------------------
+  # 2. Vérification des effectifs
+  # ----------------------------------------------------------
+  
+  cat("\n\n============================================\n")
+  cat("VARIABLE :", variable, "\n")
+  cat("============================================\n")
+  
+  print(
+    table(
+      dat$year,
+      dat$fod
+    )
+  )
+  
+  
+  # ----------------------------------------------------------
+  # 3. ANOVA avec interaction année × FOD
+  # ----------------------------------------------------------
+  
+  model <- aov(
+    value ~ year * fod,
+    data = dat
+  )
+  
+  cat("\n--- ANOVA ---\n")
+  print(summary(model))
+  
+  
+  # ----------------------------------------------------------
+  # 4. EMMEANS
+  # Comparaison des années à l'intérieur de chaque FOD
+  # ----------------------------------------------------------
+  
+  emm <- emmeans(
+    model,
+    ~ year | fod
+  )
+  
+  
+  # ----------------------------------------------------------
+  # 5. Comparaisons de Tukey
+  # ----------------------------------------------------------
+  
+  pairs_df <- pairs(
+    emm,
+    adjust = "tukey"
+  ) %>%
+    as.data.frame()
+  
+  
+  cat("\n--- Comparaisons entre années ---\n")
+  print(pairs_df)
+  
+  
+  # ----------------------------------------------------------
+  # 6. Groupes statistiques
+  # ----------------------------------------------------------
+  
+  letters_list <- cld(
+    emm,
+    adjust = "tukey",
+    Letters = letters,
+    sort = FALSE
+  )
+  
+  
+  cat("\n--- Groupes statistiques ---\n")
+  print(letters_list)
+  
+  
+  # ----------------------------------------------------------
+  # 7. Préparation des lettres
+  # ----------------------------------------------------------
+  
+  letters_df <- as.data.frame(letters_list) %>%
+    dplyr::select(
+      fod,
+      year,
+      .group
+    ) %>%
+    dplyr::mutate(
+      letter = gsub(" ", "", .group)
+    ) %>%
+    dplyr::select(
+      fod,
+      year,
+      letter
+    ) %>%
+    dplyr::filter(
+      !is.na(letter)
+    )
+  
+  
+  # ----------------------------------------------------------
+  # 8. Position des lettres
+  # ----------------------------------------------------------
+  
+  y_pos <- dat %>%
+    dplyr::group_by(fod) %>%
+    dplyr::summarise(
+      y = max(value, na.rm = TRUE) * 1.20,
+      .groups = "drop"
+    )
+  
+  
+  letters_df <- letters_df %>%
+    dplyr::left_join(
+      y_pos,
+      by = "fod"
+    )
+  
+  
+  # ----------------------------------------------------------
+  # 9. Graphique
+  # ----------------------------------------------------------
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = year,
+      y = value
+    )
+  ) +
+    
+    # Boxplots
+    geom_boxplot(
+      outlier.shape = NA,
+      width = 0.65
+    ) +
+    
+    # Points individuels
+    geom_jitter(
+      width = 0.15,
+      alpha = 0.12,
+      size = 0.7
+    ) +
+    
+    # Lettres statistiques
+    geom_text(
+      data = letters_df,
+      aes(
+        x = year,
+        y = y,
+        label = letter
+      ),
+      inherit.aes = FALSE,
+      size = 3,
+      fontface = "bold"
+    ) +
+    
+    # Un panneau par FOD
+    facet_wrap(
+      ~ fod,
+      scales = "free_y"
+    ) +
+    
+    # Labels
+    labs(
+      x = "Year",
+      y = y_label,
+      title = paste(
+        y_label,
+        "distribution within FOD clusters across years"
+      )
+    ) +
+    
+    theme_classic() +
+    
+    theme(
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 11),
+      strip.text = element_text(
+        size = 12,
+        face = "bold"
+      ),
+      plot.title = element_text(
+        size = 14,
+        face = "bold"
+      )
+    )
+  
+  
+  # ----------------------------------------------------------
+  # 10. Retourner tous les résultats
+  # ----------------------------------------------------------
+  
+  return(
+    list(
+      data = dat,
+      model = model,
+      anova = summary(model),
+      emm = emm,
+      pairs = pairs_df,
+      letters = letters_df,
+      plot = p
+    )
+  )
+}
+
+# ============================================================
+# FTLE
+# ============================================================
+
+ftle_year_fod <- analyse_year_fod(
+  variable = "ftle",
+  data = ds,
+  y_label = "FTLE"
+)
+
+
+# ============================================================
+# ANALYSE DES PIGMENTS SELON ANNEE ET FOD
+# ANOVA + EMMEANS + TUKEY + GROUPES STATISTIQUES + BOXPLOTS
+# ============================================================
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(emmeans)
+library(multcomp)
+library(multcompView)
+library(purrr)
+
+# ============================================================
+# 1. Année
+# ============================================================
+
+ds$year <- format(ds$time, "%Y")
+
+
+# ============================================================
+# 2. Liste des pigments
+# ============================================================
+
+pigments <- c(
+  "Chla",
+  "Chlb",
+  "DvChla",
+  "Fuco",
+  "But",
+  "Hex",
+  "Allo",
+  "Zea"
+)
+
+
+# ============================================================
+# 3. Fonction d'analyse
+# ============================================================
+
+analyse_pigment <- function(pigment, data = ds) {
+  
+  cat("\n")
+  cat("============================================\n")
+  cat("VARIABLE :", pigment, "\n")
+  cat("============================================\n")
+  
+  
+  # ----------------------------------------------------------
+  # Préparation des données
+  # ----------------------------------------------------------
+  
+  dat <- data %>%
+    filter(
+      !is.na(year),
+      !is.na(fod),
+      !is.na(.data[[pigment]]),
+      is.finite(.data[[pigment]]),
+      .data[[pigment]] >= 0
+    ) %>%
+    mutate(
+      year = factor(year),
+      fod = factor(fod),
+      pigment_value = .data[[pigment]]
+    )
+  
+  
+  # ----------------------------------------------------------
+  # Vérification des effectifs
+  # ----------------------------------------------------------
+  
+  cat("\n--- Effectifs ---\n")
+  
+  print(
+    table(
+      dat$year,
+      dat$fod
+    )
+  )
+  
+  
+  # ----------------------------------------------------------
+  # ANOVA
+  # ----------------------------------------------------------
+  
+  model <- aov(
+    pigment_value ~ year * fod,
+    data = dat
+  )
+  
+  cat("\n--- ANOVA ---\n")
+  print(summary(model))
+  
+  
+  # ----------------------------------------------------------
+  # EMMEANS
+  # Comparaison des années dans chaque FOD
+  # ----------------------------------------------------------
+  
+  emm <- emmeans(
+    model,
+    ~ year | fod
+  )
+  
+  
+  # ----------------------------------------------------------
+  # Comparaisons de Tukey
+  # ----------------------------------------------------------
+  
+  pairs_res <- pairs(
+    emm,
+    adjust = "tukey"
+  )
+  
+  pairs_df <- as.data.frame(pairs_res)
+  
+  cat("\n--- Comparaisons entre années ---\n")
+  print(pairs_df)
+  
+  
+  # ----------------------------------------------------------
+  # Groupes statistiques
+  # ----------------------------------------------------------
+  
+  letters_list <- cld(
+    emm,
+    adjust = "tukey",
+    Letters = letters,
+    sort = FALSE
+  )
+  
+  letters_raw <- as.data.frame(letters_list)
+  
+  cat("\n--- Groupes statistiques ---\n")
+  print(letters_raw)
+  
+  
+  # ----------------------------------------------------------
+  # Nettoyage des lettres
+  # ----------------------------------------------------------
+  
+  letters_df <- letters_raw %>%
+    dplyr::filter(
+      !is.na(emmean),
+      !is.na(.group)
+    ) %>%
+    dplyr::select(
+      fod,
+      year,
+      emmean,
+      .group
+    ) %>%
+    dplyr::mutate(
+      letter = gsub(" ", "", .group)
+    ) %>%
+    dplyr::select(
+      fod,
+      year,
+      emmean,
+      letter
+    )
+  
+  
+  # ----------------------------------------------------------
+  # Position des lettres
+  # ----------------------------------------------------------
+  
+  y_pos <- dat %>%
+    group_by(fod) %>%
+    summarise(
+      y = max(
+        pigment_value,
+        na.rm = TRUE
+      ),
+      .groups = "drop"
+    ) %>%
+    mutate(
+      y = ifelse(
+        y > 0,
+        y * 1.20,
+        0.001
+      )
+    )
+  
+  
+  letters_df <- letters_df %>%
+    left_join(
+      y_pos,
+      by = "fod"
+    )
+  
+  
+  # ----------------------------------------------------------
+  # Graphique
+  # ----------------------------------------------------------
+  
+  p <- ggplot(
+    dat,
+    aes(
+      x = year,
+      y = pigment_value
+    )
+  ) +
+    
+    geom_boxplot(
+      outlier.shape = NA,
+      width = 0.65
+    ) +
+    
+    geom_jitter(
+      width = 0.15,
+      alpha = 0.12,
+      size = 0.7
+    ) +
+    
+    geom_text(
+      data = letters_df,
+      aes(
+        x = year,
+        y = y,
+        label = letter
+      ),
+      inherit.aes = FALSE,
+      size = 3,
+      fontface = "bold"
+    ) +
+    
+    facet_wrap(
+      ~ fod,
+      scales = "free_y"
+    ) +
+    
+    scale_y_log10() +
+    
+    labs(
+      x = "Year",
+      y = pigment,
+      title = paste(
+        pigment,
+        "distribution within FOD clusters across years"
+      )
+    ) +
+    
+    theme_classic() +
+    
+    theme(
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 11),
+      strip.text = element_text(
+        size = 12,
+        face = "bold"
+      ),
+      plot.title = element_text(
+        size = 14,
+        face = "bold"
+      )
+    )
+  
+  
+  # ----------------------------------------------------------
+  # Retour de la fonction
+  # ----------------------------------------------------------
+  
+  return(
+    list(
+      data = dat,
+      model = model,
+      emm = emm,
+      pairs = pairs_df,
+      letters = letters_df,
+      plot = p
+    )
+  )
+}
+
+
+# ============================================================
+# 4. Lancer l'analyse pour tous les pigments
+# ============================================================
+
+pigment_year_fod <- setNames(
+  lapply(
+    pigments,
+    analyse_pigment
+  ),
+  pigments
+)
+
+
+# ============================================================
+# 5. Afficher les graphiques
+# ============================================================
+
+pigment_year_fod$Chla$plot
+pigment_year_fod$Chlb$plot
+pigment_year_fod$Fuco$plot
+pigment_year_fod$But$plot
+pigment_year_fod$Hex$plot
+pigment_year_fod$Allo$plot
+pigment_year_fod$Zea$plot
+pigment_year_fod$DvChla$plot
