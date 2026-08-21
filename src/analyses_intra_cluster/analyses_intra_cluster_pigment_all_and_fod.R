@@ -142,36 +142,94 @@ pig_fod <- pig_fod %>%
 
 table(pig_fod$year, pig_fod$fod)
 
-pig_long <- pig_fod %>%
-  pivot_longer(
-    cols = c(
-      Chla,
-      Perid,
-      But,
-      Fuco,
-      Hex,
-      Allo,
-      Zeax,
-      Chlb,
-      DvChla
-    ),
-    names_to = "pigment",
-    values_to = "concentration"
-  )
+pigments_plot <- c(
+  "Chla",
+  "Perid",
+  "But",
+  "Fuco",
+  "Hex",
+  "Allo",
+  "Zeax",
+  "Chlb",
+  "DvChla"
+)
 
-ggplot(
-  pig_long,
-  aes(x = fod, y = concentration)
-) +
-  geom_boxplot(
-    na.rm = TRUE
+plot_pigment <- function(pigment_name, dat = pig_long, letters_df = NULL) {
+  
+  dat_pig <- dat %>%
+    filter(pigment == pigment_name)
+  
+  p <- ggplot(
+    dat_pig,
+    aes(
+      x = year,
+      y = concentration
+    )
   ) +
-  facet_grid(
-    pigment ~ year,
-    scales = "free_y"
-  ) +
-  labs(
-    x = "FOD cluster",
-    y = "Pigment concentration"
-  ) +
-  theme_classic()
+    
+    geom_boxplot(
+      outlier.shape = NA,
+      width = 0.65
+    ) +
+    
+    geom_jitter(
+      width = 0.15,
+      alpha = 0.12,
+      size = 0.7
+    )
+  
+  # Ajouter les lettres seulement si elles existent
+  if (!is.null(letters_df)) {
+    
+    letters_pig <- letters_df %>%
+      filter(pigment == pigment_name)
+    
+    p <- p +
+      geom_text(
+        data = letters_pig,
+        aes(
+          x = year,
+          y = y,
+          label = letter
+        ),
+        inherit.aes = FALSE,
+        size = 3,
+        fontface = "bold"
+      )
+  }
+  
+  p +
+    facet_wrap(
+      ~ fod,
+      scales = "free_y"
+    ) +
+    
+    scale_y_log10() +
+    
+    labs(
+      x = "Year",
+      y = pigment_name,
+      title = paste(
+        pigment_name,
+        "distribution within FOD clusters across years"
+      )
+    ) +
+    
+    theme_classic() +
+    
+    theme(
+      axis.title = element_text(size = 12),
+      axis.text = element_text(size = 11),
+      strip.text = element_text(
+        size = 12,
+        face = "bold"
+      ),
+      plot.title = element_text(
+        size = 14,
+        face = "bold"
+      )
+    )
+}
+for (p in unique(pig_long$pigment)) {
+  print(plot_pigment(p))
+}
