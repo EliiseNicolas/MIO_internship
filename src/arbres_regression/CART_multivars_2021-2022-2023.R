@@ -189,6 +189,69 @@ time_diff <- abs(
 dist_mat[time_diff > 3600] <- NA
 dist_mat[lower.tri(dist_mat, diag = TRUE)] <- NA
 
+# ------------------------------------------------
+# HEATMAP DE LA MATRICE DE DISTANCES APRÈS FILTRAGE
+# ------------------------------------------------
+
+library(ggplot2)
+
+# Recalcul de la matrice de distances
+df_scaled <- scale(df[, vars_num])
+
+dist_mat <- as.matrix(dist(df_scaled))
+
+# Matrice des différences temporelles
+time_diff <- abs(
+  outer(
+    as.numeric(df$time),
+    as.numeric(df$time),
+    FUN = "-"
+  )
+)
+
+# Garder uniquement les paires à moins d'une heure
+dist_mat[time_diff > 3600] <- NA
+# 
+# # Supprimer diagonale + partie inférieure
+# dist_mat[lower.tri(dist_mat, diag = TRUE)] <- NA
+
+# Transformer en format long
+heatmap_data <- as.data.frame(as.table(dist_mat))
+
+colnames(heatmap_data) <- c("obs1", "obs2", "distance")
+
+# Retirer les NA
+heatmap_data <- heatmap_data[!is.na(heatmap_data$distance), ]
+
+# Heatmap
+ggplot(
+  heatmap_data,
+  aes(
+    x = obs1,
+    y = obs2,
+    fill = distance
+  )
+) +
+  geom_tile() +
+  scale_fill_viridis_c(
+    option = "viridis",
+    na.value = "white"
+  ) +
+  theme_minimal() +
+  labs(
+    x = "Observation",
+    y = "Observation",
+    fill = "Distance",
+    title = "Matrice de distances",
+    subtitle="Données à moins d'une heure d'intervalle et dont la distance est >0.25"
+  ) +
+  theme(
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  ) +
+  coord_fixed()
+
 # ----------------- Split train/test 1 : random
 set.seed(123)
 n <- nrow(df)
