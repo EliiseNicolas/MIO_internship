@@ -27,7 +27,8 @@
 
 # packages
 library(ggplot2)
-install.packages("patchwork")
+library(patchwork)
+
 # Paths
 path_pig_grid <- "F:/data_elise/NASC/pigmeann_grid.rds"
 diurnal_period <- "night"
@@ -39,6 +40,7 @@ path_sv <-paste0("F:/data_elise/sv_cropped/120kHz/Sv_2018_2021_2023_", diurnal_p
 pig_grid <- readRDS(path_pig_grid)
 sv <- readRDS(path_sv)
 
+################################################################### plots des transects sur la grille pigmeann
 # construire un data.frame propre à partir des coordonnées réelles
 df_sv <- data.frame(
   lon = sv$lon,
@@ -52,11 +54,8 @@ df_sv <- df_sv[!is.na(df_sv$lon) & !is.na(df_sv$lat), ]
 df_sv$date <- as.Date(df_sv$time, origin = "1950-01-01")
 df_sv$year <- factor(format(df_sv$date, "%Y"))
 
-# plot 
-dev.off()      # ferme le device courant
-# si erreur "cannot shut down device 1", répéter jusqu'à ce que ça échoue proprement
-graphics.off() # ferme tous les devices
-# --- Plot coloré par année ---
+
+# plots 
 ggplot() +
   
   # grille PIGMeANN
@@ -96,7 +95,8 @@ ggplot() +
   
   theme_minimal()
 
-# surface d'une grille
+
+####################################################################### profil moyen par grille
 # --- Résolution de la grille ---
 lon_res <- diff(pig_grid$lon)  # pas en longitude (°)
 lat_res <- diff(pig_grid$lat)  # pas en latitude (°)
@@ -114,9 +114,27 @@ cat("Résolution grille : ", round(dlon, 4), "° lon x ", round(dlat, 4), "° la
 
 # -------------- profil moyen par grid pigmeann et par année
 sv_date <- as.Date(sv$time, origin = "1950-01-01")  # à adapter si origine différente
-sv_year <- format(sv_date, "%Y")
+table(sv_date)
+sv_day <- format(sv_date, "%Y-%m-%d")
+# Hidtogramme de nombre de profils par jour 
+daily_counts <- as.data.frame(table(sv_date))
 
-table(sv_year)
+# Renommer les colonnes
+colnames(daily_counts) <- c("date", "n_profils")
+
+# Histogramme
+ggplot(daily_counts, aes(x = date, y = n_profils)) +
+  geom_col() +
+  labs(
+    x = "Date",
+    y = "Nombre de profils",
+    title = "Nombre de profils par jour",
+    subtitle = "Données transect 2018, 2021, 2023, 120kHz, day"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5)
+  )
 
 # --- 1. Attribution à la cellule de grille (comme avant) ---
 assign_cell <- function(coord, grid_vals) {
@@ -132,257 +150,248 @@ lon_cell <- assign_cell(sv$lon, pig_grid$lon)
 lat_cell <- assign_cell(sv$lat, pig_grid$lat)
 
 # clé de groupement incluant maintenant l'année
-cell_id_year <- paste(lon_cell, lat_cell, sv_year, sep = "_")
-
+cell_id_day <- paste(
+  lon_cell,
+  lat_cell,
+  sv_day,
+  sep = "|"
+)
 
 # --- 2. Conversion dB -> linéaire ---
 sv_linear <- 10^(sv$profiles / 10)
 
 # --- 3. Moyenne par cellule ET par année, robuste aux NA ---
-sum_by_cell   <- rowsum(sv_linear, group = cell_id_year, na.rm = TRUE)
-not_na_mat    <- !is.na(sv_linear)
-count_by_cell <- rowsum(not_na_mat * 1, group = cell_id_year)
+sum_by_cell   <- rowsum(sv_linear, group = cell_id_day, na.rm = TRUE)
+count_by_cell <- rowsum(
+  matrix(as.numeric(!is.na(sv_linear)), 
+         nrow = nrow(sv_linear), 
+         ncol = ncol(sv_linear)),
+  group = cell_id_day
+)
 
+# Moyenne linéaire
 mean_profiles_linear <- sum_by_cell / count_by_cell
 mean_profiles_linear[count_by_cell == 0] <- NA
 
 # --- 4. Reconversion en dB ---
 mean_profiles_db <- 10 * log10(mean_profiles_linear)
 
-# --- 5. Reconstruire l'objet avec lon / lat / time moyen ---
-cell_names   <- rownames(mean_profiles_db)
-cell_coords  <- do.call(rbind, strsplit(cell_names, "_"))
+# --- 5. récupérer pour chaque profil moyen : lon,lat et time moyen + nb de profils qui ont servi à calculer la moyenne.
+group_levels <- unique(cell_id_day)
 
-# temps moyen par cellule (même groupement que pour les profils)
-mean_time_by_cell <- tapply(sv$time, cell_id_year, mean, na.rm = TRUE)
+group_info <- do.call(rbind, strsplit(group_levels, "\\|"))
 
-mean_pig_grid_by_year <- list(
-  profiles  = mean_profiles_db,               # matrice n_cellules(x année) x n_depth, en dB
-  lon       = as.numeric(cell_coords[, 1]),
-  lat       = as.numeric(cell_coords[, 2]),
-  time      = as.numeric(mean_time_by_cell[cell_names]),  # temps moyen (même unité que sv$time)
-  depth     = sv$depth,
-  n_profils = as.vector(table(cell_id_year)[cell_names])
+head(group_info)
+
+# Temps moyen
+mean_time_by_cell <- tapply(
+  sv$time,
+  cell_id_day,
+  mean,
+  na.rm = TRUE
 )
 
-str(mean_pig_grid_by_year, max.level = 1)
 
-# vérification : reconvertir en date pour contrôle visuel
-mean_dates <- as.Date(mean_pig_grid_by_year$time, origin = "1950-01-01")  # adapte l'origine si besoin
-table(format(mean_dates, "%Y"))  # vérifier la répartition par année déduite du temps moyen
+# Objet final
+mean_pig_grid_by_day <- list(
+  profiles  = mean_profiles_db,
+  lon       = as.numeric(group_info[, 1]),
+  lat       = as.numeric(group_info[, 2]),
+  date      = as.Date(group_info[, 3]),
+  time      =  as.POSIXct(
+    mean_time_by_cell[group_levels] * 86400,
+    origin = "1950-01-01",
+    tz = "UTC"
+  ),
+  depth     = sv$depth,
+  n_profils = as.vector(table(cell_id_day))
+)
+
+str(mean_pig_grid_by_day, max.level = 1) # verif du dataset final
 
 # --- Sauvegarde ---
 
 # fichier global avec toutes les années (time moyen conservé)
 saveRDS(
-  mean_pig_grid_by_year,
-  paste0("F:/data_elise/NASC/120kHz/mean_sv_profile_pig_grid_by_year_2018_2021_2023_", diurnal_period, "_120kHz.rds", ".rds")
+  mean_pig_grid_by_day,
+  paste0("F:/data_elise/NASC/120kHz/mean_sv_profile_pig_grid_by_year_2018_2021_2023_", diurnal_period, "_120kHz_v2.rds", ".rds")
 )
 
-mean_dates <- as.Date(mean_pig_grid_by_year$time, origin = "1950-01-01")  # adapte l'origine si besoin
-mean_years <- format(mean_dates, "%Y")
 
 # ----------- Plot des effets du moyennage
-# --- 1. Variance par cellule (× année) et par profondeur, sur les valeurs linéaires ---
-sum_sq_by_cell <- rowsum(sv_linear^2, group = cell_id_year, na.rm = TRUE)
 
-var_profiles_linear <- (sum_sq_by_cell - count_by_cell * mean_profiles_linear^2) /
-  (count_by_cell - 1)
-var_profiles_linear[count_by_cell <= 1] <- NA
+# ------------------------------------------------------------
+# 1. Variance par cellule × jour et par profondeur
+#    sur les valeurs linéaires
+# ------------------------------------------------------------
 
-# --- 2. Data frame récapitulatif par cellule × année ---
-n_profils_df <- data.frame(
-  cell_id   = rownames(mean_profiles_db),
-  n_profils = mean_pig_grid_by_year$n_profils,
-  year      = mean_years   # dérivé du time moyen, calculé précédemment
+sum_sq_by_cell <- rowsum(
+  sv_linear^2,
+  group = cell_id_day,
+  na.rm = TRUE
 )
 
-mean_n <- mean(n_profils_df$n_profils, na.rm = TRUE)
-sd_n   <- sd(n_profils_df$n_profils, na.rm = TRUE)
+var_profiles_linear <- (
+  sum_sq_by_cell -
+    count_by_cell * mean_profiles_linear^2
+) / (count_by_cell - 1)
 
-mean_variance <- mean(var_profiles_linear, na.rm = TRUE)
-sd_variance   <- sd(var_profiles_linear, na.rm = TRUE)
+# Pas de variance si moins de 2 profils
+var_profiles_linear[count_by_cell <= 1] <- NA
 
-# --- 3. Plots ---
-library(ggplot2)
-library(patchwork)
 
-# Plot A : distribution du nombre de profils par cellule, facetté par année
-p1 <- ggplot(n_profils_df, aes(x = n_profils)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
-  geom_vline(xintercept = mean_n, color = "red", linetype = "dashed", linewidth = 0.6) +
-  annotate(
-    "text",
-    x = mean_n, y = Inf,
-    label = paste0("moyenne = ", round(mean_n, 1), " ± ", round(sd_n, 1)),
-    vjust = 2, hjust = -0.05, color = "red", size = 3.5
+# ------------------------------------------------------------
+# 2. Data frame récapitulatif par cellule × jour
+# ------------------------------------------------------------
+
+n_profils_df <- data.frame(
+  cell_id   = rownames(mean_profiles_db),
+  n_profils = mean_pig_grid_by_day$n_profils,
+  date      = mean_pig_grid_by_day$date
+)
+
+# Vérification
+head(n_profils_df)
+
+
+# ------------------------------------------------------------
+# 3. Statistiques sur le nombre de profils
+# ------------------------------------------------------------
+
+mean_n <- mean(
+  n_profils_df$n_profils,
+  na.rm = TRUE
+)
+
+sd_n <- sd(
+  n_profils_df$n_profils,
+  na.rm = TRUE
+)
+
+
+# ------------------------------------------------------------
+# 4. Statistiques sur la variance
+# ------------------------------------------------------------
+
+mean_variance <- mean(
+  var_profiles_linear,
+  na.rm = TRUE
+)
+
+sd_variance <- sd(
+  var_profiles_linear,
+  na.rm = TRUE
+)
+
+# PLOTS
+
+p1 <- ggplot(
+  n_profils_df,
+  aes(x = n_profils)
+) +
+  geom_histogram(
+    bins = 30,
+    fill = "steelblue",
+    color = "white"
   ) +
-  facet_wrap(~ year) +
+  geom_vline(
+    xintercept = mean_n,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 0.6
+  ) +
   labs(
-    title = "Nombre de profils par point de grille (par année)",
+    title = "Nombre de profils par cellule et par jour",
+    subtitle = paste0(
+      "Moyenne = ", round(mean_n, 1),
+      " ± ", round(sd_n, 1)
+    ),
     x = "Nombre de profils",
-    y = "Nombre de cellules"
+    y = "Nombre de cellules × jours"
   ) +
   theme_minimal()
 
-# Plot B : distribution de la variance par cellule × année × profondeur
-var_df <- data.frame(
-  variance = as.vector(var_profiles_linear),
-  year     = rep(mean_years, times = ncol(var_profiles_linear))
-)
-var_df <- var_df[!is.na(var_df$variance), ]
+# ------------------------------------------------------------
+# Data frame pour le plot de variance
+# ------------------------------------------------------------
 
-p2 <- ggplot(var_df, aes(x = variance)) +
-  geom_histogram(bins = 40, fill = "darkorange", color = "white") +
-  geom_vline(xintercept = mean_variance, color = "red", linetype = "dashed", linewidth = 0.6) +
-  annotate(
-    "text",
-    x = mean_variance, y = Inf,
-    label = paste0("moyenne = ", signif(mean_variance, 3)),
-    vjust = 2, hjust = -0.05, color = "red", size = 3.5
+# ------------------------------------------------------------
+# Data frame pour le plot de variance
+# ------------------------------------------------------------
+
+variance_values <- as.vector(var_profiles_linear)
+
+var_df <- data.frame(
+  variance = variance_values
+)
+
+# Vérification
+class(var_df)
+str(var_df)
+dim(var_df)
+
+# Retirer les NA et les valeurs <= 0
+var_df <- var_df[
+  is.finite(var_df$variance) &
+    var_df$variance > 0,
+  ,
+  drop = FALSE
+]
+
+p2 <- ggplot(
+  var_df,
+  aes(x = variance)
+) +
+  geom_histogram(
+    bins = 40,
+    fill = "darkorange",
+    color = "white"
+  ) +
+  geom_vline(
+    xintercept = mean_variance,
+    color = "red",
+    linetype = "dashed",
+    linewidth = 0.6
   ) +
   scale_x_log10() +
-  facet_wrap(~ year) +
   labs(
-    title = "Variance du moyennage par année (échelle linéaire, cellule × profondeur)",
-    x = "Variance (échelle log10)",
+    title = "Variance du moyennage",
+    subtitle = paste0(
+      "Moyenne = ", signif(mean_variance, 3)
+    ),
+    x = "Variance (échelle linéaire, log10)",
     y = "Fréquence"
   ) +
   theme_minimal()
 
-p1 / p2   # empilés verticalement (plus lisible avec le facettage)
+p1 / p2
+
+
+# # --- 1. Variance par cellule (× année) et par profondeur, sur les valeurs linéaires ---
+# sum_sq_by_cell <- rowsum(sv_linear^2, group = cell_id_day, na.rm = TRUE)
 # 
-# assign_cell <- function(coord, grid_vals) {
-#   grid_sorted <- sort(unique(grid_vals))  # gère l'ordre décroissant automatiquement
-#   
-#   idx <- findInterval(coord, grid_sorted, all.inside = TRUE)
-#   d_before <- abs(coord - grid_sorted[idx])
-#   d_after  <- abs(coord - grid_sorted[pmin(idx + 1, length(grid_sorted))])
-#   idx_final <- ifelse(d_after < d_before, idx + 1, idx)
-#   
-#   grid_sorted[idx_final]
-# }
-# 
-# lon_cell <- assign_cell(sv$lon, pig_grid$lon)
-# lat_cell <- assign_cell(sv$lat, pig_grid$lat)
-# 
-# cell_id <- paste(lon_cell, lat_cell, sep = "_")
-# 
-# # --- 2. Conversion dB -> linéaire avant moyennage ---
-# sv_linear <- 10^(sv$profiles / 10)   # matrice n_profils x n_depth
-# 
-# # --- 3. Moyenne par cellule de grille, pour chaque profondeur ---
-# library(dplyr)
-# 
-# # calcul de la moyenne linéaire par cellule (colonne = profondeur)
-# # somme des valeurs non-NA par cellule et par profondeur
-# sum_by_cell <- rowsum(sv_linear, group = cell_id, na.rm = TRUE)
-# 
-# # comptage des valeurs non-NA par cellule et par profondeur
-# not_na_mat <- !is.na(sv_linear)
-# count_by_cell <- rowsum(not_na_mat * 1, group = cell_id)
-# 
-# # moyenne = somme / comptage (élément par élément)
-# mean_profiles_linear <- sum_by_cell / count_by_cell
-# mean_profiles_linear[count_by_cell == 0] <- NA
-# 
-# # --- 4. Reconversion en dB ---
-# mean_profiles_db <- 10 * log10(mean_profiles_linear)
-# 
-# # --- 5. Reconstruire un objet propre avec coordonnées de grille ---
-# 
-# # extraire lon/lat depuis les noms de ligne (rownames = cell_id = "lon_lat")
-# cell_names <- rownames(mean_profiles_db)
-# cell_coords <- do.call(rbind, strsplit(cell_names, "_"))
-# 
-# mean_pig_grid <- list(
-#   profiles  = mean_profiles_db,                    # matrice n_cellules x n_depth (en dB)
-#   lon       = as.numeric(cell_coords[, 1]),
-#   lat       = as.numeric(cell_coords[, 2]),
-#   depth     = sv$depth,
-#   n_profils = as.vector(table(cell_id)[cell_names])
-# )
-# 
-# str(mean_pig_grid, max.level = 1)
-# 
-# graphics.off()
-# 
-# ggplot() +
-#   
-#   # grille PIGMeANN
-#   geom_vline(
-#     xintercept = pig_grid$lon,
-#     color = "grey85",
-#     linewidth = 0.15
-#   ) +
-#   geom_hline(
-#     yintercept = pig_grid$lat,
-#     color = "grey85",
-#     linewidth = 0.15
-#   ) +
-#   
-#   # points correspondant aux profils moyens par cellule
-#   geom_point(
-#     data = data.frame(
-#       lon = mean_pig_grid$lon,
-#       lat = mean_pig_grid$lat,
-#       n_profils = mean_pig_grid$n_profils
-#     ),
-#     aes(x = lon, y = lat, color = n_profils),
-#     size = 1
-#   ) +
-#   
-#   scale_color_viridis_c(name = "N profils") +
-#   
-#   coord_fixed() +
-#   
-#   labs(
-#     title = paste0("Profils moyens par cellule PIGMeANN - ", diurnal_period),
-#     x = "Longitude (°E)",
-#     y = "Latitude (°)"
-#   ) +
-#   
-#   theme_minimal()
-# 
-# # diagnostic effet moyennage profil seon grid pigmeann
-# 
-# # --- 1. Variance par cellule et par profondeur (sur les valeurs linéaires) ---
-# 
-# # somme des carrés par cellule (nécessaire pour calculer la variance)
-# sum_sq_by_cell <- rowsum(sv_linear^2, group = cell_id, na.rm = TRUE)
-# 
-# # variance = (somme des carrés - n * moyenne^2) / (n - 1)
-# # on réutilise sum_by_cell, count_by_cell, mean_profiles_linear déjà calculés
 # var_profiles_linear <- (sum_sq_by_cell - count_by_cell * mean_profiles_linear^2) /
 #   (count_by_cell - 1)
-# 
-# # les cellules avec 1 seul profil ont une variance non définie -> NA
 # var_profiles_linear[count_by_cell <= 1] <- NA
 # 
-# # --- 2. Résumé du nombre de profils par cellule ---
+# # --- 2. Data frame récapitulatif par cellule × année ---
 # n_profils_df <- data.frame(
-#   cell_id   = names(mean_pig_grid$n_profils) %||% rownames(mean_profiles_db),
-#   n_profils = mean_pig_grid$n_profils
+#   cell_id   = rownames(mean_profiles_db),
+#   n_profils = mean_pig_grid_by_year$n_profils,
+#   year      = mean_years   # dérivé du time moyen, calculé précédemment
 # )
 # 
 # mean_n <- mean(n_profils_df$n_profils, na.rm = TRUE)
 # sd_n   <- sd(n_profils_df$n_profils, na.rm = TRUE)
 # 
-# cat("Nombre moyen de profils par cellule :", round(mean_n, 1),
-#     "± (écart-type)", round(sd_n, 1), "\n")
-# 
-# # --- 3. Variance moyenne du moyennage (moyenne sur toutes profondeurs & cellules) ---
 # mean_variance <- mean(var_profiles_linear, na.rm = TRUE)
 # sd_variance   <- sd(var_profiles_linear, na.rm = TRUE)
 # 
-# cat("Variance moyenne (échelle linéaire) du moyennage :",
-#     signif(mean_variance, 3), "±", signif(sd_variance, 3), "\n")
-# 
-# # --- 4. Plots ---
+# # --- 3. Plots ---
 # library(ggplot2)
-# library(patchwork)  # pour assembler 2 plots côte à côte (install.packages("patchwork") si besoin)
+# library(patchwork)
 # 
-# # Plot A : distribution du nombre de profils par cellule
+# # Plot A : distribution du nombre de profils par cellule, facetté par année
 # p1 <- ggplot(n_profils_df, aes(x = n_profils)) +
 #   geom_histogram(bins = 30, fill = "steelblue", color = "white") +
 #   geom_vline(xintercept = mean_n, color = "red", linetype = "dashed", linewidth = 0.6) +
@@ -392,18 +401,22 @@ p1 / p2   # empilés verticalement (plus lisible avec le facettage)
 #     label = paste0("moyenne = ", round(mean_n, 1), " ± ", round(sd_n, 1)),
 #     vjust = 2, hjust = -0.05, color = "red", size = 3.5
 #   ) +
+#   facet_wrap(~ year) +
 #   labs(
-#     title = "Nombre de profils par point de grille",
+#     title = "Nombre de profils par point de grille (par année)",
 #     x = "Nombre de profils",
 #     y = "Nombre de cellules"
 #   ) +
 #   theme_minimal()
 # 
-# # Plot B : distribution de la variance par cellule/profondeur (échelle linéaire)
-# var_vec <- as.vector(var_profiles_linear)
-# var_vec <- var_vec[!is.na(var_vec)]
+# # Plot B : distribution de la variance par cellule × année × profondeur
+# var_df <- data.frame(
+#   variance = as.vector(var_profiles_linear),
+#   year     = rep(mean_years, times = ncol(var_profiles_linear))
+# )
+# var_df <- var_df[!is.na(var_df$variance), ]
 # 
-# p2 <- ggplot(data.frame(variance = var_vec), aes(x = variance)) +
+# p2 <- ggplot(var_df, aes(x = variance)) +
 #   geom_histogram(bins = 40, fill = "darkorange", color = "white") +
 #   geom_vline(xintercept = mean_variance, color = "red", linetype = "dashed", linewidth = 0.6) +
 #   annotate(
@@ -412,13 +425,15 @@ p1 / p2   # empilés verticalement (plus lisible avec le facettage)
 #     label = paste0("moyenne = ", signif(mean_variance, 3)),
 #     vjust = 2, hjust = -0.05, color = "red", size = 3.5
 #   ) +
-#   scale_x_log10() +   # la variance en linéaire a souvent une distribution très asymétrique
+#   scale_x_log10() +
+#   facet_wrap(~ year) +
 #   labs(
-#     title = "Variance du moyennage (échelle linéaire, par cellule × profondeur)",
+#     title = "Variance du moyennage par année (échelle linéaire, cellule × profondeur)",
 #     x = "Variance (échelle log10)",
 #     y = "Fréquence"
 #   ) +
 #   theme_minimal()
 # 
-# p1 + p2
+# p1 / p2   # empilés verticalement (plus lisible avec le facettage)
+
  

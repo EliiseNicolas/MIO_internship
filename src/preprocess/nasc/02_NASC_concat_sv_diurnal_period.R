@@ -23,10 +23,11 @@ library(dplyr)
 
 # Global Variables
 rm(list=ls())
-diurnal_period = "night"
-path2018 <- paste0("F:/data_elise/sv_cropped/120kHz/", "Sv_", diurnal_period, "_2018_120kHz.rds")
-path2021 <- paste0("F:/data_elise/sv_cropped/120kHz/", "Sv_", diurnal_period, "_2021_120kHz.rds")
-path2023 <- paste0("F:/data_elise/sv_cropped/120kHz/", "Sv_", diurnal_period, "_2023_120kHz.rds")
+
+freq <- 200
+path2018 <- paste0("F:/data_elise/sv_cropped/", freq, "kHz/Sv_2018_", freq, "kHz.rds")
+path2021 <- paste0("F:/data_elise/sv_cropped/", freq, "kHz/Sv_2021_", freq, "kHz.rds")
+path2023 <- paste0("F:/data_elise/sv_cropped/", freq, "kHz/Sv_2023_", freq, "kHz.rds")
 
 # Read data
 df2018 <- readRDS(path2018)
@@ -51,17 +52,20 @@ metadata_all <- bind_rows(
   data.frame(
     lat = df2018$lat,
     lon = df2018$lon,
-    time = df2018$time
+    time = df2018$time,
+    day = df2018$day
   ),
   data.frame(
     lat = df2021$lat,
     lon = df2021$lon,
-    time = df2021$time
+    time = df2021$time,
+    day = df2021$day
   ),
   data.frame(
     lat = df2023$lat,
     lon = df2023$lon,
-    time = df2023$time
+    time = df2023$time,
+    day = df2023$day
   )
 )
 
@@ -78,13 +82,15 @@ Sv_concat <- list(
   lat = metadata_all$lat,
   lon = metadata_all$lon,
   time = metadata_all$time,
+  day = metadata_all$day,
   depth = depth
 )
+
+str(Sv_concat)
 
 saveRDS(
   Sv_concat,
   file = paste0(
-    "F:/data_elise/sv_cropped/120kHz/",
-    "Sv_2018_2021_2023_", diurnal_period, "_120kHz.rds"
+    "F:/data_elise/sv_cropped/", freq, "kHz/Sv_2018_2021_2023_", freq, "kHz.rds"
   )
 )
