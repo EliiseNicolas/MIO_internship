@@ -31,275 +31,282 @@ library(patchwork)
 
 # Global Variables
 rm(list=ls())
-freq <- 200
-path_sv <-paste0("F:/data_elise/sv_cropped/sv_cropped_all_years/Sv_2018_2021_2023_", freq, "kHz.rds")
-path_pig_grid <- "F:/data_elise/NASC/pigmeann_grid.rds"
-
-pig_grid <- readRDS(path_pig_grid)
-sv <- readRDS(path_sv)
-
-
-
-
-####################################################################### profil moyen par grille
-# --- Résolution de la grille ---
-lon_res <- diff(pig_grid$lon)  # pas en longitude (°)
-lat_res <- diff(pig_grid$lat)  # pas en latitude (°)
-
-# vérifier si la grille est régulière
-summary(lon_res)
-summary(lat_res)
-
-# pas moyen (au cas où il y a de petites variations d'arrondi)
-dlon <- mean(lon_res)
-dlat <- mean(lat_res)
-
-cat("Résolution grille : ", round(dlon, 4), "° lon x ", round(dlat, 4), "° lat\n")
-
-
-# -------------- profil moyen par grid pigmeann et par année
-sv_date <- as.Date(sv$time, origin = "1950-01-01")  # à adapter si origine différente
-table(sv_date)
-sv_date <- format(sv_date, "%Y-%m-%d")
-sv_day <- sv$day
-
-# Hidtogramme de nombre de profils par jour 
-for (idx in c(1, 2, 3)){
-  if (idx != 2) {
-    daily_counts <- as.data.frame(table(sv_date[sv_day==idx]))
-  }
-  else {
-    daily_counts <- as.data.frame(table(sv_date))
-  }
+freqs <- c(18, 38, 70, 120, 200)
+for (freq in freqs){
+  path_sv <-paste0("F:/data_elise/sv_cropped/sv_cropped_all_years/Sv_2018_2021_2023_", freq, "kHz.rds")
+  path_pig_grid <- "F:/data_elise/sv_cropped/pigmeann_grid.rds"
+  
+  pig_grid <- readRDS(path_pig_grid)
+  sv <- readRDS(path_sv)
+  
+  
+  
+  
+  ####################################################################### profil moyen par grille
+  # --- Résolution de la grille ---
+  lon_res <- diff(pig_grid$lon)  # pas en longitude (°)
+  lat_res <- diff(pig_grid$lat)  # pas en latitude (°)
+  
+  # vérifier si la grille est régulière
+  summary(lon_res)
+  summary(lat_res)
+  
+  # pas moyen (au cas où il y a de petites variations d'arrondi)
+  dlon <- mean(lon_res)
+  dlat <- mean(lat_res)
+  
+  cat("Résolution grille : ", round(dlon, 4), "° lon x ", round(dlat, 4), "° lat\n")
+  
+  
+  # -------------- profil moyen par grid pigmeann et par année
+  sv_date <- as.Date(sv$time, origin = "1950-01-01")  # à adapter si origine différente
+  table(sv_date)
+  sv_date <- format(sv_date, "%Y-%m-%d")
+  sv_day <- sv$day
+  
+  # Hidtogramme de nombre de profils par jour
+  for (idx in c(1, 2, 3)){
+    if (idx != 2) {
+      daily_counts <- as.data.frame(table(sv_date[sv_day==idx]))
+    }
+    else {
+      daily_counts <- as.data.frame(table(sv_date))
+    }
     
-  colnames(daily_counts) <- c("date", "n_profils")
+    colnames(daily_counts) <- c("date", "n_profils")
+    
+    # Renommer les colonnes
+    colnames(daily_counts) <- c("date", "n_profils")
+    
+    days <- c("night", "day and night", "day")
+    
+    # Histogramme
+    mean_profils <- mean(
+      daily_counts$n_profils,
+      na.rm = TRUE
+    )
+    
+    # Histogramme
+    p <- ggplot(
+      daily_counts,
+      aes(x = date, y = n_profils)
+    ) +
+      geom_col() +
+      geom_hline(
+        yintercept = mean_profils,
+        linetype = "dashed",
+        color = "red",
+        linewidth = 0.5
+      ) +
+      labs(
+        x = "Date",
+        y = "ESU number",
+        title = "ESU number per day",
+        subtitle = paste(
+          "Transect datas from 2018, 2021, 2023 OC at",
+          freq,
+          "kHz,",
+          days[idx],
+          "\nMean ESU per day =",
+          round(mean_profils, 1)
+        )
+      ) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(
+          angle = 90,
+          vjust = 0.5
+        )
+      )
+    
+    print(p)
+  }
   
-  # Renommer les colonnes
-  colnames(daily_counts) <- c("date", "n_profils")
   
-  days <- c("night", "day and night", "day")
+  # --- 1. Attribution à la cellule de grille (comme avant) ---
+  assign_cell <- function(coord, grid_vals) {
+    grid_sorted <- sort(unique(grid_vals))
+    idx <- findInterval(coord, grid_sorted, all.inside = TRUE)
+    d_before <- abs(coord - grid_sorted[idx])
+    d_after  <- abs(coord - grid_sorted[pmin(idx + 1, length(grid_sorted))])
+    idx_final <- ifelse(d_after < d_before, idx + 1, idx)
+    grid_sorted[idx_final]
+  }
   
-  # Histogramme
-  mean_profils <- mean(
-    daily_counts$n_profils,
+  lon_cell <- assign_cell(sv$lon, pig_grid$lon)
+  lat_cell <- assign_cell(sv$lat, pig_grid$lat)
+  
+  # clé de groupement incluant maintenant l'année
+  cell_id_day <- paste(
+    lon_cell,
+    lat_cell,
+    sv_date,
+    sv$day,
+    sep = "|"
+  )
+  
+  # --- 2. Conversion dB -> linéaire ---
+  sv_linear <- 10^(sv$profiles / 10)
+  
+  # --- 3. Moyenne par cellule ET par année, robuste aux NA ---
+  sum_by_cell   <- rowsum(sv_linear, group = cell_id_day, na.rm = TRUE)
+  count_by_cell <- rowsum(
+    matrix(as.numeric(!is.na(sv_linear)), 
+           nrow = nrow(sv_linear), 
+           ncol = ncol(sv_linear)),
+    group = cell_id_day
+  )
+  
+  # Moyenne linéaire
+  mean_profiles_linear <- sum_by_cell / count_by_cell
+  mean_profiles_linear[count_by_cell == 0] <- NA
+  
+  # --- 4. Reconversion en dB ---
+  mean_profiles_db <- 10 * log10(mean_profiles_linear)
+  
+  # --- 5. récupérer pour chaque profil moyen : lon,lat et time moyen + nb de profils qui ont servi à calculer la moyenne.
+  group_levels <- unique(cell_id_day)
+  
+  group_info <- do.call(rbind, strsplit(group_levels, "\\|"))
+  colnames(group_info) <- c(
+    "lon",
+    "lat",
+    "date",
+    "day"
+  )
+  
+  head(group_info)
+  
+  # Temps moyen
+  mean_time_by_cell <- tapply(
+    as.numeric(sv$time),
+    cell_id_day,
+    mean,
     na.rm = TRUE
   )
   
-  # Histogramme
-  p <- ggplot(
-    daily_counts,
-    aes(x = date, y = n_profils)
-  ) +
-    geom_col() +
-    geom_hline(
-      yintercept = mean_profils,
-      linetype = "dashed",
-      color = "red",
-      linewidth = 0.5
-    ) +
-    labs(
-      x = "Date",
-      y = "ESU number",
-      title = "ESU number per day",
-      subtitle = paste(
-        "Transect datas from 2018, 2021, 2023 OC at",
-        freq,
-        "kHz,",
-        days[idx],
-        "\nMean ESU per day =",
-        round(mean_profils, 1)
-      )
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(
-        angle = 90,
-        vjust = 0.5
-      )
-    )
-  
-  print(p)
-}
-
-
-# --- 1. Attribution à la cellule de grille (comme avant) ---
-assign_cell <- function(coord, grid_vals) {
-  grid_sorted <- sort(unique(grid_vals))
-  idx <- findInterval(coord, grid_sorted, all.inside = TRUE)
-  d_before <- abs(coord - grid_sorted[idx])
-  d_after  <- abs(coord - grid_sorted[pmin(idx + 1, length(grid_sorted))])
-  idx_final <- ifelse(d_after < d_before, idx + 1, idx)
-  grid_sorted[idx_final]
-}
-
-lon_cell <- assign_cell(sv$lon, pig_grid$lon)
-lat_cell <- assign_cell(sv$lat, pig_grid$lat)
-
-# clé de groupement incluant maintenant l'année
-cell_id_day <- paste(
-  lon_cell,
-  lat_cell,
-  sv_date,
-  sv$day,
-  sep = "|"
-)
-
-# --- 2. Conversion dB -> linéaire ---
-sv_linear <- 10^(sv$profiles / 10)
-
-# --- 3. Moyenne par cellule ET par année, robuste aux NA ---
-sum_by_cell   <- rowsum(sv_linear, group = cell_id_day, na.rm = TRUE)
-count_by_cell <- rowsum(
-  matrix(as.numeric(!is.na(sv_linear)), 
-         nrow = nrow(sv_linear), 
-         ncol = ncol(sv_linear)),
-  group = cell_id_day
-)
-
-# Moyenne linéaire
-mean_profiles_linear <- sum_by_cell / count_by_cell
-mean_profiles_linear[count_by_cell == 0] <- NA
-
-# --- 4. Reconversion en dB ---
-mean_profiles_db <- 10 * log10(mean_profiles_linear)
-
-# --- 5. récupérer pour chaque profil moyen : lon,lat et time moyen + nb de profils qui ont servi à calculer la moyenne.
-group_levels <- unique(cell_id_day)
-
-group_info <- do.call(rbind, strsplit(group_levels, "\\|"))
-colnames(group_info) <- c(
-  "lon",
-  "lat",
-  "date",
-  "day"
-)
-
-head(group_info)
-
-# Temps moyen
-mean_time_by_cell <- tapply(
-  sv$time,
-  cell_id_day,
-  mean,
-  na.rm = TRUE
-)
-
-
-# Objet final
-mean_pig_grid_by_day <- list(
-  profiles  = mean_profiles_db,
-  lon       = as.numeric(group_info[, 1]),
-  lat       = as.numeric(group_info[, 2]),
-  date      = as.Date(group_info[, 3]),
-  day = as.numeric(group_info[, "day"]),
-  time      =  as.POSIXct(
-    mean_time_by_cell[group_levels] * 86400,
-    origin = "1950-01-01",
+  # Reconversion en POSIXct
+  mean_time_by_cell <- as.POSIXct(
+    mean_time_by_cell,
+    origin = "1970-01-01",
     tz = "UTC"
-  ),
-  depth     = sv$depth,
-  n_profils = as.vector(table(cell_id_day))
-)
-
-str(mean_pig_grid_by_day, max.level = 1) # verif du dataset final
-
-# --- Sauvegarde ---
-
-# fichier global avec toutes les années (time moyen conservé)
-saveRDS(
-  mean_pig_grid_by_day,
-  paste0("F:/data_elise/sv_cropped/sv_cropped_all_years/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds")
-)
-
-# --- Histogramme du nombre d'ESU post moyennage 
-mean_pig_grid_df <- data.frame(
-  lon       = mean_pig_grid_by_day$lon,
-  lat       = mean_pig_grid_by_day$lat,
-  date      = mean_pig_grid_by_day$date,
-  day       = mean_pig_grid_by_day$day,
-  time      = mean_pig_grid_by_day$time,
-  n_profils = mean_pig_grid_by_day$n_profils
-)
-
-# Ajouter les profondeurs comme colonnes
-profiles_df <- as.data.frame(mean_pig_grid_by_day$profiles)
-
-colnames(profiles_df) <- paste0(
-  "depth_",
-  mean_pig_grid_by_day$depth
-)
-
-mean_pig_grid_df <- cbind(
-  mean_pig_grid_df,
-  profiles_df
-)
-
-str(mean_pig_grid_df)
-
-for(idx in c(1, 2, 3)){
-  if (idx != 2){
-    df_day <- mean_pig_grid_df[mean_pig_grid_df$day == idx,]
-  }
-  else{
-    df_day <- mean_pig_grid_df
-  }
-  
-  depth_cols <- grep(
-    "^depth_",
-    names(df_day),
-    value = TRUE
   )
   
-  df_day$valid_profile <- apply(
-    df_day[, depth_cols],
-    1,
-    function(x) any(!is.na(x))
+  print(mean_time_by_cell)
+  
+  # Objet final
+  mean_pig_grid_by_day <- list(
+    profiles  = mean_profiles_db,
+    lon       = as.numeric(group_info[, 1]),
+    lat       = as.numeric(group_info[, 2]),
+    date      = as.Date(group_info[, 3]),
+    day = as.numeric(group_info[, "day"]),
+    time      =  mean_time_by_cell,
+    depth     = sv$depth,
+    n_profils = as.vector(table(cell_id_day))
   )
   
-  daily_counts <- as.data.frame(
-    table(
-      df_day$date[df_day$valid_profile]
+  str(mean_pig_grid_by_day, max.level = 1) # verif du dataset final
+  
+  # --- Sauvegarde ---
+  
+  # fichier global avec toutes les années (time moyen conservé)
+  saveRDS(
+    mean_pig_grid_by_day,
+    paste0("F:/data_elise/sv_cropped/sv_cropped_all_years/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds")
+  )
+  
+  # --- Histogramme du nombre d'ESU post moyennage
+  mean_pig_grid_df <- data.frame(
+    lon       = mean_pig_grid_by_day$lon,
+    lat       = mean_pig_grid_by_day$lat,
+    date      = mean_pig_grid_by_day$date,
+    day       = mean_pig_grid_by_day$day,
+    time      = mean_pig_grid_by_day$time,
+    n_profils = mean_pig_grid_by_day$n_profils
+  )
+  
+  # Ajouter les profondeurs comme colonnes
+  profiles_df <- as.data.frame(mean_pig_grid_by_day$profiles)
+  
+  colnames(profiles_df) <- paste0(
+    "depth_",
+    mean_pig_grid_by_day$depth
+  )
+  
+  mean_pig_grid_df <- cbind(
+    mean_pig_grid_df,
+    profiles_df
+  )
+  
+  str(mean_pig_grid_df)
+  
+  for(idx in c(1, 2, 3)){
+    if (idx != 2){
+      df_day <- mean_pig_grid_df[mean_pig_grid_df$day == idx,]
+    }
+    else{
+      df_day <- mean_pig_grid_df
+    }
+    
+    depth_cols <- grep(
+      "^depth_",
+      names(df_day),
+      value = TRUE
     )
-  )
-  
-  colnames(daily_counts) <- c(
-    "date",
-    "n_ESU"
-  )
-  
-  mean_ESU <- mean(daily_counts$n_ESU, na.rm = TRUE)
-  
-  p <- ggplot(daily_counts, aes(x = date, y = n_ESU)) +
-    geom_col() +
-    geom_hline(
-      yintercept = mean_ESU,
-      linetype = "dashed",
-      color = "red",
-      linewidth = 0.5
-    ) +
-    labs(
-      x = "Date",
-      y = "ESU number",
-      title = "ESU number per day after computation of mean (by pigment grid, date and diurnal period)",
-      subtitle = paste(
-        "Transect datas from 2018, 2021, 2023 OC at",
-        freq,
-        "kHz,",
-        days[idx],
-        "\nMean ESU per day =",
-        round(mean_ESU, 1)
-      )
-    ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(
-        angle = 90,
-        vjust = 0.5
+    
+    df_day$valid_profile <- apply(
+      df_day[, depth_cols],
+      1,
+      function(x) any(!is.na(x))
+    )
+    
+    daily_counts <- as.data.frame(
+      table(
+        df_day$date[df_day$valid_profile]
       )
     )
-  
-  print(p)
+    
+    colnames(daily_counts) <- c(
+      "date",
+      "n_ESU"
+    )
+    
+    mean_ESU <- mean(daily_counts$n_ESU, na.rm = TRUE)
+    
+    p <- ggplot(daily_counts, aes(x = date, y = n_ESU)) +
+      geom_col() +
+      geom_hline(
+        yintercept = mean_ESU,
+        linetype = "dashed",
+        color = "red",
+        linewidth = 0.5
+      ) +
+      labs(
+        x = "Date",
+        y = "ESU number",
+        title = "ESU number per day after computation of mean (by pigment grid, date and diurnal period)",
+        subtitle = paste(
+          "Transect datas from 2018, 2021, 2023 OC at",
+          freq,
+          "kHz,",
+          days[idx],
+          "\nMean ESU per day =",
+          round(mean_ESU, 1)
+        )
+      ) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(
+          angle = 90,
+          vjust = 0.5
+        )
+      )
+    
+    print(p)
+  }
 }
+
 
 
 
