@@ -15,19 +15,7 @@ library(tidyr)
 library(patchwork)
 
 # Global variables 
-nasc_path <- "F:/data_elise/NASC/120kHz/NASC_mean_pig_grid_by_year_2018_2021_2023_day_120kHz.rds"
 folder_path <- "F:/data_elise/ftle/ftle_raw"
-p <- 3
-
-# ---------------------------------------------------------
-# NASC
-# ---------------------------------------------------------
-nasc_ds <- readRDS(nasc_path)
-print(head(nasc_ds$time))
-dates_all_str <- format(as.Date(nasc_ds$time), "%Y-%m-%d")
-dates_unique_str <- (unique(dates_all_str))
-
-print(length(dates_unique_str))
 
 # ---------------------------------------------------------
 # FICHIERS FTLE
@@ -51,170 +39,123 @@ files <- files[
 print(length(files)) # 68 sur 76 pour 120kHz
 print(basename(files))
 
-
-# ---------------------------------------------------------
-# EXTRACTION FTLE
-# ---------------------------------------------------------
-
-ftle <- data.frame(
-  time = nasc_ds$time,
-  lat_sv = nasc_ds$lat,
-  lon_sv = nasc_ds$lon,
-  lat_ftle = NA_real_,
-  lon_ftle = NA_real_, 
-  ftle = NA_real_
-)
-
-
-for(date_i in dates_unique_str){
+for (freq in c(18, 38, 70, 120, 200)){
+  # ---------------------------------------------------------
+  # NASC
+  # ---------------------------------------------------------
+  # nasc_path <- paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds") # mean NASC per pig grid
+  nasc_path <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds") # NASC per ESU
+  nasc_ds <- readRDS(nasc_path)
+  print(head(nasc_ds$time))
+  dates_all_str <- format(as.Date(nasc_ds$time), "%Y-%m-%d")
+  dates_unique_str <- (unique(dates_all_str))
   
-  print(date_i)
+  print(length(dates_unique_str))
   
-  # =====================================================
-  # INDICES ESU À CETTE DATE
-  # =====================================================
+  # ---------------------------------------------------------
+  # EXTRACTION FTLE
+  # ---------------------------------------------------------
   
-  ind <- which(dates_all_str == date_i)
-  
-  if(length(ind) == 0)
-    next
-  
-  
-  # =====================================================
-  # OUVRIR LE FICHIER DU JOUR
-  # =====================================================
-  
-  pattern <- paste0("map_", date_i, ".*\\.nc$")
-  
-  filename <- list.files(
-    folder_path,
-    pattern = pattern,
-    full.names = TRUE
-  )
-  
-  if(length(filename) == 0)
-    next
-  
-  ds <- nc_open(filename[1])
-  
-  
-  # =====================================================
-  # COORDONNÉES FTLE
-  # =====================================================
-  
-  lat_ftle <- ds$dim$lat$vals
-  lon_ftle <- ds$dim$lon$vals
-  
-  nlat <- length(lat_ftle)
-  nlon <- length(lon_ftle)
-  
-  
-  # =====================================================
-  # TROUVER LES PIXELS FTLE LES PLUS PROCHES
-  # =====================================================
-  
-  idx_lon <- sapply(
-    nasc_ds$lon[ind],
-    function(x) which.min(abs(lon_ftle - x))
-  )
-  
-  idx_lat <- sapply(
-    nasc_ds$lat[ind],
-    function(x) which.min(abs(lat_ftle - x))
+  ftle <- data.frame(
+    time = nasc_ds$time,
+    lat_sv = nasc_ds$lat,
+    lon_sv = nasc_ds$lon,
+    lat_ftle = NA_real_,
+    lon_ftle = NA_real_, 
+    ftle = NA_real_
   )
   
   
-  # =====================================================
-  # ENREGISTRER LES COORDONNÉES FTLE ASSOCIÉES
-  # =====================================================
-  
-  ftle$lat_ftle[ind] <- lat_ftle[idx_lat]
-  ftle$lon_ftle[ind] <- lon_ftle[idx_lon]
-  
-  
-  # =====================================================
-  # FENÊTRE LAT/LON À LIRE
-  # =====================================================
-  
-  r <- (p - 1) / 2
-  
-  lon_start <- max(1, min(idx_lon) - r)
-  lon_end   <- min(nlon, max(idx_lon) + r)
-  
-  lat_start <- max(1, min(idx_lat) - r)
-  lat_end   <- min(nlat, max(idx_lat) + r)
-  
-  lon_count <- lon_end - lon_start + 1
-  lat_count <- lat_end - lat_start + 1
-  
-  
-  # =====================================================
-  # LIRE UNIQUEMENT LA FENÊTRE FTLE
-  # =====================================================
-  
-  ftle_data <- ncvar_get(
-    ds,
-    "FTLE",
-    start = c(lon_start, lat_start, 1),
-    count = c(lon_count, lat_count, 1)
-  )
-  
-  
-  # =====================================================
-  # EXTRACTION AU VOISINAGE DES POINTS
-  # =====================================================
-  
-  for(j in seq_along(ind)){
+  for(date_i in dates_unique_str){
     
-    i <- ind[j]
+    print(date_i)
     
-    # coordonnées de la station dans la fenêtre lue
-    ilon <- idx_lon[j] - lon_start + 1
-    ilat <- idx_lat[j] - lat_start + 1
+    # =====================================================
+    # INDICES ESU À CETTE DATE
+    # =====================================================
     
-    r <- (p - 1) / 2
+    ind <- which(dates_all_str == date_i)
     
-    lon_win <- max(
-      1,
-      ilon - r
-    ):min(
-      nrow(ftle_data),
-      ilon + r
-    )
+    if(length(ind) == 0) next
     
-    lat_win <- max(
-      1,
-      ilat - r
-    ):min(
-      ncol(ftle_data),
-      ilat + r
-    )
     
-    ftle$ftle[i] <- mean(
-      ftle_data[lon_win, lat_win],
-      na.rm = TRUE
-    )
+    # =====================================================
+    # OUVRIR LE FICHIER DU JOUR
+    # =====================================================
+    
+    pattern <- paste0("map_", date_i, ".*\\.nc$")
+    
+    filename <- list.files(folder_path, pattern = pattern, full.names = TRUE)
+    
+    if(length(filename) == 0){
+      warning(paste("Aucun fichier FTLE trouvé pour", date_i))
+      next
+    }
+    
+    ds <- nc_open(filename[1])
+    
+    
+    # =====================================================
+    # COORDONNÉES FTLE
+    # =====================================================
+    
+    lat_ftle <- ds$dim$lat$vals
+    lon_ftle <- ds$dim$lon$vals
+    
+    # =====================================================
+    # TROUVER LES PIXELS FTLE LES PLUS PROCHES
+    # =====================================================
+    
+    idx_lon <- sapply(nasc_ds$lon[ind], function(x) which.min(abs(lon_ftle - x)))
+    idx_lat <- sapply(nasc_ds$lat[ind], function(x) which.min(abs(lat_ftle - x)))
+    
+    
+    # =====================================================
+    # ENREGISTRER LES COORDONNÉES FTLE ASSOCIÉES
+    # =====================================================
+    
+    ftle$lat_ftle[ind] <- lat_ftle[idx_lat]
+    ftle$lon_ftle[ind] <- lon_ftle[idx_lon]
+    
+    
+    # =====================================================
+    # LIRE LES FTLE
+    # =====================================================
+    
+    ftle_data <- ncvar_get(ds, "FTLE")
+    
+    
+    # =====================================================
+    # EXTRACTION AU VOISINAGE DES POINTS
+    # =====================================================
+    
+    for(j in seq_along(ind)){
+      
+      i <- ind[j]
+      
+      ftle$ftle[i] <- ftle_data[idx_lon[j], idx_lat[j]]
+    }
+    
+    
+    # =====================================================
+    # FERMER / LIBÉRER
+    # =====================================================
+    
+    nc_close(ds)
+    
+    rm(ds, ftle_data, idx_lon, idx_lat, lat_ftle, lon_ftle)
+    gc()
   }
   
+  dlat_ftle <- nasc_ds$lat - ftle$lat_ftle
+  dlon_ftle <- nasc_ds$lon - ftle$lon_ftle
+  summary(dlat_ftle)
+  summary(dlon_ftle) # OK
+  str(ftle)
   
-  # =====================================================
-  # FERMER / LIBÉRER
-  # =====================================================
-  
-  nc_close(ds)
-  
-  rm(ds, ftle_data)
-  gc()
-}
-
-dlat_ftle <- nasc_ds$lat - ftle$lat_ftle
-dlon_ftle <- nasc_ds$lon - ftle$lon_ftle
-summary(dlat_ftle)
-summary(dlon_ftle) # OK
-str(ftle)
-
-saveRDS(
-  ftle,
-  file = paste0("F:/data_elise/ftle/ftle_colocated_transect/120kHz/ftle_9_1d__colocated_with_NASC_transect_2018_2021_2023_120kHz_day.rds"
+  saveRDS(
+    ftle,
+    file = paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_mean_grid_2018_2021_2023_", freq, "kHz.rds"
+    )
   )
-)
+}
