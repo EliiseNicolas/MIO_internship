@@ -28,16 +28,6 @@ files <- list.files(
 )
 print(files)
 
-# On garde uniquement les fichiers correspondant aux dates
-files <- files[
-  grepl(
-    paste(dates_unique_str, collapse = "|"),
-    basename(files)
-  )
-]
-
-print(length(files)) # 68 sur 76 pour 120kHz
-print(basename(files))
 
 for (freq in c(18, 38, 70, 120, 200)){
   # ---------------------------------------------------------
@@ -155,7 +145,7 @@ for (freq in c(18, 38, 70, 120, 200)){
   
   saveRDS(
     ftle,
-    file = paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_mean_grid_2018_2021_2023_", freq, "kHz.rds"
+    file = paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2023_", freq, "kHz.rds"
     )
   )
 }
