@@ -12,16 +12,16 @@ rm(list = ls())
 freqs <- c(18, 38, 70, 120, 200)
 for(freq in freqs){
   # ds NASC mean pig grid
-  # path_pig <- paste0("F:/data_elise/pigmeann/pigs_colocated_NASC_mean_pig_grid/NASC_mean_grid_pig_conc_ratio_9_1d_2018_2021_2023_", freq, "kHz.rds")
-  # path_fod <- paste0("F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2023_transect/fod_colocated_NASC_mean_pig_grid/NASC_mean_pig_FOD_with_transitions_cluster_match_2018_2021_2023_", freq, "kHz.rds")
-  # path_nasc <- paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds")
-  # path_ftle <- paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_mean_grid_pig/ftle_colocated_with_NASC_mean_grid_2018_2021_2023_", freq, "kHz.rds")
+  path_pig <- paste0("F:/data_elise/pigmeann/pigs_colocated_NASC_mean_pig_grid/NASC_mean_grid_pig_conc_ratio_9_1d_2018_2021_2023_", freq, "kHz.rds")
+  path_fod <- paste0("F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2023_transect/fod_colocated_NASC_mean_pig_grid/NASC_mean_pig_FOD_with_transitions_cluster_match_2018_2021_2023_", freq, "kHz.rds")
+  path_nasc <- paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds")
+  path_ftle <- paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_mean_grid_pig/ftle_colocated_with_NASC_mean_grid_2018_2021_2023_", freq, "kHz.rds")
   
   # ds NASC per ESU
-  path_pig <- paste0("F:/data_elise/pigmeann/pigs_colocated_NASC_per_esu/NASC_per_esu_pig_conc_ratio_9_1d_2018_2021_2023_", freq, "kHz.rds")
-  path_fod <- paste0("F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2023_transect/fod_colocated_NASC_per_esu/NASC_per_esu_FOD_with_transitions_cluster_match_2018_2021_2023_", freq, "kHz.rds")
-  path_nasc <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds")
-  path_ftle <- paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2023_", freq, "kHz.rds")
+  # path_pig <- paste0("F:/data_elise/pigmeann/pigs_colocated_NASC_per_esu/NASC_per_esu_pig_conc_ratio_9_1d_2018_2021_2023_", freq, "kHz.rds")
+  # path_fod <- paste0("F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2023_transect/fod_colocated_NASC_per_esu/NASC_per_esu_FOD_with_transitions_cluster_match_2018_2021_2023_", freq, "kHz.rds")
+  # path_nasc <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds")
+  # path_ftle <- paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2023_", freq, "kHz.rds")
   print(path_nasc)
   
   pig <- readRDS(path_pig)
@@ -40,6 +40,7 @@ for(freq in freqs){
     time_nasc = nasc$time,
     lat_nasc = nasc$lat,
     lon_nasc = nasc$lon,
+    day = nasc$day,
     nasc = nasc$NASC
   )
   
@@ -167,6 +168,7 @@ for(freq in freqs){
   summary(dlon_ftle) # OK
   
   # ------------ SAVE
-  saveRDS(regression_ds, paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds"))
+  # saveRDS(regression_ds, paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds"))
+  saveRDS(regression_ds, paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_mean_pig_grid_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds"))
 }
 

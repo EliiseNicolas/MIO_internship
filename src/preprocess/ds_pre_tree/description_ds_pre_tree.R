@@ -22,33 +22,28 @@ library(patchwork)
 # Path and dataset
 # ------------------------------------------------------------
 
-path <- "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_pig_ftle_fod_2018_2021_2023_transect_120kHz_day_mask9.rds"
+freq <- 120
+path <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_mean_pig_grid_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds")
 
-ds <- readRDS(path)
+datas <- readRDS(path)
 
 print(nrow(ds))
 str(ds)
 
+# filter datas day/night
+diurnal_period <- 3 # 3 : day, 1: night
+ds <- datas[datas$day == diurnal_period,]
 
 # ============================================================
 # MISSING VALUES
 # ============================================================
-
 # Variables utilisées pour le modèle
-model_vars <- c(
-  "nasc",
-  "fod",
-  "Chla",
-  "Per",
-  "But",
-  "Fuco",
-  "Hex",
-  "Allo",
-  "Zea",
-  "Chlb",
-  "DvChla",
-  "ftle"
+print(names(datas))
+model_vars <- setdiff(
+  names(datas),
+  c("time_nasc", "lat_nasc", "lon_nasc", "day" ,"lat_fod", "lon_fod", "lat_pig", "lon_pig", "Chla", "Per", "But", "Fuco","Hex","Allo", "Zea","Chlb","DvChla", "lat_ftle", "lon_ftle")
 )
+print(vars)
 
 # Nombre de valeurs manquantes
 nb_missing <- sapply(
@@ -157,7 +152,29 @@ pig_vars <- c(
   "DvChla"
 )
 
+pig_vars <- c(
+  "Chla_Chla",
+  "Per_Chla",
+  "But_Chla",
+  "Fuco_Chla",
+  "Hex_Chla",
+  "Allo_Chla",
+  "Zea_Chla",
+  "Chlb_Chla",
+  "DvChla_Chla"
+)
 
+pig_vars <- c(
+  "Chla_total",
+  "Per_total",
+  "But_total",
+  "Fuco_total",
+  "Hex_total",
+  "Allo_total",
+  "Zea_total",
+  "Chlb_total",
+  "DvChla_total"
+)
 # ------------------------------------------------------------
 # Long format
 # ------------------------------------------------------------
@@ -287,9 +304,12 @@ cat(
 # ============================================================
 # NASC
 # ============================================================
+q <- quantile(ds$nasc, probs = c(0.05, 0.95), na.rm = TRUE)
+ds_filtered <- ds |>
+  dplyr::filter(nasc >= q[1], nasc <= q[2])
 
 ggplot(
-  ds,
+  ds_filtered,
   aes(
     x = nasc,
     y = after_stat(count / sum(count) * 100)
@@ -298,7 +318,9 @@ ggplot(
   geom_histogram(
     bins = 200
   ) +
-  scale_x_log10() +
+  scale_x_log10(
+    labels = scales::label_number()
+  ) +
   theme_bw() +
   labs(
     x = "NASC (log10 scale)",
