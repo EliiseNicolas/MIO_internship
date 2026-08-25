@@ -27,11 +27,12 @@ path <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_
 
 datas <- readRDS(path)
 
-print(nrow(ds))
-str(ds)
+print(nrow(datas))
+str(datas)
 
 # filter datas day/night
 diurnal_period <- 3 # 3 : day, 1: night
+dp <- "day"
 ds <- datas[datas$day == diurnal_period,]
 
 # ============================================================
@@ -109,7 +110,7 @@ ggplot(
   labs(
     x = "FOD cluster",
     y = "Percentage (%)",
-    title = "FOD distribution - 2021, 2022, 2023"
+    title = paste("FOD distribution - 2018, 2021, 2023 - Transect -", dp, "-", freq, "kHz")
   ) +
   theme_bw()
 
@@ -132,7 +133,7 @@ ggplot(
   labs(
     x = "FTLE",
     y = "Percentage (%)",
-    title = "FTLE distribution - 2021, 2022, 2023"
+    title = paste("FTLE distribution - 2018, 2021, 2023 - Transect -", dp, "-", freq, "kHz")
   )
 
 
@@ -277,7 +278,7 @@ p1 + p2 +
     widths = c(3, 1)
   ) +
   plot_annotation(
-    title = "Distribution of pigment variables - 2021, 2022, 2023",
+    title = paste("Distribution of pigment variables - 2018, 2021, 2023 - Transect -", dp, "-", freq, "kHz"),
     subtitle = "Missing values are excluded from histograms"
   )
 
@@ -304,10 +305,13 @@ cat(
 # ============================================================
 # NASC
 # ============================================================
+print(range(ds$nasc))
 q <- quantile(ds$nasc, probs = c(0.05, 0.95), na.rm = TRUE)
 ds_filtered <- ds |>
   dplyr::filter(nasc >= q[1], nasc <= q[2])
 
+# ds_filtered$nasc <- log10(ds_filtered$nasc)
+print(range(ds_filtered$nasc))
 ggplot(
   ds_filtered,
   aes(
@@ -318,12 +322,12 @@ ggplot(
   geom_histogram(
     bins = 200
   ) +
-  scale_x_log10(
-    labels = scales::label_number()
-  ) +
+  # scale_x_log10(
+  #   labels = scales::label_number()
+  # ) +
   theme_bw() +
   labs(
-    x = "NASC (log10 scale)",
+    x = "NASC",
     y = "Percentage (%)",
-    title = "NASC distribution - 2021, 2022, 2023"
+    title = paste("NASC distribution - 2018, 2021, 2023 - Transect -", dp, "-", freq, "kHz")
   )
