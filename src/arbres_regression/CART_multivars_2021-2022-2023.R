@@ -4,11 +4,12 @@ library(rpart.plot)
 library(ggplot2)
 library(randomForest)
 library(mgcv)
+library(xgboost)
 
 rm(list = ls())
 
 # -------------- Global variables
-freq <- 120
+freq <- 18
 
 path_datas <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_mean_pig_grid_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds")
 datas <- readRDS(path_datas)
@@ -18,11 +19,22 @@ str(datas)
 
 diurnal_period <- 3 # 3 : day, 1: night
 dp <- "day"
-split <- "RS (80/20)" # or "LOYO" #
+split <- "LOYO"# "RS (80/20)" #"LOYO" # # or  #
 data_leakage_spatio_temp <- TRUE
-dist_thr <- 0.25
-pigment_type <-"total_ratio" # # or  or "total_ratio" "conc"  "chla_ratio" # 
-n_trees <- 100
+dist_thr <- 0.5
+pigment_type <- "chla_ratio" # "total_ratio" or  #"conc" 
+n_trees <- 300
+log <- TRUE
+FOD_0 <- FALSE
+model_type <- "XGBOOST"
+
+# Cross-validation
+n_folds <- 5
+n_repeats <- 10
+set.seed(123)
+
+# sensibility analysis
+thresholds <- c(0.25, 0.5, 0.75, 1, 1.25, 1.5)
 
 ####### 1 - filter datas day/night
 
@@ -31,72 +43,118 @@ str(datas)
 
 ####### 2 - filtrer NASC - remove extreme values
 
+print(range(datas$nasc))
 q <- quantile(datas$nasc, probs = c(0.05, 0.95), na.rm = TRUE)
 datas <- datas |>
   dplyr::filter(nasc >= q[1], nasc <= q[2])
+print(range(datas$nasc))
 
-####### 3 - plot distribution du NASC
+######## 3 - mettre NASC en log
 
-ggplot(
-  datas,
-  aes(
-    x = nasc,
-    y = after_stat(count / sum(count) * 100)
-  )
-) +
-  geom_histogram(
-    bins = 200
+if (log){
+  datas$nasc <- log10(datas$nasc)
+}
+print(range(datas$nasc))
+
+####### 4 - plot distribution du NASC
+if (log) {
+  nasc_scale <- "log10(NASC)"
+  x_label <- "log10(NASC)"
+  
+  p <- ggplot(
+    datas,
+    aes(
+      x = log10(nasc),
+      y = after_stat(count / sum(count) * 100)
+    )
   ) +
-  scale_x_log10(
-    labels = scales::label_number()
+    geom_histogram(bins = 200)
+  
+} else {
+  nasc_scale <- "NASC"
+  x_label <- "NASC"
+  
+  p <- ggplot(
+    datas,
+    aes(
+      x = nasc,
+      y = after_stat(count / sum(count) * 100)
+    )
   ) +
+    geom_histogram(bins = 200)
+}
+
+p +
   theme_bw() +
   labs(
-    x = "NASC (log10 scale)",
+    x = x_label,
     y = "Percentage (%)",
-    title = paste("NASC distribution - 2021, 2022, 2023 - ", dp, "-", freq, "kHz"),
-    subtitle="NASC without extreme values (0.05 - 0.95) "
+    title = paste(
+      nasc_scale,
+      "distribution - 2018, 2021, 2023 -",
+      dp, "-", freq, "kHz"
+    ),
+    subtitle = paste(
+      nasc_scale,
+      "without extreme values (0.05 - 0.95)"
+    )
   )
 
-####### 4 - Build regression dataset
+####### 5 - Keep FOD transition clusters or not 
+
+if (FOD_0){
+  fod_0 <- as.character(datas$fod)
+  fod_0[as.numeric(fod_0) > 6] <- "0"
+  datas$fod <- fod_0
+} 
+
+####### 6 - replace "NA" categories by NA
+
+datas$fod <- as.factor(datas$fod)
+datas$fod[datas$fod == "NA"] <- NA
+datas$fod <- droplevels(datas$fod)
+table(datas$fod, useNA = "ifany")
+
+####### 7 - Build regression dataset
+
 df <- data.frame(
   NASC = datas$nasc,
   year = format(datas$time_nasc, "%Y"),
   time = datas$time_nasc,
   fod = datas$fod,
-  total_pig = datas$total_pig,
   ftle = datas$ftle
 )
 
 if (pigment_type == "chla_ratio"){
   print("Chla")
-  vars_num <- c("per", "but", "fuco", "hex", "allo", "zea", "chlb", "total_pig", "ftle")
-  # chla = datas$Chla,
-  df$per = datas$Per_Chla
-  df$but = datas$But_Chla
-  df$fuco = datas$Fuco_Chla
-  df$hex = datas$Hex_Chla
-  df$allo = datas$Allo_Chla
-  df$zea = datas$Zea_Chla
-  df$chlb = datas$Chlb_Chla
+  vars_num <- c("NASC", "per_ratio_chla", "but_ratio_chla", "fuco_ratio_chla", "hex_ratio_chla", "allo_ratio_chla", "zea_ratio_chla", "chlb_ratio_chla", "total_chla", "ftle")
+  df$total_chla = datas$Chla
+  df$per_ratio_chla = datas$Per_Chla
+  df$but_ratio_chla = datas$But_Chla
+  df$fuco_ratio_chla = datas$Fuco_Chla
+  df$hex_ratio_chla = datas$Hex_Chla
+  df$allo_ratio_chla = datas$Allo_Chla
+  df$zea_ratio_chla = datas$Zea_Chla
+  df$chlb_ratio_chla = datas$Chlb_Chla
 }
 
 if (pigment_type == "total_ratio"){
-  vars_num <- c("chla", "per", "but", "fuco", "hex", "allo", "zea", "chlb", "total_pig", "ftle")
+  vars_num <- c("NASC","chla_ratio_total", "per_ratio_total", "but_ratio_total", "fuco_ratio_total", "hex_ratio_total", "allo_ratio_total", "zea_ratio_total", "chlb_ratio_total", "total_pig", "ftle")
   print("total")
-  df$chla = datas$Chla_total
-  df$per = datas$Per_total
-  df$but = datas$But_total
-  df$fuco = datas$Fuco_total
-  df$hex = datas$Hex_total
-  df$allo = datas$Allo_total
-  df$zea = datas$Zea_total
-  df$chlb = datas$Chlb_total
+  df$chla_ratio_total = datas$Chla_total
+  df$per_ratio_total = datas$Per_total
+  df$but_ratio_total = datas$But_total
+  df$fuco_ratio_total = datas$Fuco_total
+  df$hex_ratio_total = datas$Hex_total
+  df$allo_ratio_total = datas$Allo_total
+  df$zea_ratio_total = datas$Zea_total
+  df$chlb_ratio_total = datas$Chlb_total
+  df$total_pig = datas$total_pig
 }
 
 if (pigment_type == "conc"){
   print("conc")
-  vars_num <- c("chla", "per", "but", "fuco", "hex", "allo", "zea", "chlb", "total_pig", "ftle")
+  vars_num <- c("NASC","chla", "per", "but", "fuco", "hex", "allo", "zea", "chlb", "total_pig", "ftle")
   df$chla = datas$Chla
   df$per = datas$Per
   df$but = datas$But
@@ -105,11 +163,13 @@ if (pigment_type == "conc"){
   df$allo = datas$Allo
   df$zea = datas$Zea
   df$chlb = datas$Chlb
+  df$total_pig = datas$total_pig
 }
 
 str(df)
 
-####### 5 - Diagnostique du nombre de données
+####### 8 - Diagnostique du nombre de données
+
 print(c("Nombre total de données avant filtrage : ", nrow(df)))
 colSums(is.na(df))
 # df <- df[!is.na(df$total_pig) & !is.na(df$fuco) & !is.na(df$zea) & !is.na(df$chla) & !is.na(df$per) & !is.na(df$allo)& !df$fod=="NA" &!is.na(df$ftle),]#  & df$fod=="NA"
@@ -124,136 +184,237 @@ print(c("Nombre total de données après filtrage : ", nrow(df)))
 
 colSums(is.na(df))
 
-####### 6 - Dataleakage spatio-temporel : retirer les lignes trop proches
-# Deux observations sont considérées comme proches si elles sont à moins d'une heure et qu'elles ont une distance > dist_thr
-if(data_leakage_spatio_temp){
-  # verif lignes dupliquées
-  print(c("Nombre de lignes dupliquées : ", sum(duplicated(df)))) 
+
+####### 9- Spatio-temporal leakage
+
+if (data_leakage_spatio_temp) {
   
-  # Standardisation
+  print(c("Lignes dupliquées :", sum(duplicated(df))))
+  
+  # Distance initiale
   df_scaled <- scale(df[, vars_num])
-
-  # Matrice de distances
   dist_mat <- as.matrix(dist(df_scaled))
-
-  # Matrice des différences temporelles en secondes
-  time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time),FUN = "-"))
-
-  # Garder les paires suffisemment proches et à moins d'1h
-  dist_mat[time_diff > 3600] <- NA
-  dist_mat[lower.tri(dist_mat, diag = TRUE)] <- NA
-  pairs <- which(!is.na(dist_mat), arr.ind = TRUE)
+  time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time), FUN = "-"))
   
-  if (nrow(pairs) == 0) {
-    message("Aucune paire d'observations à moins d'une heure.")
+  # Distribution des distances pour les observations < 1 h
+  dist_mat_plot <- dist_mat
+  dist_mat_plot[time_diff > 3600] <- NA
+  dist_mat_plot[lower.tri(dist_mat_plot, diag = TRUE)] <- NA
+  dist_close <- dist_mat_plot[time_diff <= 3600 & !is.na(dist_mat_plot)]
+  
+  print(quantile(dist_close, probs = c(0.01, 0.05, 0.10, 0.25, 0.50, 0.75), na.rm = TRUE))
+  
+  p <- ggplot(
+    data.frame(distance = dist_close), aes(x = distance)) + 
+    geom_histogram(bins = 100) + 
+    geom_vline(xintercept = dist_thr, linetype = "dashed") + 
+    theme_bw() + 
+    labs(x = "Distance", y = "Count", title = "Distribution of distances for observations < 1 h apart", subtitle = paste("Selected threshold:", dist_thr))
+  print(p)
+  
+  # Fonction de suppression itérative
+  
+  remove_close_pairs <- function(df_input, vars_num, dist_thr, time_thr = 3600) { 
+    df_work <- df_input; 
+    n_initial <- nrow(df_work); 
+    n_pairs_initial <- NA; 
+    n_iterations <- 0; 
+    removed_rows <- integer(0); 
+    pairs_history <- data.frame(iteration = integer(0), n_pairs = integer(0), removed = integer(0)); 
+    
+    repeat { 
+      if (nrow(df_work) < 2) break; 
+      
+      df_scaled <- scale(df_work[, vars_num]); 
+      dist_mat <- as.matrix(dist(df_scaled)); 
+      time_diff <- abs(outer(as.numeric(df_work$time), as.numeric(df_work$time), FUN = "-")); 
+      pairs <- which(time_diff <= time_thr & dist_mat < dist_thr, arr.ind = TRUE); 
+      pairs <- pairs[pairs[, 1] < pairs[, 2], , drop = FALSE]; 
+      n_pairs <- nrow(pairs); 
+      
+      if (is.na(n_pairs_initial)) n_pairs_initial <- n_pairs; 
+      if (n_pairs == 0) break; 
+      pair <- pairs[1, ]; 
+      remove_row <- pair[2]; 
+      original_row <- as.integer(rownames(df_work)[remove_row]);
+      removed_rows <- c(removed_rows, original_row); 
+      n_iterations <- n_iterations + 1; 
+      pairs_history <- rbind(pairs_history, data.frame(iteration = n_iterations, n_pairs = n_pairs, removed = original_row)); 
+      df_work <- df_work[-remove_row, , drop = FALSE] }; 
+      final_df <- df_work; 
+      list(
+        df = final_df, 
+        n_initial = n_initial, 
+        n_remaining = nrow(final_df), 
+        n_removed = n_initial - nrow(final_df), 
+        n_pairs_initial = ifelse(is.na(n_pairs_initial), 0, n_pairs_initial), 
+        n_pairs_final = 0, 
+        n_iterations = n_iterations, 
+        removed_rows = removed_rows, 
+        pairs_history = pairs_history
+      ) 
+    }
+  
+  
+  # ----------------------------------------------------------
+  # Sensitivity analysis
+  # ----------------------------------------------------------
+  
+  thresholds <- c(0.25, 0.5, 0.75, 1, 1.25, 1.5)
+  sensitivity_results <- data.frame()
+  sensitivity_data <- list()
+  
+  for (thr in thresholds) {
+    
+    cat("\n========================================\n")
+    cat("Threshold :", thr, "\n")
+    cat("========================================\n")
+    
+    leakage_thr <- remove_close_pairs(df, vars_num, thr)
+    df_thr <- leakage_thr$df
+    
+    cat("Paires initiales :", leakage_thr$n_pairs_initial, "\n")
+    cat("Observations supprimées :", leakage_thr$n_removed, "\n")
+    cat("Observations restantes :", leakage_thr$n_remaining, "\n")
+    cat("Nombre d'itérations :", leakage_thr$n_iterations, "\n")
+    
+    # LOYO
+    years_all_thr <- sort(unique(df_thr$year))
+    loyo_thr <- data.frame()
+    
+    for (yr in years_all_thr) {
+      
+      train_yr <- df_thr[df_thr$year != yr, ]
+      test_yr <- df_thr[df_thr$year == yr, ]
+      
+      train_yr$year <- NULL
+      test_yr$year <- NULL
+      train_yr$time <- NULL
+      test_yr$time <- NULL
+      
+      train_yr_scaled <- scale(train_yr[, vars_num])
+      center_yr <- attr(train_yr_scaled, "scaled:center")
+      scale_yr <- attr(train_yr_scaled, "scaled:scale")
+      test_yr_scaled <- scale(test_yr[, vars_num], center = center_yr, scale = scale_yr)
+      
+      ds_train_yr <- train_yr
+      ds_train_yr[, vars_num] <- train_yr_scaled
+      ds_test_yr <- test_yr
+      ds_test_yr[, vars_num] <- test_yr_scaled
+      
+      if (model_type == "CART") model_yr <- rpart(NASC ~ ., data = ds_train_yr, method = "anova")
+      if (model_type == "RF") model_yr <- randomForest(NASC ~ ., data = ds_train_yr, ntree = n_trees, importance = TRUE)
+      
+      obs_yr <- ds_test_yr$NASC
+      pred_yr <- predict(model_yr, newdata = ds_test_yr)
+      
+      RMSE_yr <- sqrt(mean((pred_yr - obs_yr)^2))
+      R2_yr <- 1 - sum((obs_yr - pred_yr)^2) / sum((obs_yr - mean(obs_yr))^2)
+      MAE_yr <- mean(abs(pred_yr - obs_yr))
+      
+      loyo_thr <- rbind(loyo_thr, data.frame(year = yr, RMSE = RMSE_yr, R2 = R2_yr, MAE = MAE_yr, n_train = nrow(train_yr), n_test = nrow(test_yr)))
+    }
+    
+    sensitivity_results <- rbind(sensitivity_results, data.frame(threshold = thr, n_pairs_initial = leakage_thr$n_pairs_initial, n_removed = leakage_thr$n_removed, percent_removed = 100 * leakage_thr$n_removed / leakage_thr$n_initial, n_remaining = leakage_thr$n_remaining, n_iterations = leakage_thr$n_iterations, RMSE = mean(loyo_thr$RMSE), RMSE_sd = sd(loyo_thr$RMSE), R2 = mean(loyo_thr$R2), R2_sd = sd(loyo_thr$R2), MAE = mean(loyo_thr$MAE), MAE_sd = sd(loyo_thr$MAE)))
+    
+    sensitivity_data[[as.character(thr)]] <- leakage_thr
+  }
+  
+  print(sensitivity_results)
+  
+  
+  # ----------------------------------------------------------
+  # Graphiques sensitivity
+  # ----------------------------------------------------------
+  
+  ggplot(sensitivity_results, aes(x = threshold, y = RMSE)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "RMSE", title = paste("Sensitivity analysis -", model_type), subtitle = paste("LOYO -", dp, "-", freq, "kHz"))
+  
+  ggplot(sensitivity_results, aes(x = threshold, y = R2)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "R²", title = paste("Sensitivity analysis -", model_type), subtitle = paste("LOYO -", dp, "-", freq, "kHz"))
+  
+  ggplot(sensitivity_results, aes(x = threshold, y = percent_removed)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "Observations removed (%)", title = "Sensitivity of data removal to distance threshold", subtitle = paste("Observations at less than 1 hour apart -", dp, "-", freq, "kHz"))
+  
+  
+  # ----------------------------------------------------------
+  # Nettoyage définitif avec dist_thr
+  # ----------------------------------------------------------
+  
+  leakage_final <- remove_close_pairs(df, vars_num, dist_thr)
+  df <- leakage_final$df
+  
+  cat("\n========================================\n")
+  cat("NETTOYAGE FINAL\n")
+  cat("========================================\n")
+  cat("Threshold :", dist_thr, "\n")
+  cat("Paires initiales :", leakage_final$n_pairs_initial, "\n")
+  cat("Observations initiales :", leakage_final$n_initial, "\n")
+  cat("Observations supprimées :", leakage_final$n_removed, "\n")
+  cat("Pourcentage supprimé :", round(100 * leakage_final$n_removed / leakage_final$n_initial, 2), "%\n")
+  cat("Observations restantes :", leakage_final$n_remaining, "\n")
+  cat("Nombre d'itérations :", leakage_final$n_iterations, "\n")
+  
+  # Vérification finale
+  df_scaled <- scale(df[, vars_num])
+  dist_mat <- as.matrix(dist(df_scaled))
+  time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time), FUN = "-"))
+  final_pairs <- which(time_diff <= 3600 & dist_mat < dist_thr, arr.ind = TRUE)
+  final_pairs <- final_pairs[final_pairs[, 1] < final_pairs[, 2], , drop = FALSE]
+  
+  cat("Paires restantes après nettoyage :", nrow(final_pairs), "\n")
+  
+  if (nrow(final_pairs) == 0) {
+    cat("OK : aucune paire répondant aux critères de leakage ne reste.\n")
   } else {
-    res <- data.frame(ligne1 = pairs[, 1], ligne2 = pairs[, 2], distance = dist_mat[pairs])
-    # Trier par similarité
-    res <- res[order(res$distance), ]
-  
-    # Les 50 paires les plus proches
-    res <- head(res, 50)
-    
-    # infos sur les paires 
-    res$time1 <- df$time[res$ligne1]
-    res$time2 <- df$time[res$ligne2]
-  
-    res$time_diff_min <- as.numeric(
-      difftime(res$time2, res$time1, units = "mins")
-    )
-    
-    # créer un label pour chaque paire
-    res$obs1_label <- paste0(res$ligne1, " | ", format(res$time1, "%Y-%m-%d %H:%M"))
-    res$obs2_label <- paste0(res$ligne2, " | ", format(res$time2, "%Y-%m-%d %H:%M"))
-    res$pair <- paste0(res$obs1_label," ↔ ",res$obs2_label)
-    
-    # Mettre les paires dans l'ordre de distance
-    res$pair <- factor(res$pair, levels = rev(res$pair))
-    
-    # Plot des 50 lignes les plus proches
-    p <- ggplot(res, aes(x = distance, y = pair)) +
-    geom_point(size = 3) +
-    theme_minimal() +
-    labs(
-      x = "Distance",
-      y = "Paire d'observations",
-      title = "Observations les plus proches",
-    )
-    print(p)
-    
-    # retirer les lignes trop proches
-    print(c("nombre de lignes trop proches : ", sum(dist_mat < dist_thr, na.rm = TRUE), "thr = ", dist_thr))
-    pairs <- which(dist_mat < dist_thr, arr.ind = TRUE)
-  
-    # Supprimer uniquement la 2e observation de chaque paire
-    rows_to_remove <- unique(pairs[, 2])
-    cat("Nombre de lignes supprimées :", length(rows_to_remove), "\n")
-    cat("Nombre de lignes restantes :", nrow(df), "\n")
-    df <- df[-rows_to_remove, ]
-    
-    # Heatmap de la matrice de distance après filtrage
-    # Standardisation
-    df_scaled <- scale(df[, vars_num])
-    
-    # Matrice de distances
-    dist_mat <- as.matrix(dist(df_scaled))
-    
-    # Matrice des différences temporelles en secondes
-    time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time),FUN = "-"))
-    
-    # Garder les paires suffisemment proches et à moins d'1h
-    dist_mat[time_diff > 3600] <- NA
-    dist_mat[lower.tri(dist_mat, diag = TRUE)] <- NA
-    
-    # Transformer en format long
-    heatmap_data <- as.data.frame(as.table(dist_mat))
-    print(dim(dist_mat))
-    print(class(dist_mat))
-    print(length(vars_num))
-    
-    heatmap_data <- as.data.frame(as.table(dist_mat))
-    
-    print(names(heatmap_data))
-    print(dim(heatmap_data))
-    
-    colnames(heatmap_data) <- c("obs1", "obs2", "distance")
-    heatmap_data <- heatmap_data[!is.na(heatmap_data$distance), ]
-  
-    # Plot de la heatmap
-    p <- ggplot(
-      heatmap_data,
-      aes(
-        x = obs1,
-        y = obs2,
-        fill = distance
-      )
-    ) +
-      geom_tile() +
-      scale_fill_viridis_c(
-        option = "viridis",
-        na.value = "white"
-      ) +
-      theme_minimal() +
-      labs(
-        x = "Observation",
-        y = "Observation",
-        fill = "Distance",
-        title = "Matrice de distances",
-        subtitle="Données à moins d'une heure d'intervalle et dont la distance est >0.25"
-      ) +
-      theme(
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()
-      ) +
-      coord_fixed()
-    
-    print(p)
+    warning("Des paires de leakage sont encore présentes.")
   }
 }
 
+print(sensitivity_results)
 
-####### 6 - Split train/test
+ggplot(sensitivity_results, aes(x = threshold, y = RMSE)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    x = "Distance threshold",
+    y = "RMSE",
+    title = paste("Sensitivity analysis -", model_type, "algorithm"),
+    subtitle = paste("LOYO -", dp, "-", freq, "kHz")
+  )
+
+ggplot(sensitivity_results, aes(x = threshold, y = R2)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    x = "Distance threshold",
+    y = "R²",
+    title = paste("Sensitivity analysis -", model_type, "algorithm"),
+    subtitle = paste("LOYO -", dp, "-", freq, "kHz")
+  )
+
+ggplot(sensitivity_results, aes(x = threshold, y = R2)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    x = "Distance threshold",
+    y = "R²",
+    title = paste("Sensitivity analysis -", model_type, "algorithm"),
+    subtitle = paste("LOYO -", dp, "-", freq, "kHz")
+  )
+
+ggplot(sensitivity_results, aes(x = threshold, y = percent_removed)) +
+  geom_line() +
+  geom_point(size = 3) +
+  theme_bw() +
+  labs(
+    x = "Distance threshold",
+    y = "Observations removed (%)",
+    title = "Sensitivity of data removal to distance threshold",
+    subtitle = paste("Observations at less than 1 hour apart -", dp, "-", freq, "kHz")
+  )
+
+####### 10 - Split train/test
 
 set.seed(123)
 n <- nrow(df)
@@ -336,7 +497,7 @@ if(data_leakage_spatio_temp){
 }
 
 
-####### 7 - Regression tree
+####### 11 - Regression tree
 model_type <- "RF"
 
 if (model_type == "CART"){
@@ -390,17 +551,41 @@ if (model_type == "RF"){
   ]
 }
 
-####### 8 - Compute predictions
-observed <- ds_test_scaled$NASC
+if(model_type == "XGBOOST"){
+  X_train <- as.matrix(ds_train_yr[, setdiff(vars_num, "NASC")])
+  y_train <- ds_train_yr$NASC
+  
+  X_test <- as.matrix(ds_test_yr[, setdiff(vars_num, "NASC")])
+  y_test <- ds_test_yr$NASC
+  model_yr <- xgboost(
+    data = X_train,
+    label = y_train,
+    nrounds = 100,
+    max_depth = 2,
+    eta = 0.05,
+    min_child_weight = 3,
+    subsample = 0.8,
+    colsample_bytree = 0.8,
+    objective = "reg:squarederror",
+    verbose = 0
+  )
+}
 
-prediction <- predict(model, newdata = ds_test_scaled)
+####### 12 - Compute predictions
+observed <- ds_test_scaled$NASC
+if (model_type != "XGBOOST"){
+  prediction <- predict(model, newdata = ds_test_scaled)
+}else {
+  prediction <- predict(model_yr, X_test)
+}
+
 
 resultats <- data.frame(
   NASC_reel = observed,
   NASC_predit = prediction
 )
 
-####### 9 - Compute statistics
+####### 13 - Compute statistics
 
 RMSE <- sqrt(mean((prediction - observed)^2))
 
@@ -408,7 +593,7 @@ R2 <- 1 - sum((observed-prediction)^2) / sum((observed-mean(observed))^2)
 
 MAE <- mean(abs(prediction - observed))
 
-####### 10 - Plot prediction results
+####### 14 - Plot prediction results
 
 # Plot variable importance
 
@@ -461,262 +646,155 @@ legend(
   lty = c(NA, 1)
 )
 
-####### 6 - TRUE LOYO (Leave-One-Year-Out)
+######################################################################
+####### 15 - Validation croisée LOYO propre, sur toutes les années
+years_all <- sort(unique(df$year))
+loyo_results <- data.frame()
+loyo_predictions <- data.frame()
 
+for (yr in years_all) {
+  train_yr <- df[df$year != yr, ]
+  test_yr <- df[df$year == yr, ]
+  train_yr$year <- NULL
+  test_yr$year <- NULL
+  train_yr$time <- NULL
+  test_yr$time <- NULL
+  train_yr_scaled <- scale(train_yr[, vars_num])
+  center_yr <- attr(train_yr_scaled, "scaled:center")
+  scale_yr <- attr(train_yr_scaled, "scaled:scale")
+  test_yr_scaled <- scale(test_yr[, vars_num], center = center_yr, scale = scale_yr)
+  ds_train_yr <- train_yr
+  ds_train_yr[, vars_num] <- train_yr_scaled
+  ds_test_yr <- test_yr
+  ds_test_yr[, vars_num] <- test_yr_scaled
+  if (model_type == "CART") model_yr <- rpart(NASC ~ ., data = ds_train_yr, method = "anova")
+  if (model_type == "RF") model_yr <- randomForest(NASC ~ ., data = ds_train_yr, ntree = n_trees, importance = TRUE)
+  obs_yr <- ds_test_yr$NASC
+  pred_yr <- predict(model_yr, newdata = ds_test_yr)
+  RMSE_yr <- sqrt(mean((pred_yr - obs_yr)^2))
+  R2_yr <- 1 - sum((obs_yr - pred_yr)^2) / sum((obs_yr - mean(obs_yr))^2)
+  MAE_yr <- mean(abs(pred_yr - obs_yr))
+  loyo_results <- rbind(loyo_results, data.frame(year = yr, n_train = nrow(train_yr), n_test = nrow(test_yr), RMSE = RMSE_yr, R2 = R2_yr, MAE = MAE_yr))
+  loyo_predictions <- rbind(loyo_predictions, data.frame(year = yr, observed = obs_yr, predicted = pred_yr))
+}
+
+print(loyo_results)
+cat("\n--- LOYO : moyenne sur toutes les années ---\n")
+cat("RMSE moyen :", mean(loyo_results$RMSE), "(sd =", sd(loyo_results$RMSE), ")\n")
+cat("R² moyen :", mean(loyo_results$R2), "(sd =", sd(loyo_results$R2), ")\n")
+cat("MAE moyen :", mean(loyo_results$MAE), "(sd =", sd(loyo_results$MAE), ")\n")
+
+ggplot(loyo_results, aes(x = year, y = RMSE)) + geom_col(fill = "steelblue") + theme_bw() + labs(x = "Année test", y = "RMSE", title = paste("RMSE par année - LOYO -", model_type, "algorithm"), subtitle = paste("Transect 2018, 2021, 2023,", dp, ",", freq, "kHz, pigments :", pigment_type))
+
+ggplot(loyo_predictions, aes(x = observed, y = predicted, color = year)) + geom_point(alpha = 0.6) + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + theme_bw() + labs(x = "True NASC", y = "Predicted NASC", title = paste("Real NASC vs. Predicted NASC - LOYO -", model_type, "algorithm"), color = "Année test")
+
+####### 16 - Random split avec plusieurs folds (validation croisée k-fold)
+n_folds <- 5
+set.seed(123)
+fold_assign <- sample(rep(seq_len(n_folds), length.out = n))
+
+rs_results <- data.frame()
+rs_predictions <- data.frame()
+
+for (k in seq_len(n_folds)) {
+  train_k <- df[fold_assign != k, ]
+  test_k <- df[fold_assign == k, ]
+  train_k$year <- NULL
+  test_k$year <- NULL
+  train_k$time <- NULL
+  test_k$time <- NULL
+  train_k_scaled <- scale(train_k[, vars_num])
+  center_k <- attr(train_k_scaled, "scaled:center")
+  scale_k <- attr(train_k_scaled, "scaled:scale")
+  test_k_scaled <- scale(test_k[, vars_num], center = center_k, scale = scale_k)
+  ds_train_k <- train_k
+  ds_train_k[, vars_num] <- train_k_scaled
+  ds_test_k <- test_k
+  ds_test_k[, vars_num] <- test_k_scaled
+  if (model_type == "CART") model_k <- rpart(NASC ~ ., data = ds_train_k, method = "anova")
+  if (model_type == "RF") model_k <- randomForest(NASC ~ ., data = ds_train_k, ntree = n_trees, importance = TRUE)
+  obs_k <- ds_test_k$NASC
+  pred_k <- predict(model_k, newdata = ds_test_k)
+  RMSE_k <- sqrt(mean((pred_k - obs_k)^2))
+  R2_k <- 1 - sum((obs_k - pred_k)^2) / sum((obs_k - mean(obs_k))^2)
+  MAE_k <- mean(abs(pred_k - obs_k))
+  rs_results <- rbind(rs_results, data.frame(fold = k, n_train = nrow(train_k), n_test = nrow(test_k), RMSE = RMSE_k, R2 = R2_k, MAE = MAE_k))
+  rs_predictions <- rbind(rs_predictions, data.frame(fold = k, observed = obs_k, predicted = pred_k))
+}
+
+print(rs_results)
+cat("\n--- Random Split : moyenne sur les", n_folds, "folds ---\n")
+cat("RMSE moyen :", mean(rs_results$RMSE), "(sd =", sd(rs_results$RMSE), ")\n")
+cat("R² moyen :", mean(rs_results$R2), "(sd =", sd(rs_results$R2), ")\n")
+cat("MAE moyen :", mean(rs_results$MAE), "(sd =", sd(rs_results$MAE), ")\n")
+
+ggplot(rs_results, aes(x = factor(fold), y = RMSE)) + geom_col(fill = "darkorange") + theme_bw() + labs(x = "Fold", y = "RMSE", title = paste("RMSE par fold - Random Split (k =", n_folds, ") -", model_type, "algorithm"), subtitle = paste("Transect 2018, 2021, 2023,", dp, ",", freq, "kHz, pigments :", pigment_type))
+
+ggplot(rs_predictions, aes(x = observed, y = predicted, color = factor(fold))) + geom_point(alpha = 0.6) + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + theme_bw() + labs(x = "True NASC", y = "Predicted NASC", title = paste("Real NASC vs. Predicted NASC - Random Split -", model_type, "algorithm"), color = "Fold")
+
+####### 17 - Courbe d'apprentissage (learning curve)
+# Basée sur le split principal (ds_train_scaled / ds_test_scaled défini en section 10)
+train_fractions <- seq(0.1, 1, by = 0.1)
+learning_curve <- data.frame()
 set.seed(123)
 
-years <- sort(unique(df$year))
-print(years)
-
-# Vérification
-if (length(years) < 2) {
-  stop("Il faut au moins 2 années différentes pour faire un LOYO.")
+for (frac in train_fractions) {
+  n_sub <- floor(frac * nrow(ds_train_scaled))
+  sub_index <- sample(seq_len(nrow(ds_train_scaled)), size = n_sub)
+  train_sub <- ds_train_scaled[sub_index, ]
+  if (model_type == "CART") model_sub <- rpart(NASC ~ ., data = train_sub, method = "anova")
+  if (model_type == "RF") model_sub <- randomForest(NASC ~ ., data = train_sub, ntree = n_trees, importance = TRUE)
+  pred_train_sub <- predict(model_sub, newdata = train_sub)
+  pred_test_sub <- predict(model_sub, newdata = ds_test_scaled)
+  RMSE_train_sub <- sqrt(mean((pred_train_sub - train_sub$NASC)^2))
+  RMSE_test_sub <- sqrt(mean((pred_test_sub - ds_test_scaled$NASC)^2))
+  learning_curve <- rbind(learning_curve, data.frame(n_train = n_sub, RMSE_train = RMSE_train_sub, RMSE_test = RMSE_test_sub))
 }
 
-# Liste pour stocker les résultats
-results_loyo <- list()
-metrics_loyo <- list()
-models_loyo <- list()
-importance_loyo <- list()
+print(learning_curve)
 
-
-####### 7 - LOYO : une année à la fois en test
-
-for (test_year in years) {
-  
-  cat("\n========================================\n")
-  cat("LOYO - Année test :", test_year, "\n")
-  cat("========================================\n")
-  
-  # -----------------------------
-  # Train / test
-  # -----------------------------
-  
-  train <- df[df$year != test_year, ]
-  test  <- df[df$year == test_year, ]
-  
-  cat("Train :", nrow(train), "observations\n")
-  cat("Test  :", nrow(test), "observations\n")
-  
-  cat(
-    "Années train :",
-    paste(sort(unique(train$year)), collapse = ", "),
-    "\n"
-  )
-  
-  
-  # -----------------------------
-  # Retirer year et time
-  # -----------------------------
-  
-  train_model <- train
-  test_model  <- test
-  
-  train_model$year <- NULL
-  test_model$year  <- NULL
-  
-  train_model$time <- NULL
-  test_model$time  <- NULL
-  
-  
-  # -----------------------------
-  # Scaling
-  # IMPORTANT :
-  # calculé uniquement sur le TRAIN
-  # -----------------------------
-  
-  train_scaled <- scale(train_model[, vars_num])
-  
-  train_center <- attr(train_scaled, "scaled:center")
-  train_scale  <- attr(train_scaled, "scaled:scale")
-  
-  test_scaled <- scale(
-    test_model[, vars_num],
-    center = train_center,
-    scale = train_scale
-  )
-  
-  
-  # -----------------------------
-  # Reconstruction des datasets
-  # -----------------------------
-  
-  ds_train_scaled <- train_model
-  ds_test_scaled  <- test_model
-  
-  ds_train_scaled[, vars_num] <- train_scaled
-  ds_test_scaled[, vars_num]  <- test_scaled
-  
-  
-  # -----------------------------
-  # Vérifications
-  # -----------------------------
-  
-  if (any(is.na(ds_train_scaled[, vars_num]))) {
-    stop(
-      paste(
-        "NA dans le train pour l'année test",
-        test_year
-      )
-    )
-  }
-  
-  if (any(is.na(ds_test_scaled[, vars_num]))) {
-    stop(
-      paste(
-        "NA dans le test pour l'année test",
-        test_year
-      )
-    )
-  }
-  
-  
-  # -----------------------------
-  # Modèle
-  # -----------------------------
-  
-  if (model_type == "CART") {
-    
-    model <- rpart(
-      NASC ~ .,
-      data = ds_train_scaled,
-      method = "anova"
-    )
-    
-  }
-  
-  
-  if (model_type == "RF") {
-    
-    model <- randomForest(
-      NASC ~ .,
-      data = ds_train_scaled,
-      ntree = n_trees,
-      importance = TRUE
-    )
-    
-  }
-  
-  
-  # -----------------------------
-  # Prédictions
-  # -----------------------------
-  
-  observed <- ds_test_scaled$NASC
-  
-  prediction <- predict(
-    model,
-    newdata = ds_test_scaled
-  )
-  
-  
-  # -----------------------------
-  # Statistiques
-  # -----------------------------
-  
-  RMSE <- sqrt(
-    mean(
-      (prediction - observed)^2
-    )
-  )
-  
-  MAE <- mean(
-    abs(prediction - observed)
-  )
-  
-  R2 <- 1 -
-    sum((observed - prediction)^2) /
-    sum((observed - mean(observed))^2)
-  
-  
-  # -----------------------------
-  # Modèle nul
-  # -----------------------------
-  
-  # prédiction = moyenne du TRAIN
-  prediction_null <- rep(
-    mean(ds_train_scaled$NASC),
-    length(observed)
-  )
-  
-  RMSE_null <- sqrt(
-    mean(
-      (prediction_null - observed)^2
-    )
-  )
-  
-  R2_null <- 1 -
-    sum((observed - prediction_null)^2) /
-    sum((observed - mean(observed))^2)
-  
-  
-  # -----------------------------
-  # Sauvegarde des métriques
-  # -----------------------------
-  
-  metrics_loyo[[test_year]] <- data.frame(
-    test_year = test_year,
-    n_train = nrow(ds_train_scaled),
-    n_test = nrow(ds_test_scaled),
-    RMSE = RMSE,
-    MAE = MAE,
-    R2 = R2,
-    RMSE_null = RMSE_null,
-    R2_null = R2_null
-  )
-  
-  
-  # -----------------------------
-  # Sauvegarde des prédictions
-  # -----------------------------
-  
-  results_loyo[[test_year]] <- data.frame(
-    test_year = test_year,
-    NASC_reel = observed,
-    NASC_predit = prediction
-  )
-  
-  
-  # -----------------------------
-  # Sauvegarde du modèle
-  # -----------------------------
-  
-  models_loyo[[test_year]] <- model
-  
-  
-  # -----------------------------
-  # Importance des variables
-  # -----------------------------
-  
-  if (model_type == "RF") {
-    
-    imp <- importance(model)
-    
-    importance_loyo[[test_year]] <- data.frame(
-      test_year = test_year,
-      variable = rownames(imp),
-      IncMSE = imp[, "%IncMSE"]
-    )
-    
-  }
-  
-  
-  # -----------------------------
-  # Affichage
-  # -----------------------------
-  
-  cat("\nRésultats année test", test_year, "\n")
-  cat("RMSE      :", round(RMSE, 3), "\n")
-  cat("MAE       :", round(MAE, 3), "\n")
-  cat("R²        :", round(R2, 3), "\n")
-  cat("RMSE null :", round(RMSE_null, 3), "\n")
-}
-
-####### 8 - Résultats LOYO
-
-metrics_loyo_df <- do.call(
-  rbind,
-  metrics_loyo
+learning_curve_long <- rbind(
+  data.frame(n_train = learning_curve$n_train, RMSE = learning_curve$RMSE_train, set = "Train"),
+  data.frame(n_train = learning_curve$n_train, RMSE = learning_curve$RMSE_test, set = "Test")
 )
 
-print(metrics_loyo_df)
+ggplot(learning_curve_long, aes(x = n_train, y = RMSE, color = set)) + geom_line() + geom_point() + theme_bw() + labs(x = "Taille de l'échantillon d'entraînement", y = "RMSE", title = paste("Courbe d'apprentissage -", model_type, "algorithm"), subtitle = paste("Transect 2018, 2021, 2023,", dp, ",", freq, "kHz, split :", split), color = "Dataset")
+
+####### 18 - Courbe de validation (validation curve)
+# Basée sur le split principal (ds_train_scaled / ds_test_scaled défini en section 10)
+if (model_type == "RF") {
+  hp_values <- c(10, 50, 100, 200, 300, 500, 800)
+  hp_label <- "Nombre d'arbres (ntree)"
+  validation_curve <- data.frame()
+  for (hp in hp_values) {
+    model_val <- randomForest(NASC ~ ., data = ds_train_scaled, ntree = hp, importance = TRUE)
+    pred_train_val <- predict(model_val, newdata = ds_train_scaled)
+    pred_test_val <- predict(model_val, newdata = ds_test_scaled)
+    RMSE_train_val <- sqrt(mean((pred_train_val - ds_train_scaled$NASC)^2))
+    RMSE_test_val <- sqrt(mean((pred_test_val - ds_test_scaled$NASC)^2))
+    validation_curve <- rbind(validation_curve, data.frame(hyperparameter = hp, RMSE_train = RMSE_train_val, RMSE_test = RMSE_test_val))
+  }
+}
+
+if (model_type == "CART") {
+  hp_values <- c(0.001, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2)
+  hp_label <- "Complexité (cp)"
+  validation_curve <- data.frame()
+  for (hp in hp_values) {
+    model_val <- rpart(NASC ~ ., data = ds_train_scaled, method = "anova", control = rpart.control(cp = hp))
+    pred_train_val <- predict(model_val, newdata = ds_train_scaled)
+    pred_test_val <- predict(model_val, newdata = ds_test_scaled)
+    RMSE_train_val <- sqrt(mean((pred_train_val - ds_train_scaled$NASC)^2))
+    RMSE_test_val <- sqrt(mean((pred_test_val - ds_test_scaled$NASC)^2))
+    validation_curve <- rbind(validation_curve, data.frame(hyperparameter = hp, RMSE_train = RMSE_train_val, RMSE_test = RMSE_test_val))
+  }
+}
+
+print(validation_curve)
+
+validation_curve_long <- rbind(
+  data.frame(hyperparameter = validation_curve$hyperparameter, RMSE = validation_curve$RMSE_train, set = "Train"),
+  data.frame(hyperparameter = validation_curve$hyperparameter, RMSE = validation_curve$RMSE_test, set = "Test")
+)
+
+ggplot(validation_curve_long, aes(x = hyperparameter, y = RMSE, color = set)) + geom_line() + geom_point() + theme_bw() + labs(x = hp_label, y = "RMSE", title = paste("Courbe de validation -", model_type, "algorithm"), subtitle = paste("Transect 2018, 2021, 2023,", dp, ",", freq, "kHz, split :", split), color = "Dataset")
