@@ -970,7 +970,7 @@ for (FOD_0 in FOD_values) {
 
 best_LOYO <- results |>
   filter(validation == "LOYO") |>
-  arrange(RMSE) |>
+  arrange(desc(R2)) |>
   slice(1)
 
 cat("\n\n")
@@ -987,7 +987,7 @@ print(best_LOYO)
 
 best_RS <- results |>
   filter(validation == "RS") |>
-  arrange(RMSE) |>
+  arrange(desc(R2)) |>
   slice(1)
 
 cat("\n\n")
@@ -1003,8 +1003,8 @@ print(best_RS)
 # ============================================================
 
 best_RF_LOYO <- results |>
-  filter(model == "RF", validation == "LOYO") |>
-  arrange(RMSE) |>
+  filter(model == "RF", validation == "LOYO", dist_thr == 1) |>
+  arrange(desc(R2)) |>
   slice(1)
 
 cat("\n\n")
@@ -1020,8 +1020,8 @@ print(best_RF_LOYO)
 # ============================================================
 
 best_XGB_LOYO <- results |>
-  filter(model == "XGBoost", validation == "LOYO") |>
-  arrange(RMSE) |>
+  filter(model == "XGBoost", validation == "LOYO", dist_thr == 1) |>
+  arrange(desc(R2)) |>
   slice(1)
 
 cat("\n\n")
@@ -1084,7 +1084,7 @@ cat("====================================================\n")
 
 results |>
   filter(validation == "LOYO") |>
-  arrange(RMSE) |>
+  arrange(desc(R2)) |>
   select(
     model,
     FOD_0,
@@ -1120,7 +1120,7 @@ cat("====================================================\n")
 
 results |>
   filter(validation == "RS") |>
-  arrange(RMSE) |>
+  arrange(desc(R2)) |>
   select(
     model,
     FOD_0,
@@ -1167,7 +1167,7 @@ cat("====================================================\n")
 cat("RESUME DES CONDITIONS\n")
 cat("====================================================\n")
 
-print(summary_conditions)
+print(summary_conditions, n=500)
 
 
 # ============================================================

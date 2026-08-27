@@ -24,20 +24,23 @@ library(dplyr)
 # Global Variables
 rm(list=ls())
 
-freqs <- c(38, 70, 120, 200)
+freqs <- c(18) # 38, 70, 120, 200
 for (freq in freqs){
   path2018 <- paste0("F:/data_elise/sv_cropped/sv_cropped_per_year/", freq, "kHz/Sv_2018_", freq, "kHz.rds")
   path2021 <- paste0("F:/data_elise/sv_cropped/sv_cropped_per_year/", freq, "kHz/Sv_2021_", freq, "kHz.rds")
+  path2022 <- paste0("F:/data_elise/sv_cropped/sv_cropped_per_year/", freq, "kHz/Sv_2022_", freq, "kHz.rds")
   path2023 <- paste0("F:/data_elise/sv_cropped/sv_cropped_per_year/", freq, "kHz/Sv_2023_", freq, "kHz.rds")
   
   # Read data
   df2018 <- readRDS(path2018)
   df2021 <- readRDS(path2021)
+  df2022 <- readRDS(path2022)
   df2023 <- readRDS(path2023)
   
   # Check that depth grid is identical
   stopifnot(
     identical(df2018$depth, df2021$depth),
+    identical(df2018$depth, df2022$depth),
     identical(df2018$depth, df2023$depth)
   )
   
@@ -45,6 +48,7 @@ for (freq in freqs){
   Sv_all <- rbind(
     df2018$profiles,
     df2021$profiles,
+    df2022$profiles,
     df2023$profiles
   ) #(n_profiles, depth)
   
@@ -61,6 +65,12 @@ for (freq in freqs){
       lon = df2021$lon,
       time = df2021$time,
       day = df2021$day
+    ),
+    data.frame(
+      lat = df2022$lat,
+      lon = df2022$lon,
+      time = df2022$time,
+      day = df2022$day
     ),
     data.frame(
       lat = df2023$lat,
@@ -92,8 +102,12 @@ for (freq in freqs){
   saveRDS(
     Sv_concat,
     file = paste0(
-      "F:/data_elise/sv_cropped/sv_cropped_all_years/Sv_2018_2021_2023_", freq, "kHz.rds"
+      "F:/data_elise/sv_cropped/sv_cropped_all_years/Sv_2018_2021_2022_2023_", freq, "kHz.rds"
     )
   )
 }
 
+dim(df2018$profiles)
+dim(df2021$profiles)
+dim(df2022$profiles)
+dim(df2023$profiles)

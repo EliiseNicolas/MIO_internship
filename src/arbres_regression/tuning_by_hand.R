@@ -5,6 +5,7 @@ library(sf)
 library(geosphere)
 library(tidyr)
 library(patchwork)
+library(viridis)
 set.seed(123)
 
 
@@ -30,20 +31,17 @@ distance_thresholds <- c(0.25, 0.5, 0.75, 1)
 FOD_values <- c(FALSE, TRUE)
 log_values <- c(FALSE, TRUE)
 log <- TRUE
+
 # CART
 max_depth <- 7
-min_leafs <- 
+min_leafs <- 5
+  
 # Random Forest
 ntree_values <- c(200, 500)
 nodesize_values <- c(3, 5, 10)
 mtry_fraction <- c(0.3, 0.5, 0.8, 1.0)
 
-# XGBoost
-max_depth_values <- c(2, 3, 4, 5)
-eta_values <- c(0.03, 0.05, 0.1)
-min_child_weight_values <- c(3, 5, 10)
-subsample_values <- c(0.8, 1)
-colsample_bytree_values <- c(0.8, 1)
+
 
 nrounds <- 1000
 
@@ -60,7 +58,6 @@ str(datas)
 prepare_data <- function(datas, pigment_type = "chla_ratio", FOD_0 = FALSE, log = TRUE, diurnal_period = 3) {
   
   dat <- datas
-  
   # Day / night
   dat <- dat[dat$day == diurnal_period, ]
   
@@ -96,12 +93,12 @@ prepare_data <- function(datas, pigment_type = "chla_ratio", FOD_0 = FALSE, log 
     NASC = dat$nasc,
     year = format(dat$time_nasc, "%Y"),
     time = dat$time_nasc,
-    lat <- dat$lat_nasc,
-    lon <- dat$lon_nasc,
+    lat = dat$lat_nasc,
+    lon = dat$lon_nasc,
     fod = dat$fod,
     ftle = dat$ftle
   )
-
+  str(df)
   # Pigments
 
   if (pigment_type == "chla_ratio") {
@@ -146,13 +143,15 @@ prepare_data <- function(datas, pigment_type = "chla_ratio", FOD_0 = FALSE, log 
   df$fod <- droplevels(df$fod)
 
   # Missing values
-
+  print(colSums(is.na(df)))
+  print(sort(unique(as.Date(df$time[is.na(df$ftle)]))))
   df <- df[complete.cases(df), ] # retirer toutes les lignes ou il y a un NA dans la colonne
   print(colSums(is.na(df)))
   
   return(df)
 }
 df <- prepare_data(datas)
+
 str(df)
 
 # ============================================================
@@ -326,8 +325,8 @@ distributions_datas <- function(ds){
   df2 <- df %>%
     mutate(
       year = as.integer(year),
-      lat = lat....dat.lat_nasc,
-      lon = lon....dat.lon_nasc
+      lat = lat,
+      lon = lon
     ) %>%
     arrange(year, time)
   
@@ -361,18 +360,10 @@ distributions_datas <- function(ds){
   
   distance_moyenne
   
-  library(viridis)
-  
   df2 <- df2 %>%
     mutate(
       day = as.Date(time)
     )
-  
-  library(dplyr)
-  library(ggplot2)
-  library(patchwork)
-  library(viridis)
-  
   
   # Fonction pour créer un plot par année
   make_map <- function(data, year_value, palette_option) {
@@ -487,74 +478,6 @@ distributions_datas <- function(ds){
 }
 distributions_datas(df)
 
-################ je me suis arrêtée là
-# ============================================================
-# 04 - SUPPRESSION DU DATA LEAKAGE
-# ============================================================
-
-remove_close_pairs <- function(df_input, predictor_vars, dist_thr = 0.5, time_thr = 3600) {
-  
-  df_work <- df_input
-  
-  n_initial <- nrow(df_work)
-  removed_rows <- integer(0)
-  n_iterations <- 0
-  
-  repeat {
-    
-    if (nrow(df_work) < 2) {
-      break
-    }
-    
-    # Distance calculée UNIQUEMENT sur les prédicteurs
-    
-    df_scaled <- scale(df_work[, predictor_vars, drop = FALSE])
-    dist_mat <- as.matrix(dist(df_scaled))
-    
-    # Différence temporelle
-    
-    time_diff <- abs(outer(as.numeric(df_work$time), as.numeric(df_work$time), FUN = "-"))
-    
-    # Paires proches
-    
-    pairs <- which(time_diff <= time_thr & dist_mat < dist_thr, arr.ind = TRUE)
-    
-    pairs <- pairs[pairs[, 1] < pairs[, 2], , drop = FALSE]
-    
-    n_pairs <- nrow(pairs)
-    
-    if (n_pairs == 0) {
-      break
-    }
-    
-    # Suppression du deuxième élément de la première paire
-    
-    pair <- pairs[1, ]
-    remove_row <- pair[2]
-    
-    removed_rows <- c(removed_rows, remove_row)
-    n_iterations <- n_iterations + 1
-    
-    df_work <- df_work[-remove_row, , drop = FALSE]
-  }
-  
-  list(
-    df = df_work,
-    n_initial = n_initial,
-    n_remaining = nrow(df_work),
-    n_removed = n_initial - nrow(df_work),
-    percent_removed = 100 * (n_initial - nrow(df_work)) / n_initial,
-    n_iterations = n_iterations,
-    removed_rows = removed_rows
-  )
-}
-str(df)
-predictor_vars <- setdiff(names(df),
-  c("time", "lat", "lon", "year", "NASC", "fod")
-)
-print(predictor_vars)
-df_cleaned <- remove_close_pairs(df, predictor_vars = predictor_vars)
-distributions_datas(df_cleaned$df)
 # ============================================================
 # 04 - METRIQUES
 # ============================================================
@@ -572,10 +495,10 @@ calculate_metrics <- function(obs, pred) {
 
 
 # ============================================================
-# 05 - XGBOOST
+# 05 - RANDOM FOREST
 # ============================================================
 
-fit_xgb <- function(train, test, vars_num, max_depth, eta, min_child_weight, subsample, colsample_bytree, nrounds) {
+fit_rf <- function(train, test, vars_num, max_depth, eta, min_child_weight, subsample, colsample_bytree, nrounds) {
   
   
   # ----------------------------------------------------------
@@ -611,23 +534,8 @@ fit_xgb <- function(train, test, vars_num, max_depth, eta, min_child_weight, sub
   # XGBoost
   # ----------------------------------------------------------
   
-  dtrain <- xgb.DMatrix(data = X_train, label = y_train)
-  dtest <- xgb.DMatrix(data = X_test)
   
-  model <- xgb.train(
-    params = list(
-      objective = "reg:squarederror",
-      eval_metric = "rmse",
-      max_depth = max_depth,
-      eta = eta,
-      min_child_weight = min_child_weight,
-      subsample = subsample,
-      colsample_bytree = colsample_bytree
-    ),
-    data = dtrain,
-    nrounds = nrounds,
-    verbose = 0
-  )
+  model <- "RF à remplir avec la fonction"
   
   # ----------------------------------------------------------
   # Prediction
