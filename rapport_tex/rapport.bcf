@@ -2383,11 +2383,6 @@
     <bcf:citekey order="7" intorder="1">eilers1996</bcf:citekey>
     <bcf:citekey order="8" intorder="1">wand2008</bcf:citekey>
     <bcf:citekey order="9" intorder="1">eilers1996</bcf:citekey>
-    <bcf:citekey order="10" intorder="1">gill1982atmosphere</bcf:citekey>
-    <bcf:citekey order="11" intorder="1">wikipedia_onde_gravite</bcf:citekey>
-    <bcf:citekey order="12" intorder="1">wikipedia_barotrope</bcf:citekey>
-    <bcf:citekey order="13" intorder="1">wikipedia_thermocline</bcf:citekey>
-    <bcf:citekey order="14" intorder="1">wikipedia_isopycnal</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

@@ -315,101 +315,135 @@
 	Dans notre cas, le nombre d'observations étant très important, on se limite a une validation croisée sur un sous-ensemble d'observations.
 	
 	
-	\subsection{Réduction de dimension par Functional Principal Component Analysis}
+	\paragraph{Réduction de dimension par Functional Principal Component Analysis}
 	
-	l'Analyse par Composante Principale Fonctionelle (ACPF ou \textit{FPCA} pour Functional Principal Component Analysis)
+	l'Analyse par Composante Principale Fonctionnelle (ACPF ou \textit{FPCA} pour Functional Principal Component Analysis)
 	
-	Suite à l'estimation fonctionelle réalisée à l'étape précédente, l'ensemble d'observations $S_v \in \mathbb{R}^{n_{freq}, n_{pings}, n_{depths}}$ est désormais un ensemble de fonctions $S_v \in (L^{2}([d_{min}, d_{max}]))^{n_{freqs} \times n_{pings}}$ où chaque observation $S_v^{(f, p)} : [d_{min}, d_{max}] \rightarrow \mathbb{R}$ est une fonction de la profondeur pour une fréquence f et un ping p donnés et $S_v^{(f, p)}(z) = \sum_{k = 1}^{K} \alpha_k \Phi_k (z)$.
+	Suite à l'estimation fonctionnelle réalisée à l'étape précédente, chaque profil $l$ est désormais représenté par un couple de fonctions de la profondeur, la température et la salinité, estimées sur la même base de B-splines $(\Phi_k)_{1\leq k \leq K}$ définie sur $[d_{min}, d_{max}]$ :
+	\[
+	T_l(z) = \sum_{k=1}^{K} \alpha_{l,k}^{T}\, \Phi_k(z), 
+	\qquad
+	S_l(z) = \sum_{k=1}^{K} \alpha_{l,k}^{S}\, \Phi_k(z),
+	\qquad z \in [d_{min}, d_{max}]
+	\]
+	On considère alors chaque profil comme une observation \textbf{bivariée} $X_l = (T_l, S_l) \in \big(L^2([d_{min}, d_{max}])\big)^2$, muni du produit scalaire
+	\[
+	\langle (f_1, g_1), (f_2, g_2) \rangle = \langle f_1, f_2 \rangle_{L^2} + \langle g_1, g_2 \rangle_{L^2}
+	\]
+	L'objectif de cette étape est de réduire conjointement la dimension des profils de température et de salinité, afin de capturer les modes de variabilité communs aux deux variables (par exemple une thermocline associée à une halocline).
 	
-	\subsubsection{Motivation}
+	\subparagraph{Motivation}
 	Réduire la dimension des données permet d'effectuer des analyses avec une plus grande facilité en diminuant par exemple les temps de calculs.
 	
 	
 	\vspace{2 em}
 	
-	Une approche pour réduire la dimension des données est l'analyse par composante principale (ACP ou PCA pour Principal Component Analysis). Puisque les données sont fonctionnelles, on parle alors d'Analyse par Composante Principale fonctionnelle (ACPf ou fCPA). La logique est identique à celle d'une PCA classique mais les outils sont adaptés pour manipuler les fonctions. 
+	Une approche pour réduire la dimension des données est l'analyse par composante principale (ACP ou PCA pour Principal Component Analysis). Puisque les données sont fonctionnelles, on parle alors d'Analyse par Composante Principale fonctionnelle (ACPf ou FPCA). La logique est identique à celle d'une PCA classique mais les outils sont adaptés pour manipuler les fonctions. Ici, la FPCA est réalisée conjointement sur les deux variables, on parle de FPCA \textbf{bivariée}.
 	
-	\subsubsection{Étape 1 : Centrage des données}
-	On a $S_v^{(f, p)}(z) = \sum_{k = 1}^{K} \alpha_k \Phi_k (z)$. 
-	Soit $\overline{\alpha} \in \mathbb{R}^K$ la moyenne empirique pour tous les pings a une fréquence donnée des coefficients de chaque B-spline $(\Phi_k)_{1\leq k \leq K}$ .
-	
+	\subparagraph{Étape 0 : Construction du vecteur de coefficients bivarié}
+	Pour chaque profil $l$, on concatène les coefficients de B-spline de température et de salinité en un unique vecteur $\alpha_l \in \mathbb{R}^{2K}$ :
 	\[
-		\overline{\alpha} = \frac{1}{N} \sum_{i=1}^{N} \alpha_i 
+	\alpha_l = \begin{pmatrix} \alpha_l^{T} \\ \alpha_l^{S} \end{pmatrix}, 
+	\qquad \alpha_l^{T} = (\alpha_{l,1}^T, \ldots, \alpha_{l,K}^T)^\top, 
+	\quad \alpha_l^{S} = (\alpha_{l,1}^S, \ldots, \alpha_{l,K}^S)^\top
+	\]
+	En empilant les $N$ profils, on obtient la matrice $\alpha \in \mathbb{R}^{N \times 2K}$.
+	
+	\subparagraph{Étape 1 : Centrage des données}
+	Soit $\overline{\alpha} \in \mathbb{R}^{2K}$ la moyenne empirique, sur l'ensemble des $N$ profils, des coefficients de chaque B-spline pour la partie température et pour la partie salinité :
+	\[
+	\overline{\alpha} = \frac{1}{N} \sum_{l=1}^{N} \alpha_l
 	\]
 	
-	 On peut donc obtenir les coefficients de B-spline centrés $\tilde{\alpha} \in \mathbb{R}^{N \times K}$ où pour un ping $i$ donné, on a : 
-	 \[
-	 \tilde{\alpha}_{i, k} = \alpha_{i,k} - \overline{\alpha}
-	 \]
-	 
-	\subsubsection{Étape 2 : Calcul de la covariance empirique}
-	
-	La covariance empirique peut se calculer comme suit : 
+	On obtient ainsi les coefficients bivariés centrés $\tilde{\alpha} \in \mathbb{R}^{N \times 2K}$, où pour un profil $l$ donné :
 	\[
-	\hat V(s, t) = \frac{1}{N} (\tilde{\alpha}\Phi(s))^{T} (\tilde{\alpha}\Phi(t)) \in \mathbb{R}^{K \times K}
-	= \frac{1}{N} \Phi^T(s)\tilde{\alpha}^{T} \tilde{\alpha}\Phi(t)
+	\tilde{\alpha}_{l} = \alpha_{l} - \overline{\alpha}
 	\]
 	
-	\subsubsection{Étape 3 : Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}
+	\subparagraph{Étape 2 : Calcul de la covariance empirique}
 	
-	On effectue la décomposition spectrale de la matrice de covariance empirique $\hat{V} \in \mathbb{R}^{K \times K}$ :
+	On définit la matrice bivariée de fonctions de base $\boldsymbol{\Phi}(z) \in \mathbb{R}^{2K}$ comme la concaténation de la base $\Phi$ utilisée pour chacune des deux composantes :
 	\[
-		\int \hat{V}(s, t)\xi(t) dt = \rho \xi(s)
+	\boldsymbol{\Phi}(z) = \begin{pmatrix} \Phi(z) \\ \Phi(z) \end{pmatrix}, 
+	\quad \Phi(z) = (\Phi_1(z), \ldots, \Phi_K(z))^\top
 	\]
-	Avec la contrainte d'orthonormalité des fonctions propres : $||\xi||_{L^2} = 1$ et $<\xi_1, \xi_2> = 0$  si $\xi_1 \neq \xi_2$
-	
-	D'autre part, on peut faire l'hypothèse que la fonction propre $\xi (t)$ peut se décomposer dans la base de B-spline identique à nos fonctions de profils : 
+	de sorte que le profil bivarié centré s'écrive $\tilde X_l(z) = \tilde\alpha_l^\top \boldsymbol{\Phi}(z) \in \mathbb{R}$ (une combinaison scalaire mêlant la partie température et la partie salinité). La fonction de covariance empirique associée est :
 	\[
-		\xi(t) = \sum_{k=1}^{K} b_k \Phi_k(t)
+	\hat V(s, t) = \frac{1}{N}\sum_{l=1}^{N} \tilde X_l(s)\, \tilde X_l(t)
+	= \frac{1}{N} \big(\tilde{\alpha}\,\boldsymbol{\Phi}(s)\big)^{\top} \big(\tilde{\alpha}\,\boldsymbol{\Phi}(t)\big) \in \mathbb{R}
+	= \frac{1}{N} \boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^{T} \tilde{\alpha}\,\boldsymbol{\Phi}(t)
+	\]
+	où $\tilde\alpha^\top\tilde\alpha \in \mathbb{R}^{2K \times 2K}$ est la matrice de covariance empirique des coefficients bivariés.
+	
+	\subparagraph{Étape 3 : Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}
+	
+	On effectue la décomposition spectrale de l'opérateur de covariance $\hat{V}$ :
+	\[
+	\int \hat{V}(s, t)\,\xi(t)\, dt = \rho\, \xi(s)
+	\]
+	avec la contrainte d'orthonormalité des fonctions propres bivariées : $\|\xi\|_{L^2} = 1$ et $\langle \xi_i, \xi_j\rangle = 0$ si $i \neq j$.
+	
+	On fait l'hypothèse que la fonction propre bivariée $\xi(t)$ se décompose dans la même base bivariée que nos profils :
+	\[
+	\xi(t) = \boldsymbol{\Phi}^\top(t)\, b, \qquad b \in \mathbb{R}^{2K}
 	\]
 	
-	On a alors 
+	On a alors :
 	\begin{align*}
-		\int \hat{V}(s, t)\xi(t)\,dt 
-		&= \int \frac{1}{N} \Phi^T(s)\tilde{\alpha}^T \tilde{\alpha} \Phi(t) \Phi^T(t) b\,dt \\
-		&= \frac{1}{N} \Phi^T(s)\tilde{\alpha}^T \tilde{\alpha} 
-		\underbrace{\int \Phi(t)\Phi^T(t)\,dt}_{= W} b \\
-		&= \frac{1}{N}\Phi^T(s)\tilde{\alpha}^T \tilde{\alpha} W b
+		\int \hat{V}(s, t)\,\xi(t)\,dt 
+		&= \int \frac{1}{N} \boldsymbol{\Phi}^\top(s)\tilde{\alpha}^\top \tilde{\alpha}\, \boldsymbol{\Phi}(t)\, \boldsymbol{\Phi}^\top(t)\, b\,dt \\
+		&= \frac{1}{N} \boldsymbol{\Phi}^\top(s)\tilde{\alpha}^\top \tilde{\alpha} 
+		\underbrace{\int \boldsymbol{\Phi}(t)\boldsymbol{\Phi}^\top(t)\,dt}_{=\, W} \, b \\
+		&= \frac{1}{N}\boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^\top \tilde{\alpha}\, W\, b
+	\end{align*}
+	où $W = \int \boldsymbol{\Phi}(t)\boldsymbol{\Phi}^\top(t)\,dt \in \mathbb{R}^{2K \times 2K}$ est la matrice de Gram de la base bivariée. Comme $\boldsymbol{\Phi}(t)$ répète deux fois la même base $\Phi(t)$, $W$ prend la forme bloc-diagonale
+	\[
+	W = \begin{pmatrix} W_0 & 0 \\ 0 & W_0 \end{pmatrix}, 
+	\qquad W_0 = \int \Phi(t)\Phi^\top(t)\,dt \in \mathbb{R}^{K \times K}
+	\]
+	les blocs hors-diagonale étant nuls car la partie température et la partie salinité de $\xi$ n'interagissent qu'au travers de la covariance des coefficients $\tilde\alpha^\top\tilde\alpha$, pas au travers de la base elle-même.
+	
+	On peut donc réécrire la décomposition spectrale comme suit :
+	\begin{align*}
+		& \int \hat{V}(s, t)\,\xi(t)\,dt = \rho\, \xi(s)\\
+		& \iff \frac{1}{N}\boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, \boldsymbol{\Phi}^\top(s)\, b\\
+		& \iff \frac{1}{N} \tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, b
 	\end{align*}
 	
-	On peut donc re-écrire la décomposition spectrale comme suis : 
+	La matrice $\tilde\alpha^\top\tilde\alpha$ est symétrique (c'est un produit de la forme $A^\top A$), mais le produit $\tilde\alpha^\top\tilde\alpha\, W$ ne l'est pas en général : le problème aux valeurs propres n'est donc pas directement résoluble par une décomposition spectrale standard. Pour contourner ce problème, on utilise le changement de variable $b = W^{-\frac{1}{2}} u$ :
 	\begin{align*}
-		& \int \hat{V}(s, t)\xi(t) = \rho \xi(s)\\
-		& \iff \frac{1}{N}\Phi^T(s)\tilde{\alpha}^T \tilde{\alpha} W b = \rho b \Phi(s)\\
-		& \iff \frac 1 N \tilde{\alpha}^T \tilde{\alpha} W b = \rho b
+		& \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, b\\
+		& \iff \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W\, W^{-\frac 1 2}u = \rho\, W^{-\frac 1 2}u\\
+		& \iff \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W^{\frac{1}{2}} u = \rho\, W^{-\frac{1}{2}} u \\
+		& \iff \frac 1 N \underbrace{W^{\frac 1 2}\, \tilde{\alpha}^\top \tilde{\alpha}\, W^{\frac 1 2}}_{\text{symétrique}}\, u = \rho\, u
+	\end{align*}
+	La matrice $W^{1/2}\tilde\alpha^\top\tilde\alpha\, W^{1/2}$ est bien symétrique (elle est de la forme $M^\top M$ avec $M = \tilde\alpha W^{1/2}$), ce qui garantit des valeurs propres réelles $\rho$ et des vecteurs propres $u$ orthogonaux. Une fois $u$ obtenu, on retrouve $b = W^{-1/2} u$, puis la fonction propre bivariée $\xi(t) = \boldsymbol{\Phi}^\top(t)\, b$, dont les deux moitiés de $b$ (les $K$ premiers et les $K$ derniers coefficients) donnent respectivement la composante "température" $\xi^T$ et la composante "salinité" $\xi^S$ de la fonction propre.
+	
+	\subparagraph{Étape 4 : Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}
+	Une fois les fonctions propres bivariées $\xi_j = (\xi_j^T, \xi_j^S)$ et valeurs propres $\rho_j$ calculées, on peut calculer les projections $c_{l,j}$ des profils bivariés centrés $\tilde X_l = (\tilde T_l, \tilde S_l)$ sur l'espace propre. On note $c_{l,j}$ le score du profil $l$ sur la $j$-ème composante principale (commun à la température et à la salinité, puisque la composante principale est bivariée) :
+	\begin{align*}
+		c_{l, j} &= \langle \tilde X_l, \xi_j\rangle \\
+		&= \int \tilde\alpha_l^\top \boldsymbol{\Phi}(t)\, \boldsymbol{\Phi}^\top(t)\, b_j \, dt \\ 
+		&= \tilde \alpha_l^\top\, W\, b_j \;\in \mathbb{R}
 	\end{align*}
 	
-	Or, dans le cas où la base choisie n'est pas orthonormale (comme la base de B-Spline), la décomposition en valeur spectrale n'est pas réalisable car la matrice $ \tilde{\alpha}^T \tilde{\alpha}$ n'est pas symétrique. Pour contourner ce problème, il existe une astuce par changement de variable $b = W^{-\frac 1 2}u$. Ainsi on obtient l'équation de décomposition spectrale suivante : 
-	
-	\begin{align*}
-		& \frac 1 N \tilde{\alpha}^T \tilde{\alpha} W b = \rho b\\
-		& \iff \frac 1 N \tilde{\alpha}^T \tilde{\alpha} W^{-\frac 1 2}u = \rho W^{-\frac 1 2}u\\
-		& \iff \frac 1 N \underbrace{W^{\frac 1 2} \tilde{\alpha}^T \tilde{\alpha} W^{- \frac 1 2}}_{\text{symétrique}}u = \rho u
-	\end{align*}
-	
-	\subsubsection{Étape 4 : Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}
-	Une fois les fonctions propres $\xi$ et valeurs propres $\rho$ calculées par résolution de l'équation propre, on peut calculer les projections $c_{i}$ des profils fonctionnels $Sv_i$ dans l'espace propre. On note ainsi $c_{i, j}$ le score pour le ping $i$ sur la j-ème composante principale.
-	\begin{align*}
-		& c_{i, j} = \langle S_v^{(i)}, \xi_j\rangle \\
-		& = \int  \tilde{\alpha} \Phi(s) \Phi(s) b ds \\ 
-		& = \tilde \alpha W b_j \in \mathbb{R}
-	\end{align*}
-	
-	On choisit ensuite $J<<K$ composantes à partir de la variance expliquée cumulée. La variance expliquée cumulée des $J$ premières composantes principales est calculée comme suis :
+	On choisit ensuite $J \ll 2K$ composantes à partir de la variance expliquée cumulée. La variance expliquée cumulée des $J$ premières composantes principales est calculée comme suit :
 	\[
-		VE = \frac{\sum_{j=1}^{J}\rho_j}{\sum_{k=1}^{K} \rho_k}	
+	VE = \frac{\sum_{j=1}^{J}\rho_j}{\sum_{k=1}^{2K} \rho_k}	
 	\]
-	avec $\rho_k$ la valeur propre associée à la k-ième composante principale et les composantes principales triées par ordre croissant de valeur propre.
-	On peut donc sélectionner par exemple les $J$ premières composantes principales qui expliquent 90\% de la variance.
+	avec $\rho_k$ la valeur propre associée à la $k$-ième composante principale, les composantes étant triées par ordre \textbf{décroissant} de valeur propre ($\rho_1 \geq \rho_2 \geq \cdots$), de sorte que les $J$ premières composantes soient celles qui expliquent le plus de variance conjointe des profils de température et de salinité. On peut ainsi sélectionner par exemple les $J$ premières composantes principales qui expliquent 90\% de la variance.
 	
 	\vspace{1em}
 	
-	Finalement, on peut reconstruire le profil $S_v^{(i)}$ comme la combinaison linéaire des $J$ premières fonctions propres et des scores associés : 
+	Finalement, on peut reconstruire conjointement les profils de température et de salinité du profil $l$ comme la combinaison linéaire des $J$ premières fonctions propres bivariées et des scores associés (les mêmes scores $c_{l,j}$ pilotant simultanément la reconstruction des deux variables) :
 	\[
-		S_v^{(i)}(t) = \overline{S_v^{(i)}}(t) + \sum_{j=1}^{J}c_{i,j}\xi_j(t)
+	T_l(t) = \overline{T}(t) + \sum_{j=1}^{J} c_{l,j}\, \xi_j^T(t), 
+	\qquad
+	S_l(t) = \overline{S}(t) + \sum_{j=1}^{J} c_{l,j}\, \xi_j^S(t)
 	\]
+	où $\overline{T}$ et $\overline{S}$ sont les profils moyens de température et de salinité, obtenus à partir des composantes correspondantes de $\overline\alpha$.
 	
-	\subsection{Gaussian Mixture Model Clustering}
+	\paragraph{Gaussian Mixture Model Clustering}
 	Une manière de regrouper les données qui se ressemblent est le clustering. Le clustering par mélange de gaussiennes (GMM) est l'une de ces méthodes.Elle repose sur l'hypothèse que les données suivent un mélange de K distributions normales multivariées, une par cluster. Cette hypothèse paramétrique forte contraint l'espace de solutions et peut s'avérer avantageuse lorsque les données s'y conforment réellement. Notons cependant que celon le modèle de GMM, le nombre de paramètres peut s'avérer important. 
 	
 	On a donc des données $X = \{x_1, \ldots, x_N\} \in \mathbb{R}^{N \times D}$. On suppose qu'elles suivent un mélange de K distributions normales multivariées. La loi de probabilité de $X$ peut donc être représentée par la marginale des $K$ lois normales multivariées :
