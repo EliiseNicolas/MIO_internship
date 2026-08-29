@@ -15,7 +15,7 @@ for (g in seq_along(lat_res)) {
   
   for (freq in freqs){
     
-    path_mean_profile <- paste0("F:/data_elise/sv_cropped/sv_cropped_all_years/mean_Sv_pigmeann_grid_lon", lon_res_i,"_lat" ,lat_res_i, "_", freq, "kHz.rds")
+    path_mean_profile <- paste0("F:/data_elise/sv_cropped/sv_cropped_all_years/mean_Sv_2018_2021_2022_2023_pigmeann_grid_lon", lon_res_i,"_lat" ,lat_res_i, "_", freq, "kHz.rds")
     
     # Ouvrir le fichier
     mean_profiles <- readRDS(path_mean_profile)
@@ -155,7 +155,7 @@ for (g in seq_along(lat_res)) {
     # Le nom de fichier inclut maintenant grid_label, sinon les 4
     # resolutions de grille s'ecrasaient mutuellement.
     
-    saveRDS(nasc_df, paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_", grid_label, "_2018_2022_2021_2023_", freq, "kHz.rds"))
+    saveRDS(nasc_df, paste0("F:/data_elise/NASC/NASC_pig_mean/NASC_mean_Sv_pig_grid_", grid_label, "_2018_2022_2021_2023_", freq, "kHz.rds"))
     
     # ------------------------------------------------------------
     # Plot du NASC au cours du temps par année

@@ -10,6 +10,10 @@ rm(list = ls())
 library(ncdf4)
 
 # Paths
+freqs <- c(18, 38, 70, 120, 200)
+lat_res <- c(200, 500, 700, 1000)
+lon_res <- c(200, 500, 1000, 1500)
+
 path_clusters_2018_2021_2022_2023 <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/transitions_upgraded/cluster_transition_map_renamed.rds"
 lon_path <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/lon.rds"
 lat_path <- "F:/data_elise/fod_elise_2018_2021_2022_2023/mclust_results_2018_2021_2022_2023/lat.rds"
@@ -22,74 +26,79 @@ lon_fod <- readRDS(lon_path)
 time_fod <- readRDS(time_path)
 date_fod <- as.Date(time_fod)
 
-for (freq in c(200)){ 
-  print(freq)
-  path_nasc <- paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds")
-  # path_nasc <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds") # NASC per ESU
+for (g in seq_along(lat_res)) {
+  lon_res_i <- lon_res[g]
+  lat_res_i <- lat_res[g]
+  grid_label <- paste0("lon", lon_res_i, "_lat", lat_res_i)
   
-  # Open NASC
-  nasc_ds <- readRDS(path_nasc)
-  time_nasc <- nasc_ds$time
-  
-  date_nasc_all <- as.Date(time_nasc)
-  # print(date_nasc_all)
-  date_nasc_unique <- unique(date_nasc_all)
-  date_nasc_unique
-  lat_nasc <- nasc_ds$lat
-  lon_nasc <- nasc_ds$lon
-  
-  # For every ping in nasc, find the closest fod cluster (in time and space)
-  # Since FOD has daily resolution, loop is on days
-  fod_all <- rep(NA, length(time_nasc))
-  lat_fod_match <- rep(NA, length(time_nasc))
-  lon_fod_match <- rep(NA, length(time_nasc))
-  
-  for (d in date_nasc_unique){
-    # print(head(time_fod))
-    d <- as.Date(d, origin = "1970-01-01")
-    # print(d)
-    idx_time_fod <- which(date_fod == d)
+  for (freq in freqs){
+    print(freq)
+    path_nasc <- paste0("F:/data_elise/NASC/NASC_pig_mean/NASC_mean_Sv_pig_grid_lon", lon_res_i, "_lat", lat_res_i,"_2018_2022_2021_2023_", freq, "kHz.rds")
+    # path_nasc <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds") # NASC per ESU
     
-    if(length(idx_time_fod) == 0){
-      print(paste("Jour non trouvé dans FOD :", format(d, "%Y-%m-%d")))
-      next
-    } # regarder les jours pas présents dans le ds
+    # Open NASC
+    nasc_ds <- readRDS(path_nasc)
+    time_nasc <- nasc_ds$time
     
-    # keep only ESU at day d
-    mask_nasc_day <- date_nasc_all == d
-    idx_nasc_day <- which(mask_nasc_day)
+    date_nasc_all <- as.Date(time_nasc)
+    # print(date_nasc_all)
+    date_nasc_unique <- unique(date_nasc_all)
+    date_nasc_unique
+    lat_nasc <- nasc_ds$lat
+    lon_nasc <- nasc_ds$lon
     
-    lat_nasc_day <- lat_nasc[mask_nasc_day]
-    lon_nasc_day <- lon_nasc[mask_nasc_day]
+    # For every ping in nasc, find the closest fod cluster (in time and space)
+    # Since FOD has daily resolution, loop is on days
+    fod_all <- rep(NA, length(time_nasc))
+    lat_fod_match <- rep(NA, length(time_nasc))
+    lon_fod_match <- rep(NA, length(time_nasc))
     
-    # find closest lat/lon nasc coords in FOD
-    for(i in seq_along(lat_nasc_day)){
-      idx_lon_day_fod <- which.min(abs(lon_fod - lon_nasc_day[i]))
-      idx_lat_day_fod <- which.min(abs(lat_fod - lat_nasc_day[i]))
-      fod_cl <- clusters[idx_lon_day_fod, idx_lat_day_fod, idx_time_fod]
+    for (d in date_nasc_unique){
+      # print(head(time_fod))
+      d <- as.Date(d, origin = "1970-01-01")
+      # print(d)
+      idx_time_fod <- which(date_fod == d)
       
-      fod_all[idx_nasc_day[i]] <- clusters[
-        idx_lon_day_fod,
-        idx_lat_day_fod,
-        idx_time_fod
-      ]
+      if(length(idx_time_fod) == 0){
+        print(paste("Jour non trouvé dans FOD :", format(d, "%Y-%m-%d")))
+        next
+      } # regarder les jours pas présents dans le ds
       
-      # coordonnées FOD associées
-      # print(c(
-      #   "NASC lat =", lat_nasc_day[i],
-      #   "FOD lat =", lat_fod[idx_lat_day_fod],
-      #   "diff lat =", lat_fod[idx_lat_day_fod] - lat_nasc_day[i]
-      # ))
-      # 
-      # print(c(
-      #   "NASC lon =", lon_nasc_day[i],
-      #   "FOD lon =", lon_fod[idx_lon_day_fod],
-      #   "diff lon =", lon_fod[idx_lon_day_fod] - lon_nasc_day[i]
-      # ))
-      lat_fod_match[idx_nasc_day[i]] <- lat_fod[idx_lat_day_fod]
-      lon_fod_match[idx_nasc_day[i]] <- lon_fod[idx_lon_day_fod]
+      # keep only ESU at day d
+      mask_nasc_day <- date_nasc_all == d
+      idx_nasc_day <- which(mask_nasc_day)
+      
+      lat_nasc_day <- lat_nasc[mask_nasc_day]
+      lon_nasc_day <- lon_nasc[mask_nasc_day]
+      
+      # find closest lat/lon nasc coords in FOD
+      for(i in seq_along(lat_nasc_day)){
+        idx_lon_day_fod <- which.min(abs(lon_fod - lon_nasc_day[i]))
+        idx_lat_day_fod <- which.min(abs(lat_fod - lat_nasc_day[i]))
+        fod_cl <- clusters[idx_lon_day_fod, idx_lat_day_fod, idx_time_fod]
+        
+        fod_all[idx_nasc_day[i]] <- clusters[
+          idx_lon_day_fod,
+          idx_lat_day_fod,
+          idx_time_fod
+        ]
+        
+        # coordonnées FOD associées
+        # print(c(
+        #   "NASC lat =", lat_nasc_day[i],
+        #   "FOD lat =", lat_fod[idx_lat_day_fod],
+        #   "diff lat =", lat_fod[idx_lat_day_fod] - lat_nasc_day[i]
+        # ))
+        # 
+        # print(c(
+        #   "NASC lon =", lon_nasc_day[i],
+        #   "FOD lon =", lon_fod[idx_lon_day_fod],
+        #   "diff lon =", lon_fod[idx_lon_day_fod] - lon_nasc_day[i]
+        # ))
+        lat_fod_match[idx_nasc_day[i]] <- lat_fod[idx_lat_day_fod]
+        lon_fod_match[idx_nasc_day[i]] <- lon_fod[idx_lon_day_fod]
+      }
     }
-  }
   # str(fod_all)
   # print(unique(fod_all))
   length(lat_fod_match)
@@ -116,13 +125,15 @@ for (freq in c(200)){
   # verif du match des lon/lat
   dlat_fod <- nasc_fod_match$lat_fod - nasc_fod_match$lat_nasc
   dlon_fod <- nasc_fod_match$lon_fod - nasc_fod_match$lon_nasc
-  summary(dlat_fod)
-  summary(dlon_fod) # OK
+  print(summary(dlat_fod))
+  print(summary(dlon_fod)) # OK
+  
   
   saveRDS(
     nasc_fod_match,
-    paste0("F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2023_transect/fod_colocated_NASC_mean_pig_grid/NASC_mean_pig_FOD_with_transitions_cluster_match_2018_2021_2023_", freq, "kHz.rds"
-    ))
+    paste0("F:/data_elise/fod_elise_2018_2021_2022_2023/fod_colocated_nasc_2018_2021_2022_2023_transect/fod_colocated_NASC_mean_pig_grid/NASC_mean_pig_FOD_with_transitions_cluster_match_2018_2021_2023_", freq, "kHz_lon", lon_res_i, "_lat", lat_res_i, ".rds")
+    )
+  }
 }
 
 
