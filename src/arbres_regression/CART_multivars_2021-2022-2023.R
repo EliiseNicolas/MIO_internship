@@ -11,7 +11,7 @@ rm(list = ls())
 # -------------- Global variables
 freq <- 18
 
-path_datas <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_mean_pig_grid_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds")
+path_datas <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_18kHz_lon200_lat200.rds")
 datas <- readRDS(path_datas)
 str(datas)
 
@@ -20,13 +20,13 @@ str(datas)
 diurnal_period <- 3 # 3 : day, 1: night
 dp <- "day"
 split <- "LOYO"# "RS (80/20)" #"LOYO" # # or  #
-data_leakage_spatio_temp <- TRUE
+data_leakage_spatio_temp <- FALSE
 dist_thr <- 0.5
 pigment_type <- "chla_ratio" # "total_ratio" or  #"conc" 
 n_trees <- 300
 log <- TRUE
 FOD_0 <- FALSE
-model_type <- "XGBOOST"
+model_type <- "CART"
 
 # Cross-validation
 n_folds <- 5
@@ -185,234 +185,234 @@ print(c("Nombre total de données après filtrage : ", nrow(df)))
 colSums(is.na(df))
 
 
-####### 9- Spatio-temporal leakage
-
-if (data_leakage_spatio_temp) {
-  
-  print(c("Lignes dupliquées :", sum(duplicated(df))))
-  
-  # Distance initiale
-  df_scaled <- scale(df[, vars_num])
-  dist_mat <- as.matrix(dist(df_scaled))
-  time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time), FUN = "-"))
-  
-  # Distribution des distances pour les observations < 1 h
-  dist_mat_plot <- dist_mat
-  dist_mat_plot[time_diff > 3600] <- NA
-  dist_mat_plot[lower.tri(dist_mat_plot, diag = TRUE)] <- NA
-  dist_close <- dist_mat_plot[time_diff <= 3600 & !is.na(dist_mat_plot)]
-  
-  print(quantile(dist_close, probs = c(0.01, 0.05, 0.10, 0.25, 0.50, 0.75), na.rm = TRUE))
-  
-  p <- ggplot(
-    data.frame(distance = dist_close), aes(x = distance)) + 
-    geom_histogram(bins = 100) + 
-    geom_vline(xintercept = dist_thr, linetype = "dashed") + 
-    theme_bw() + 
-    labs(x = "Distance", y = "Count", title = "Distribution of distances for observations < 1 h apart", subtitle = paste("Selected threshold:", dist_thr))
-  print(p)
-  
-  # Fonction de suppression itérative
-  
-  remove_close_pairs <- function(df_input, vars_num, dist_thr, time_thr = 3600) { 
-    df_work <- df_input; 
-    n_initial <- nrow(df_work); 
-    n_pairs_initial <- NA; 
-    n_iterations <- 0; 
-    removed_rows <- integer(0); 
-    pairs_history <- data.frame(iteration = integer(0), n_pairs = integer(0), removed = integer(0)); 
-    
-    repeat { 
-      if (nrow(df_work) < 2) break; 
-      
-      df_scaled <- scale(df_work[, vars_num]); 
-      dist_mat <- as.matrix(dist(df_scaled)); 
-      time_diff <- abs(outer(as.numeric(df_work$time), as.numeric(df_work$time), FUN = "-")); 
-      pairs <- which(time_diff <= time_thr & dist_mat < dist_thr, arr.ind = TRUE); 
-      pairs <- pairs[pairs[, 1] < pairs[, 2], , drop = FALSE]; 
-      n_pairs <- nrow(pairs); 
-      
-      if (is.na(n_pairs_initial)) n_pairs_initial <- n_pairs; 
-      if (n_pairs == 0) break; 
-      pair <- pairs[1, ]; 
-      remove_row <- pair[2]; 
-      original_row <- as.integer(rownames(df_work)[remove_row]);
-      removed_rows <- c(removed_rows, original_row); 
-      n_iterations <- n_iterations + 1; 
-      pairs_history <- rbind(pairs_history, data.frame(iteration = n_iterations, n_pairs = n_pairs, removed = original_row)); 
-      df_work <- df_work[-remove_row, , drop = FALSE] }; 
-      final_df <- df_work; 
-      list(
-        df = final_df, 
-        n_initial = n_initial, 
-        n_remaining = nrow(final_df), 
-        n_removed = n_initial - nrow(final_df), 
-        n_pairs_initial = ifelse(is.na(n_pairs_initial), 0, n_pairs_initial), 
-        n_pairs_final = 0, 
-        n_iterations = n_iterations, 
-        removed_rows = removed_rows, 
-        pairs_history = pairs_history
-      ) 
-    }
-  
-  
-  # ----------------------------------------------------------
-  # Sensitivity analysis
-  # ----------------------------------------------------------
-  
-  thresholds <- c(0.25, 0.5, 0.75, 1, 1.25, 1.5)
-  sensitivity_results <- data.frame()
-  sensitivity_data <- list()
-  
-  for (thr in thresholds) {
-    
-    cat("\n========================================\n")
-    cat("Threshold :", thr, "\n")
-    cat("========================================\n")
-    
-    leakage_thr <- remove_close_pairs(df, vars_num, thr)
-    df_thr <- leakage_thr$df
-    
-    cat("Paires initiales :", leakage_thr$n_pairs_initial, "\n")
-    cat("Observations supprimées :", leakage_thr$n_removed, "\n")
-    cat("Observations restantes :", leakage_thr$n_remaining, "\n")
-    cat("Nombre d'itérations :", leakage_thr$n_iterations, "\n")
-    
-    # LOYO
-    years_all_thr <- sort(unique(df_thr$year))
-    loyo_thr <- data.frame()
-    
-    for (yr in years_all_thr) {
-      
-      train_yr <- df_thr[df_thr$year != yr, ]
-      test_yr <- df_thr[df_thr$year == yr, ]
-      
-      train_yr$year <- NULL
-      test_yr$year <- NULL
-      train_yr$time <- NULL
-      test_yr$time <- NULL
-      
-      train_yr_scaled <- scale(train_yr[, vars_num])
-      center_yr <- attr(train_yr_scaled, "scaled:center")
-      scale_yr <- attr(train_yr_scaled, "scaled:scale")
-      test_yr_scaled <- scale(test_yr[, vars_num], center = center_yr, scale = scale_yr)
-      
-      ds_train_yr <- train_yr
-      ds_train_yr[, vars_num] <- train_yr_scaled
-      ds_test_yr <- test_yr
-      ds_test_yr[, vars_num] <- test_yr_scaled
-      
-      if (model_type == "CART") model_yr <- rpart(NASC ~ ., data = ds_train_yr, method = "anova")
-      if (model_type == "RF") model_yr <- randomForest(NASC ~ ., data = ds_train_yr, ntree = n_trees, importance = TRUE)
-      
-      obs_yr <- ds_test_yr$NASC
-      pred_yr <- predict(model_yr, newdata = ds_test_yr)
-      
-      RMSE_yr <- sqrt(mean((pred_yr - obs_yr)^2))
-      R2_yr <- 1 - sum((obs_yr - pred_yr)^2) / sum((obs_yr - mean(obs_yr))^2)
-      MAE_yr <- mean(abs(pred_yr - obs_yr))
-      
-      loyo_thr <- rbind(loyo_thr, data.frame(year = yr, RMSE = RMSE_yr, R2 = R2_yr, MAE = MAE_yr, n_train = nrow(train_yr), n_test = nrow(test_yr)))
-    }
-    
-    sensitivity_results <- rbind(sensitivity_results, data.frame(threshold = thr, n_pairs_initial = leakage_thr$n_pairs_initial, n_removed = leakage_thr$n_removed, percent_removed = 100 * leakage_thr$n_removed / leakage_thr$n_initial, n_remaining = leakage_thr$n_remaining, n_iterations = leakage_thr$n_iterations, RMSE = mean(loyo_thr$RMSE), RMSE_sd = sd(loyo_thr$RMSE), R2 = mean(loyo_thr$R2), R2_sd = sd(loyo_thr$R2), MAE = mean(loyo_thr$MAE), MAE_sd = sd(loyo_thr$MAE)))
-    
-    sensitivity_data[[as.character(thr)]] <- leakage_thr
-  }
-  
-  print(sensitivity_results)
-  
-  
-  # ----------------------------------------------------------
-  # Graphiques sensitivity
-  # ----------------------------------------------------------
-  
-  ggplot(sensitivity_results, aes(x = threshold, y = RMSE)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "RMSE", title = paste("Sensitivity analysis -", model_type), subtitle = paste("LOYO -", dp, "-", freq, "kHz"))
-  
-  ggplot(sensitivity_results, aes(x = threshold, y = R2)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "R²", title = paste("Sensitivity analysis -", model_type), subtitle = paste("LOYO -", dp, "-", freq, "kHz"))
-  
-  ggplot(sensitivity_results, aes(x = threshold, y = percent_removed)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "Observations removed (%)", title = "Sensitivity of data removal to distance threshold", subtitle = paste("Observations at less than 1 hour apart -", dp, "-", freq, "kHz"))
-  
-  
-  # ----------------------------------------------------------
-  # Nettoyage définitif avec dist_thr
-  # ----------------------------------------------------------
-  
-  leakage_final <- remove_close_pairs(df, vars_num, dist_thr)
-  df <- leakage_final$df
-  
-  cat("\n========================================\n")
-  cat("NETTOYAGE FINAL\n")
-  cat("========================================\n")
-  cat("Threshold :", dist_thr, "\n")
-  cat("Paires initiales :", leakage_final$n_pairs_initial, "\n")
-  cat("Observations initiales :", leakage_final$n_initial, "\n")
-  cat("Observations supprimées :", leakage_final$n_removed, "\n")
-  cat("Pourcentage supprimé :", round(100 * leakage_final$n_removed / leakage_final$n_initial, 2), "%\n")
-  cat("Observations restantes :", leakage_final$n_remaining, "\n")
-  cat("Nombre d'itérations :", leakage_final$n_iterations, "\n")
-  
-  # Vérification finale
-  df_scaled <- scale(df[, vars_num])
-  dist_mat <- as.matrix(dist(df_scaled))
-  time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time), FUN = "-"))
-  final_pairs <- which(time_diff <= 3600 & dist_mat < dist_thr, arr.ind = TRUE)
-  final_pairs <- final_pairs[final_pairs[, 1] < final_pairs[, 2], , drop = FALSE]
-  
-  cat("Paires restantes après nettoyage :", nrow(final_pairs), "\n")
-  
-  if (nrow(final_pairs) == 0) {
-    cat("OK : aucune paire répondant aux critères de leakage ne reste.\n")
-  } else {
-    warning("Des paires de leakage sont encore présentes.")
-  }
-}
-
-print(sensitivity_results)
-
-ggplot(sensitivity_results, aes(x = threshold, y = RMSE)) +
-  geom_line() +
-  geom_point(size = 3) +
-  theme_bw() +
-  labs(
-    x = "Distance threshold",
-    y = "RMSE",
-    title = paste("Sensitivity analysis -", model_type, "algorithm"),
-    subtitle = paste("LOYO -", dp, "-", freq, "kHz")
-  )
-
-ggplot(sensitivity_results, aes(x = threshold, y = R2)) +
-  geom_line() +
-  geom_point(size = 3) +
-  theme_bw() +
-  labs(
-    x = "Distance threshold",
-    y = "R²",
-    title = paste("Sensitivity analysis -", model_type, "algorithm"),
-    subtitle = paste("LOYO -", dp, "-", freq, "kHz")
-  )
-
-ggplot(sensitivity_results, aes(x = threshold, y = R2)) +
-  geom_line() +
-  geom_point(size = 3) +
-  theme_bw() +
-  labs(
-    x = "Distance threshold",
-    y = "R²",
-    title = paste("Sensitivity analysis -", model_type, "algorithm"),
-    subtitle = paste("LOYO -", dp, "-", freq, "kHz")
-  )
-
-ggplot(sensitivity_results, aes(x = threshold, y = percent_removed)) +
-  geom_line() +
-  geom_point(size = 3) +
-  theme_bw() +
-  labs(
-    x = "Distance threshold",
-    y = "Observations removed (%)",
-    title = "Sensitivity of data removal to distance threshold",
-    subtitle = paste("Observations at less than 1 hour apart -", dp, "-", freq, "kHz")
-  )
+# ####### 9- Spatio-temporal leakage
+# 
+# if (data_leakage_spatio_temp) {
+#   
+#   print(c("Lignes dupliquées :", sum(duplicated(df))))
+#   
+#   # Distance initiale
+#   df_scaled <- scale(df[, vars_num])
+#   dist_mat <- as.matrix(dist(df_scaled))
+#   time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time), FUN = "-"))
+#   
+#   # Distribution des distances pour les observations < 1 h
+#   dist_mat_plot <- dist_mat
+#   dist_mat_plot[time_diff > 3600] <- NA
+#   dist_mat_plot[lower.tri(dist_mat_plot, diag = TRUE)] <- NA
+#   dist_close <- dist_mat_plot[time_diff <= 3600 & !is.na(dist_mat_plot)]
+#   
+#   print(quantile(dist_close, probs = c(0.01, 0.05, 0.10, 0.25, 0.50, 0.75), na.rm = TRUE))
+#   
+#   p <- ggplot(
+#     data.frame(distance = dist_close), aes(x = distance)) + 
+#     geom_histogram(bins = 100) + 
+#     geom_vline(xintercept = dist_thr, linetype = "dashed") + 
+#     theme_bw() + 
+#     labs(x = "Distance", y = "Count", title = "Distribution of distances for observations < 1 h apart", subtitle = paste("Selected threshold:", dist_thr))
+#   print(p)
+#   
+#   # Fonction de suppression itérative
+#   
+#   remove_close_pairs <- function(df_input, vars_num, dist_thr, time_thr = 3600) { 
+#     df_work <- df_input; 
+#     n_initial <- nrow(df_work); 
+#     n_pairs_initial <- NA; 
+#     n_iterations <- 0; 
+#     removed_rows <- integer(0); 
+#     pairs_history <- data.frame(iteration = integer(0), n_pairs = integer(0), removed = integer(0)); 
+#     
+#     repeat { 
+#       if (nrow(df_work) < 2) break; 
+#       
+#       df_scaled <- scale(df_work[, vars_num]); 
+#       dist_mat <- as.matrix(dist(df_scaled)); 
+#       time_diff <- abs(outer(as.numeric(df_work$time), as.numeric(df_work$time), FUN = "-")); 
+#       pairs <- which(time_diff <= time_thr & dist_mat < dist_thr, arr.ind = TRUE); 
+#       pairs <- pairs[pairs[, 1] < pairs[, 2], , drop = FALSE]; 
+#       n_pairs <- nrow(pairs); 
+#       
+#       if (is.na(n_pairs_initial)) n_pairs_initial <- n_pairs; 
+#       if (n_pairs == 0) break; 
+#       pair <- pairs[1, ]; 
+#       remove_row <- pair[2]; 
+#       original_row <- as.integer(rownames(df_work)[remove_row]);
+#       removed_rows <- c(removed_rows, original_row); 
+#       n_iterations <- n_iterations + 1; 
+#       pairs_history <- rbind(pairs_history, data.frame(iteration = n_iterations, n_pairs = n_pairs, removed = original_row)); 
+#       df_work <- df_work[-remove_row, , drop = FALSE] }; 
+#       final_df <- df_work; 
+#       list(
+#         df = final_df, 
+#         n_initial = n_initial, 
+#         n_remaining = nrow(final_df), 
+#         n_removed = n_initial - nrow(final_df), 
+#         n_pairs_initial = ifelse(is.na(n_pairs_initial), 0, n_pairs_initial), 
+#         n_pairs_final = 0, 
+#         n_iterations = n_iterations, 
+#         removed_rows = removed_rows, 
+#         pairs_history = pairs_history
+#       ) 
+#     }
+#   
+#   
+#   # ----------------------------------------------------------
+#   # Sensitivity analysis
+#   # ----------------------------------------------------------
+#   
+#   thresholds <- c(0.25, 0.5, 0.75, 1, 1.25, 1.5)
+#   sensitivity_results <- data.frame()
+#   sensitivity_data <- list()
+#   
+#   for (thr in thresholds) {
+#     
+#     cat("\n========================================\n")
+#     cat("Threshold :", thr, "\n")
+#     cat("========================================\n")
+#     
+#     leakage_thr <- remove_close_pairs(df, vars_num, thr)
+#     df_thr <- leakage_thr$df
+#     
+#     cat("Paires initiales :", leakage_thr$n_pairs_initial, "\n")
+#     cat("Observations supprimées :", leakage_thr$n_removed, "\n")
+#     cat("Observations restantes :", leakage_thr$n_remaining, "\n")
+#     cat("Nombre d'itérations :", leakage_thr$n_iterations, "\n")
+#     
+#     # LOYO
+#     years_all_thr <- sort(unique(df_thr$year))
+#     loyo_thr <- data.frame()
+#     
+#     for (yr in years_all_thr) {
+#       
+#       train_yr <- df_thr[df_thr$year != yr, ]
+#       test_yr <- df_thr[df_thr$year == yr, ]
+#       
+#       train_yr$year <- NULL
+#       test_yr$year <- NULL
+#       train_yr$time <- NULL
+#       test_yr$time <- NULL
+#       
+#       train_yr_scaled <- scale(train_yr[, vars_num])
+#       center_yr <- attr(train_yr_scaled, "scaled:center")
+#       scale_yr <- attr(train_yr_scaled, "scaled:scale")
+#       test_yr_scaled <- scale(test_yr[, vars_num], center = center_yr, scale = scale_yr)
+#       
+#       ds_train_yr <- train_yr
+#       ds_train_yr[, vars_num] <- train_yr_scaled
+#       ds_test_yr <- test_yr
+#       ds_test_yr[, vars_num] <- test_yr_scaled
+#       
+#       if (model_type == "CART") model_yr <- rpart(NASC ~ ., data = ds_train_yr, method = "anova")
+#       if (model_type == "RF") model_yr <- randomForest(NASC ~ ., data = ds_train_yr, ntree = n_trees, importance = TRUE)
+#       
+#       obs_yr <- ds_test_yr$NASC
+#       pred_yr <- predict(model_yr, newdata = ds_test_yr)
+#       
+#       RMSE_yr <- sqrt(mean((pred_yr - obs_yr)^2))
+#       R2_yr <- 1 - sum((obs_yr - pred_yr)^2) / sum((obs_yr - mean(obs_yr))^2)
+#       MAE_yr <- mean(abs(pred_yr - obs_yr))
+#       
+#       loyo_thr <- rbind(loyo_thr, data.frame(year = yr, RMSE = RMSE_yr, R2 = R2_yr, MAE = MAE_yr, n_train = nrow(train_yr), n_test = nrow(test_yr)))
+#     }
+#     
+#     sensitivity_results <- rbind(sensitivity_results, data.frame(threshold = thr, n_pairs_initial = leakage_thr$n_pairs_initial, n_removed = leakage_thr$n_removed, percent_removed = 100 * leakage_thr$n_removed / leakage_thr$n_initial, n_remaining = leakage_thr$n_remaining, n_iterations = leakage_thr$n_iterations, RMSE = mean(loyo_thr$RMSE), RMSE_sd = sd(loyo_thr$RMSE), R2 = mean(loyo_thr$R2), R2_sd = sd(loyo_thr$R2), MAE = mean(loyo_thr$MAE), MAE_sd = sd(loyo_thr$MAE)))
+#     
+#     sensitivity_data[[as.character(thr)]] <- leakage_thr
+#   }
+#   
+#   print(sensitivity_results)
+#   
+#   
+#   # ----------------------------------------------------------
+#   # Graphiques sensitivity
+#   # ----------------------------------------------------------
+#   
+#   ggplot(sensitivity_results, aes(x = threshold, y = RMSE)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "RMSE", title = paste("Sensitivity analysis -", model_type), subtitle = paste("LOYO -", dp, "-", freq, "kHz"))
+#   
+#   ggplot(sensitivity_results, aes(x = threshold, y = R2)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "R²", title = paste("Sensitivity analysis -", model_type), subtitle = paste("LOYO -", dp, "-", freq, "kHz"))
+#   
+#   ggplot(sensitivity_results, aes(x = threshold, y = percent_removed)) + geom_line() + geom_point(size = 3) + geom_vline(xintercept = dist_thr, linetype = "dashed") + theme_bw() + labs(x = "Distance threshold", y = "Observations removed (%)", title = "Sensitivity of data removal to distance threshold", subtitle = paste("Observations at less than 1 hour apart -", dp, "-", freq, "kHz"))
+#   
+#   
+#   # ----------------------------------------------------------
+#   # Nettoyage définitif avec dist_thr
+#   # ----------------------------------------------------------
+#   
+#   leakage_final <- remove_close_pairs(df, vars_num, dist_thr)
+#   df <- leakage_final$df
+#   
+#   cat("\n========================================\n")
+#   cat("NETTOYAGE FINAL\n")
+#   cat("========================================\n")
+#   cat("Threshold :", dist_thr, "\n")
+#   cat("Paires initiales :", leakage_final$n_pairs_initial, "\n")
+#   cat("Observations initiales :", leakage_final$n_initial, "\n")
+#   cat("Observations supprimées :", leakage_final$n_removed, "\n")
+#   cat("Pourcentage supprimé :", round(100 * leakage_final$n_removed / leakage_final$n_initial, 2), "%\n")
+#   cat("Observations restantes :", leakage_final$n_remaining, "\n")
+#   cat("Nombre d'itérations :", leakage_final$n_iterations, "\n")
+#   
+#   # Vérification finale
+#   df_scaled <- scale(df[, vars_num])
+#   dist_mat <- as.matrix(dist(df_scaled))
+#   time_diff <- abs(outer(as.numeric(df$time), as.numeric(df$time), FUN = "-"))
+#   final_pairs <- which(time_diff <= 3600 & dist_mat < dist_thr, arr.ind = TRUE)
+#   final_pairs <- final_pairs[final_pairs[, 1] < final_pairs[, 2], , drop = FALSE]
+#   
+#   cat("Paires restantes après nettoyage :", nrow(final_pairs), "\n")
+#   
+#   if (nrow(final_pairs) == 0) {
+#     cat("OK : aucune paire répondant aux critères de leakage ne reste.\n")
+#   } else {
+#     warning("Des paires de leakage sont encore présentes.")
+#   }
+# }
+# 
+# print(sensitivity_results)
+# 
+# ggplot(sensitivity_results, aes(x = threshold, y = RMSE)) +
+#   geom_line() +
+#   geom_point(size = 3) +
+#   theme_bw() +
+#   labs(
+#     x = "Distance threshold",
+#     y = "RMSE",
+#     title = paste("Sensitivity analysis -", model_type, "algorithm"),
+#     subtitle = paste("LOYO -", dp, "-", freq, "kHz")
+#   )
+# 
+# ggplot(sensitivity_results, aes(x = threshold, y = R2)) +
+#   geom_line() +
+#   geom_point(size = 3) +
+#   theme_bw() +
+#   labs(
+#     x = "Distance threshold",
+#     y = "R²",
+#     title = paste("Sensitivity analysis -", model_type, "algorithm"),
+#     subtitle = paste("LOYO -", dp, "-", freq, "kHz")
+#   )
+# 
+# ggplot(sensitivity_results, aes(x = threshold, y = R2)) +
+#   geom_line() +
+#   geom_point(size = 3) +
+#   theme_bw() +
+#   labs(
+#     x = "Distance threshold",
+#     y = "R²",
+#     title = paste("Sensitivity analysis -", model_type, "algorithm"),
+#     subtitle = paste("LOYO -", dp, "-", freq, "kHz")
+#   )
+# 
+# ggplot(sensitivity_results, aes(x = threshold, y = percent_removed)) +
+#   geom_line() +
+#   geom_point(size = 3) +
+#   theme_bw() +
+#   labs(
+#     x = "Distance threshold",
+#     y = "Observations removed (%)",
+#     title = "Sensitivity of data removal to distance threshold",
+#     subtitle = paste("Observations at less than 1 hour apart -", dp, "-", freq, "kHz")
+#   )
 
 ####### 10 - Split train/test
 
@@ -472,29 +472,29 @@ cat("\n--- Dimensions finales ---\n")
 cat("Train :", nrow(ds_train_scaled), "observations\n")
 cat("Test :", nrow(ds_test_scaled), "observations\n")
 
-# verifier le dataleakage
-if(data_leakage_spatio_temp){
-  is_train <- seq_len(nrow(df)) %in% train_index
-  is_test  <- !is_train
-  
-  # Garder uniquement les paires TRAIN <-> TEST
-  train_test_pairs <- outer(is_train, is_test, FUN = "&")
-  
-  # Nombre de paires train-test avec distance < dist_thr
-  sum(dist_mat < dist_thr & train_test_pairs, na.rm = TRUE)
-  pairs <- which(dist_mat < dist_thr & train_test_pairs, arr.ind = TRUE)
-  
-  # dataset de leakage
-  leakage <- data.frame(
-      train = pairs[, 1],
-      test = pairs[, 2],
-      distance = dist_mat[pairs]
-    )
-  leakage$time_train <- df$time[leakage$train]
-  leakage$time_test  <- df$time[leakage$test]
-  leakage$time_diff_min <- abs(as.numeric(difftime(leakage$time_train,leakage$time_test,units = "mins")))
-  print(c("Nombre de donnée leaked :", leakage, "nombre de données totales du test set: ", nrow(ds_test_scaled)))
-}
+# # verifier le dataleakage
+# if(data_leakage_spatio_temp){
+#   is_train <- seq_len(nrow(df)) %in% train_index
+#   is_test  <- !is_train
+#   
+#   # Garder uniquement les paires TRAIN <-> TEST
+#   train_test_pairs <- outer(is_train, is_test, FUN = "&")
+#   
+#   # Nombre de paires train-test avec distance < dist_thr
+#   sum(dist_mat < dist_thr & train_test_pairs, na.rm = TRUE)
+#   pairs <- which(dist_mat < dist_thr & train_test_pairs, arr.ind = TRUE)
+#   
+#   # dataset de leakage
+#   leakage <- data.frame(
+#       train = pairs[, 1],
+#       test = pairs[, 2],
+#       distance = dist_mat[pairs]
+#     )
+#   leakage$time_train <- df$time[leakage$train]
+#   leakage$time_test  <- df$time[leakage$test]
+#   leakage$time_diff_min <- abs(as.numeric(difftime(leakage$time_train,leakage$time_test,units = "mins")))
+#   print(c("Nombre de donnée leaked :", leakage, "nombre de données totales du test set: ", nrow(ds_test_scaled)))
+# }
 
 
 ####### 11 - Regression tree
@@ -686,7 +686,30 @@ cat("MAE moyen :", mean(loyo_results$MAE), "(sd =", sd(loyo_results$MAE), ")\n")
 
 ggplot(loyo_results, aes(x = year, y = RMSE)) + geom_col(fill = "steelblue") + theme_bw() + labs(x = "Année test", y = "RMSE", title = paste("RMSE par année - LOYO -", model_type, "algorithm"), subtitle = paste("Transect 2018, 2021, 2023,", dp, ",", freq, "kHz, pigments :", pigment_type))
 
-ggplot(loyo_predictions, aes(x = observed, y = predicted, color = year)) + geom_point(alpha = 0.6) + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + theme_bw() + labs(x = "True NASC", y = "Predicted NASC", title = paste("Real NASC vs. Predicted NASC - LOYO -", model_type, "algorithm"), color = "Année test")
+# ---- Stats globales LOYO (toutes années confondues) pour la légende
+RMSE_loyo_global <- sqrt(mean((loyo_predictions$predicted - loyo_predictions$observed)^2))
+R2_loyo_global <- 1 - sum((loyo_predictions$observed - loyo_predictions$predicted)^2) /
+  sum((loyo_predictions$observed - mean(loyo_predictions$observed))^2)
+
+loyo_label <- paste0("RMSE = ", round(RMSE_loyo_global, 2), ", R\u00b2 = ", round(R2_loyo_global, 2))
+
+ggplot(loyo_predictions, aes(x = observed, y = predicted, color = year)) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  theme_bw() +
+  labs(
+    x = "True NASC",
+    y = "Predicted NASC",
+    title = paste("Real NASC vs. Predicted NASC - LOYO -", model_type, "algorithm"),
+    color = "Année test"
+  ) +
+  annotate(
+    "label",
+    x = -Inf, y = Inf,
+    hjust = -0.1, vjust = 1.5,
+    label = loyo_label,
+    size = 4
+  )
 
 ####### 16 - Random split avec plusieurs folds (validation croisée k-fold)
 n_folds <- 5
@@ -730,8 +753,30 @@ cat("MAE moyen :", mean(rs_results$MAE), "(sd =", sd(rs_results$MAE), ")\n")
 
 ggplot(rs_results, aes(x = factor(fold), y = RMSE)) + geom_col(fill = "darkorange") + theme_bw() + labs(x = "Fold", y = "RMSE", title = paste("RMSE par fold - Random Split (k =", n_folds, ") -", model_type, "algorithm"), subtitle = paste("Transect 2018, 2021, 2023,", dp, ",", freq, "kHz, pigments :", pigment_type))
 
-ggplot(rs_predictions, aes(x = observed, y = predicted, color = factor(fold))) + geom_point(alpha = 0.6) + geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") + theme_bw() + labs(x = "True NASC", y = "Predicted NASC", title = paste("Real NASC vs. Predicted NASC - Random Split -", model_type, "algorithm"), color = "Fold")
+# ---- Stats globales Random Split (tous folds confondus) pour la légende
+RMSE_rs_global <- sqrt(mean((rs_predictions$predicted - rs_predictions$observed)^2))
+R2_rs_global <- 1 - sum((rs_predictions$observed - rs_predictions$predicted)^2) /
+  sum((rs_predictions$observed - mean(rs_predictions$observed))^2)
 
+rs_label <- paste0("RMSE = ", round(RMSE_rs_global, 2), ", R\u00b2 = ", round(R2_rs_global, 2))
+
+ggplot(rs_predictions, aes(x = observed, y = predicted, color = factor(fold))) +
+  geom_point(alpha = 0.6) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red") +
+  theme_bw() +
+  labs(
+    x = "True NASC",
+    y = "Predicted NASC",
+    title = paste("Real NASC vs. Predicted NASC - Random Split -", model_type, "algorithm"),
+    color = "Fold"
+  ) +
+  annotate(
+    "label",
+    x = -Inf, y = Inf,
+    hjust = -0.1, vjust = 1.5,
+    label = rs_label,
+    size = 4
+  )
 ####### 17 - Courbe d'apprentissage (learning curve)
 # Basée sur le split principal (ds_train_scaled / ds_test_scaled défini en section 10)
 train_fractions <- seq(0.1, 1, by = 0.1)

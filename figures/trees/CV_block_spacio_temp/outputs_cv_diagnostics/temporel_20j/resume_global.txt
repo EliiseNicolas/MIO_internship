@@ -1,0 +1,3 @@
+RMSE globale = 0.2830
+R2 global = -0.3191
+Proportion hors AOA = 0.0000
