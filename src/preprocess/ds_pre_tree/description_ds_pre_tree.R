@@ -23,7 +23,7 @@ library(patchwork)
 # ------------------------------------------------------------
 
 freq <- 120
-path <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_mean_pig_grid_pig_ftle_fod_2018_2021_2023_transect_", freq, "kHz_mask9.rds")
+path <- paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_mean_pig_grid_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_120kHz_lon1500_lat1000.rds")
 
 datas <- readRDS(path)
 

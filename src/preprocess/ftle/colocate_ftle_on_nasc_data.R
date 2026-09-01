@@ -34,7 +34,7 @@ for (freq in c(18, 38, 70, 120, 200)){
   # NASC
   # ---------------------------------------------------------
   # nasc_path <- paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds") # mean NASC per pig grid
-  nasc_path <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds") # NASC per ESU
+  nasc_path <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2022_2023_", freq, "kHz.rds") # NASC per ESU
   nasc_ds <- readRDS(nasc_path)
   print(head(nasc_ds$time))
   dates_all_str <- format(as.Date(nasc_ds$time), "%Y-%m-%d")
@@ -145,18 +145,18 @@ for (freq in c(18, 38, 70, 120, 200)){
   
   saveRDS(
     ftle,
-    file = paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2023_", freq, "kHz.rds"
+    file = paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2022_2023_", freq, "kHz.rds"
     )
   )
 }
 
-# diagnostic des NAs 
-rm(list=ls())
-freq <- 18
-ftle <- readRDS( paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2023_", freq, "kHz.rds"))
-print(sum(is.na(ftle)))
-idx_na <- which(is.na(ftle$ftle))
-time_na <- ftle$time[idx_na]
-print(time_na)
-print(unique(as.Date(time_na)))
-unique(is.na(ftle$time))
+# # diagnostic des NAs 
+# rm(list=ls())
+# freq <- 18
+# ftle <- readRDS( paste0("F:/data_elise/ftle/ftle_colocated_transect/ftle_colocated_NASC_per_esu/ftle_colocated_with_NASC_per_esu_2018_2021_2023_", freq, "kHz.rds"))
+# print(sum(is.na(ftle)))
+# idx_na <- which(is.na(ftle$ftle))
+# time_na <- ftle$time[idx_na]
+# print(time_na)
+# print(unique(as.Date(time_na)))
+# unique(is.na(ftle$time))

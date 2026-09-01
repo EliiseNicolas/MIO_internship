@@ -44,7 +44,7 @@ for(freq in c(18, 38, 70, 120, 200)){
   # NASC
   # ---------------------------------------------------------
   # nasc_path <- paste0("F:/data_elise/NASC/NASC_pig_mean/mean_Sv_pig_grid_by_date_2018_2021_2023_", freq, "kHz.rds")
-  nasc_path <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2023_", freq, "kHz.rds") # NASC per ESU
+  nasc_path <- paste0("F:/data_elise/NASC/NASC_all_ESU/NASC_per_ESU_2018_2021_2022_2023_", freq, "kHz.rds") # NASC per ESU
   nasc_ds <- readRDS(nasc_path)
   print(head(nasc_ds$time))
   dates_all_str <- format(as.Date(nasc_ds$time), "%Y%m%d")
@@ -275,7 +275,7 @@ for(freq in c(18, 38, 70, 120, 200)){
       "NASC_per_esu_pig_conc_ratio_",
       p*p,
       "_1d_",
-      "2018_2021_2023_", freq, "kHz.rds"
+      "2018_2021_2022_2023_", freq, "kHz.rds"
     )
   )
 }
