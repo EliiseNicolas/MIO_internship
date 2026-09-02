@@ -1,0 +1,3 @@
+RMSE globale = 0.3710
+R2 global = -0.1643
+Nombre de folds = 5
