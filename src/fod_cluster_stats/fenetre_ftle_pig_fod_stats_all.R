@@ -630,7 +630,7 @@ plot_n_days_interannual(ftle_long, value_col = "ftle", entity_col = "variable",
 # 8. Execution -- NASC
 # ============================================================
 
-freq <- 38
+freq <- 120
 nasc_ds <- readRDS(paste0(
   "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
   freq, "kHz_mask9.rds"
