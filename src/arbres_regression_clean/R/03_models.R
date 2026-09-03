@@ -95,12 +95,40 @@ importance_xgb <- function(model) {
 }
 
 # =====================================================================
+# randomForestSRC (rfsrc) -- gère nativement le manquant via imputation
+# (na.action = "na.impute"), à l'entraînement ET à la prédiction. Utilisé
+# pour le test de reconstruction de carte complète
+# (14_run_rfsrc_reconstruction.R), sur les covariables NORMALISEES
+# (COVARIATES_ALL -- ftle, Chla_total, *_totpig, fod), les mêmes que le
+# pipeline principal CART/RF/XGB.
+# Hyperparamètres tunés : mtry, nodesize, ntree.
+# =====================================================================
+fit_rfsrc <- function(train_df, params, response = RESPONSE_VAR, covs = COVARIATES_ALL) {
+  form <- stats::as.formula(paste(response, "~", paste(covs, collapse = " + ")))
+  randomForestSRC::rfsrc(
+    form, data = train_df[, c(response, covs)],
+    mtry = params$mtry, nodesize = params$nodesize, ntree = params$ntree,
+    na.action = "na.impute", importance = TRUE
+  )
+}
+predict_rfsrc <- function(model, newdata) {
+  # na.action = "na.impute" est aussi utilisé en prédiction : les valeurs
+  # manquantes de `newdata` sont imputées par le modèle avant prédiction
+  # -> permet de prédire sur TOUS les pixels de la grille, même incomplets.
+  predict(model, newdata = newdata, na.action = "na.impute")$predicted
+}
+importance_rfsrc <- function(model) {
+  imp <- model$importance
+  tibble(variable = names(imp), importance = as.numeric(imp))
+}
+
+# =====================================================================
 # Backend générique : encapsule fit/predict/importance + indique si le
 # modèle a besoin de données complètes (sans NA). Utilisé partout
 # ailleurs (tuning, diagnostics, entraînement) pour écrire un seul code
-# qui fonctionne pour les 3 familles de modèles.
+# qui fonctionne pour les 4 familles de modèles.
 # =====================================================================
-make_backend <- function(model_type, fod_levels = NULL) {
+make_backend <- function(model_type, fod_levels = NULL, covs = NULL) {
   switch(model_type,
     "cart" = list(
       model_type = "cart",
@@ -123,6 +151,13 @@ make_backend <- function(model_type, fod_levels = NULL) {
       importance = importance_xgb,
       needs_complete = FALSE
     ),
-    stop("model_type inconnu : ", model_type, " (attendu : cart, rf, xgb)")
+    "rfsrc" = list(
+      model_type = "rfsrc",
+      fit        = function(train_df, params) fit_rfsrc(train_df, params, covs = covs %||% COVARIATES_ALL),
+      predict    = function(model, newdata) predict_rfsrc(model, newdata),
+      importance = importance_rfsrc,
+      needs_complete = FALSE   # gère le NA nativement via imputation
+    ),
+    stop("model_type inconnu : ", model_type, " (attendu : cart, rf, xgb, rfsrc)")
   )
 }

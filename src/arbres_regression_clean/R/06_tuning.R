@@ -85,6 +85,11 @@ default_tuning_grid <- function(model_type) {
       min_child_weight = c(1, 3, 5),
       nrounds          = c(300, 500)
     ),
+    "rfsrc" = expand.grid(
+      mtry     = c(2, 3, 4),
+      nodesize = c(5, 15, 30),
+      ntree    = c(300, 500)
+    ),
     stop("model_type inconnu : ", model_type)
   )
 }

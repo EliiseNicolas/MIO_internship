@@ -154,16 +154,24 @@ plot_metric_bar <- function(metrics_all, metric, fill = "steelblue", hline0 = FA
 # ---------------------------------------------------------------------
 plot_distances_per_fold <- function(metrics_all, subtitle = "") {
   dist_long <- metrics_all %>%
-    select(fold_id, mean_geo_dist_km, mean_covariate_dist) %>%
-    pivot_longer(-fold_id, names_to = "metric", values_to = "value")
+    select(fold_id, mean_geo_dist_km, sd_geo_dist_km,
+           mean_covariate_dist, sd_covariate_dist) %>%
+    pivot_longer(
+      cols = c(mean_geo_dist_km, mean_covariate_dist),
+      names_to = "metric", values_to = "mean_value"
+    ) %>%
+    mutate(sd_value = if_else(metric == "mean_geo_dist_km", sd_geo_dist_km, sd_covariate_dist)) %>%
+    select(fold_id, metric, mean_value, sd_value)
 
-  ggplot(dist_long, aes(x = fold_id, y = value, fill = metric)) +
+  ggplot(dist_long, aes(x = fold_id, y = mean_value, fill = metric)) +
     geom_col(show.legend = FALSE) +
+    geom_errorbar(aes(ymin = pmax(mean_value - sd_value, 0), ymax = mean_value + sd_value), width = 0.2) +
     facet_wrap(~metric, scales = "free_y", labeller = as_labeller(c(
-      mean_geo_dist_km    = "Distance geographique moyenne (km)",
-      mean_covariate_dist = "Distance covariables test->train (standardisee)"
+      mean_geo_dist_km    = "Distance geographique (km), test -> train le plus proche",
+      mean_covariate_dist = "Distance covariables (standardisee), test -> train le plus proche"
     ))) +
-    labs(title = "Distance test -> train, par fold", subtitle = subtitle, x = "Fold", y = NULL) +
+    labs(title = "Distance test -> train, par fold (moyenne +/- ecart-type intra-fold)",
+         subtitle = subtitle, x = "Fold", y = NULL) +
     theme_pipeline + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 }
 

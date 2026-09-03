@@ -26,11 +26,11 @@ for (freq in FREQS) {
   cat("\n============================================================\n")
   cat("FREQUENCE :", freq, "kHz\n")
   cat("============================================================\n")
-
+  
   # deux versions du jeu de données : sans NA (CART/RF) et avec NA (XGB)
   prep_complete <- load_and_clean(freq, drop_na_numeric = TRUE)
   prep_xgb      <- load_and_clean(freq, drop_na_numeric = FALSE)
-
+  
   schemes_complete <- build_all_schemes(prep_complete$df)
   schemes_xgb      <- build_all_schemes(prep_xgb$df)
 

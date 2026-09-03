@@ -51,14 +51,18 @@ compute_fold_diagnostics <- function(fold, data, params, backend,
   )
 
   # ---- distance géographique : chaque test -> train le plus proche (km) ----
+  # Moyenne ET écart-type/variance de cette distance A L'INTERIEUR du fold
+  # (dispersion entre les points de test, pas seulement une moyenne unique).
   geo_dist <- FNN::knnx.dist(
     data  = as.matrix(train_df[, c("x_km", "y_km")]),
     query = as.matrix(test_df[,  c("x_km", "y_km")]), k = 1
   )[, 1]
   metrics$mean_geo_dist_km <- mean(geo_dist)
+  metrics$sd_geo_dist_km   <- sd(geo_dist)
+  metrics$var_geo_dist_km  <- var(geo_dist)
 
   # ---- distance euclidienne dans l'espace des covariables numériques ----
-  # (standardisées sur le train)
+  # (standardisées sur le train) -- même logique : moyenne + dispersion.
   train_num <- as.matrix(train_df[, covs_num])
   test_num  <- as.matrix(test_df[,  covs_num])
   center <- colMeans(train_num, na.rm = TRUE)
@@ -68,6 +72,8 @@ compute_fold_diagnostics <- function(fold, data, params, backend,
   train_nn <- FNN::knn.dist(train_num_s, k = 1)[, 1]
   test_nn  <- FNN::knnx.dist(train_num_s, test_num_s, k = 1)[, 1]
   metrics$mean_covariate_dist <- mean(test_nn)
+  metrics$sd_covariate_dist   <- sd(test_nn)
+  metrics$var_covariate_dist  <- var(test_nn)
   metrics$extrapolation_index <- mean(test_nn) / mean(train_nn)
 
   # ---- variance / moyenne / sd des covariables numériques, train vs test ----

@@ -17,6 +17,7 @@ suppressPackageStartupMessages({
   library(rpart)
   library(rpart.plot)
   library(patchwork)
+  library(randomForestSRC)   # nécessaire pour 14_run_rfsrc_reconstruction.R
 })
 
 `%||%` <- function(a, b) if (is.null(a)) b else a
@@ -33,11 +34,40 @@ N_CV           <- 10           # nb de folds pour l'entraînement final (naive E
 PATH_TEMPLATE <- function(freq) {
   paste0(
     "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/",
-    "ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
+    "new_ratio_ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
     freq, "kHz_mask9.rds"
   )
 }
-PATH_GRID_DAY <- "F:/data_elise/ds_day_ftle_pig_fod/ds_ftle_pig_fod_20230126.rds"
+
+# ---- Grille de prédiction spatiale ------------------------------------------
+# UN SEUL fichier désormais (après correction du script de génération,
+# cf. data_generation/generate_ds_ftle_pig_fod_all_dates.R) : toutes les
+# dates -- y compris 2023-01-26 -- avec pigments bruts ET versions
+# normalisées déjà calculées (chla_total, chla_totpig, ..., en minuscules),
+# et `ftle`/`pig`/`fod` tous alignés sur le même ordre de dimensions
+# [date, lon, lat]. ADAPTER le chemin ci-dessous à ton fichier réel.
+PATH_GRID_ALL_DATES <- "F:/data_elise/prediction_ds/ds_ftle_pig_fod_ALL_DATES.rds"
+
+# Date utilisée pour les cartes "mono-date" (12_run_grid_prediction.R) --
+# extraite directement du fichier ci-dessus, plus besoin d'un fichier séparé.
+TARGET_DATE_SINGLE <- as.Date("2023-01-26")
+
+# Table de correspondance entre les noms (minuscules) des champs déjà
+# normalisés dans le fichier et les noms utilisés dans COVARIATES_NUM
+# (voir plus bas) -- PAS de formule à deviner, ces champs sont déjà
+# calculés dans le fichier source.
+MULTIDATE_PIG_NAME_MAP <- c(
+  chla_total    = "Chla_total",
+  chla_totpig   = "Chla_totpig",
+  per_totpig    = "Per_totpig",
+  but_totpig    = "But_totpig",
+  fuco_totpig   = "Fuco_totpig",
+  hex_totpig    = "Hex_totpig",
+  allo_totpig   = "Allo_totpig",
+  zea_totpig    = "Zea_totpig",
+  chlb_totpig   = "Chlb_totpig",
+  dvchla_totpig = "DvChla_totpig"
+)
 
 OUTPUT_ROOT <- "outputs_pipeline"
 dir.create(OUTPUT_ROOT, showWarnings = FALSE, recursive = TRUE)
@@ -45,15 +75,23 @@ dir.create(OUTPUT_ROOT, showWarnings = FALSE, recursive = TRUE)
 path_out <- function(...) file.path(OUTPUT_ROOT, ...)
 
 # ---- Variables ---------------------------------------------------------------
-VARS_NUM <- c(
-  "NASC", "per_ratio_chla", "but_ratio_chla", "fuco_ratio_chla",
-  "hex_ratio_chla", "allo_ratio_chla", "zea_ratio_chla",
-  "chlb_ratio_chla", "total_chla", "ftle"
-)
+# Structure de données mise à jour : les prédicteurs sont désormais
+# fournis directement (déjà normalisés par rapport au pigment total),
+# plus besoin de calculer des ratios à la main.
+#   - ftle              : directement dans la table
+#   - fod               : facteur (chaîne "NA" à convertir en NA)
+#   - Chla_total        : Chla normalisé (variable distincte de Chla_totpig)
+#   - <pigment>_totpig  : chaque pigment normalisé par le pigment total
+#     (Chla_totpig, Per_totpig, But_totpig, Fuco_totpig, Hex_totpig,
+#      Allo_totpig, Zea_totpig, Chlb_totpig, DvChla_totpig)
+RESPONSE_VAR   <- "NASC"   # construit à partir de la colonne source `nasc` (log10)
 
-COVARIATES_NUM <- setdiff(VARS_NUM, "NASC")
+COVARIATES_NUM <- c(
+  "ftle", "Chla_total",
+  "Chla_totpig", "Per_totpig", "But_totpig", "Fuco_totpig",
+  "Hex_totpig", "Allo_totpig", "Zea_totpig", "Chlb_totpig", "DvChla_totpig"
+)
 COVARIATES_ALL <- c(COVARIATES_NUM, "fod")
-RESPONSE_VAR   <- "NASC"
 
 # ---- Schémas de blocage spatio-temporel à tester ------------------------------
 # Un buffer proportionnel à la taille de cellule est utilisé par défaut :
@@ -83,5 +121,12 @@ BLOCK_MAX_FOLDS_ABS      <- 30    # plafond (même si beaucoup de blocs dispo)
 # Nombre de folds pour le naive RS 80/20 : reste fixe (ce n'est pas un
 # nombre de "blocs disponibles", juste un nombre de répétitions Monte-Carlo).
 NAIVE_N_FOLDS <- N_CV
+
+# ---- Prédiction sur la grille multi-date (133 jours) ------------------------
+# 133 dates x plusieurs schémas x 2 modèles peut vite représenter des
+# milliers de cartes. Par défaut on ne produit les cartes datées que pour
+# le schéma naive (le plus rapide/simple) -- étends cette liste si tu
+# veux aussi les 133 cartes pour un ou plusieurs schémas bloqués.
+MULTIDATE_PREDICTION_SCHEMES <- c("naive_RS_80_20")
 
 set.seed(42)

@@ -7,28 +7,127 @@ diagnostics et les plots étaient copiés-collés dans chaque script).
 ## Architecture
 
 ```
+data_generation/
+  generate_ds_ftle_pig_fod_all_dates.R   script (corrigé) qui produit le fichier grille unique
 R/
-  00_config.R              chemins, fréquences, variables, grilles de blocage
-  01_data_prep.R           chargement + nettoyage (identique pour tous les modèles)
-  02_folds.R               construction des schémas : naive RS 80/20, blocage spatial, blocage temporel
-  03_models.R              interface commune fit/predict/importance pour CART, RF, XGB
-  04_diagnostics.R         métriques + distances + distributions par fold (générique)
-  05_plots.R               toutes les fonctions de tracé (génériques)
-  06_tuning.R              fonction de tuning générique + grilles par défaut
-  10_run_tuning.R          SCRIPT 1 : tuning CART/RF/XGB, par fréquence x par schéma
-  11_run_training.R        SCRIPT 2 : entraînement 10 folds RF/XGB avec params tunés + tous les diagnostics
-  12_run_grid_prediction.R SCRIPT 3 : prédiction sur grille = moyenne des 10 modèles, cartes avec/sans NA
+  00_config.R                  chemins, fréquences, variables, grilles de blocage
+  01_data_prep.R                chargement + nettoyage (identique pour tous les modèles)
+  02_folds.R                    construction des schémas : naive RS 80/20, blocage spatial, blocage temporel
+  03_models.R                   interface commune fit/predict/importance pour CART, RF, XGB, randomForestSRC
+  04_diagnostics.R               métriques + distances + distributions par fold (générique)
+  05_plots.R                     toutes les fonctions de tracé (génériques)
+  06_tuning.R                    fonction de tuning générique + grilles par défaut
+  10_run_tuning.R                SCRIPT 1 : tuning CART/RF/XGB, par fréquence x par schéma
+  11_run_training.R              SCRIPT 2 : entraînement CART/RF/XGB avec params tunés + tous les diagnostics
+  12_run_grid_prediction.R       SCRIPT 3 : prédiction sur grille (une date), cartes avec/sans NA
+  13_run_grid_prediction_multidate.R  SCRIPT 3bis : prédiction sur grille, TOUTES les dates (133 cartes)
+  14_run_rfsrc_reconstruction.R  SCRIPT 4 : test de reconstruction de carte complète (randomForestSRC)
 ```
 
-À exécuter dans l'ordre : `10_run_tuning.R` -> `11_run_training.R` -> `12_run_grid_prediction.R`.
-Chaque script `10_/11_/12_` source les fichiers `00_` à `06_` dont il a besoin.
+À exécuter dans l'ordre : `10_run_tuning.R` -> `11_run_training.R` -> `12_/13_run_grid_prediction*.R`.
+`14_run_rfsrc_reconstruction.R` est indépendant (pas besoin d'avoir lancé 10/11 avant).
+Chaque script `10_` à `14_` source les fichiers `00_` à `06_` dont il a besoin.
+
+### Tout lancer d'un coup : `run_all_pipeline.R`
+
+À la racine de `nasc_pipeline/` (à côté de `R/`), `run_all_pipeline.R` enchaîne
+les 5 scripts dans l'ordre, avec logs horodatés, et vérifie entre chaque
+étape que les fichiers nécessaires à l'étape suivante existent bien
+(ex. arrête tout avec un message clair si le tuning ne s'est pas
+terminé correctement avant de lancer le training). Chaque étape peut
+être désactivée individuellement en haut du fichier (`RUN_TUNING`,
+`RUN_TRAINING`, etc.) -- utile pour relancer seulement la suite après
+une interruption.
+
+Pour une exécution longue (nuit) sans bloquer ta console RStudio :
+**Tools -> Background Jobs -> Start Background Job**, sélectionne
+`run_all_pipeline.R`, et vérifie que le "Working Directory" du job est
+bien le dossier `nasc_pipeline`. Sinon, `source("run_all_pipeline.R")`
+directement dans la console fonctionne aussi (mais bloque la console
+jusqu'à la fin).
 
 **Adapter avant de lancer** : les chemins dans `00_config.R`
-(`PATH_TEMPLATE`, `PATH_GRID_DAY`), qui pointent vers `F:/data_elise/...`
+(`PATH_TEMPLATE`, `PATH_GRID_ALL_DATES`), qui pointent vers `F:/data_elise/...`
 (chemins Windows locaux, non accessibles depuis cet environnement -- je
 n'ai donc pas pu exécuter/tester ces scripts avec tes données réelles).
 Vérifie aussi les packages requis : `dplyr, tidyr, purrr, tibble,
+ggplot2, FNN, ranger, xgboost, rpart, rpart.plot, patchwork,
+randomForestSRC`.
+
+### Grille de prédiction : fichier unique, structure corrigée
+
+Après ton retour sur la structure de `all_years`, j'ai identifié un vrai
+bug structurel dans le script de génération : `fod` avait un ordre de
+dimensions `[lon, lat, date]`, incohérent avec `ftle`/`pig` qui ont
+`[date, lon, lat]`. Corrigé dans
+`data_generation/generate_ds_ftle_pig_fod_all_dates.R` via `aperm()`.
+
+Conséquence pour le pipeline : **un seul fichier grille**
+(`PATH_GRID_ALL_DATES`) sert maintenant à tout -- plus besoin d'un
+fichier séparé pour 2023-01-26, ni de deviner une formule de
+normalisation (l'ancienne grille mono-date ne contenait que les
+pigments bruts). `extract_grid_for_date()` / `extract_grid_for_date_raw()`
+dans `01_data_prep.R` en extraient une date donnée, sans plus aucun cas
+particulier pour `fod`.
+
+Deux points **non corrigés silencieusement** dans le script de
+génération (choix scientifiques, pas des bugs de structure) -- à
+confirmer toi-même avant de faire confiance aux résultats :
+1. `chla_total` est une copie exacte de `Chla` brute (DvChla exclue
+   volontairement) -- ça duplique une variable déjà présente, sans info
+   nouvelle en tant que prédicteur séparé.
+2. Le dénominateur des ratios `*_totpig` exclut Chla de la somme, y
+   compris pour calculer `chla_totpig` lui-même (`= Chla / somme des 8
+   AUTRES pigments`, pas `/ somme des 9 pigments`). Une alternative
+   (somme incluant Chla) est laissée en commentaire dans le script si
+   ce n'était pas l'intention.
+
+### Script 4 (nouveau) : test de reconstruction avec randomForestSRC
+
+`14_run_rfsrc_reconstruction.R` répond à la demande "tester la
+reconstruction d'une carte entière avec RF" : contrairement à RF
+(`ranger`), qui doit jeter tout pixel incomplet, `randomForestSRC` gère
+le manquant nativement via imputation (`na.action = "na.impute"`), à
+l'entraînement ET à la prédiction. Le script entraîne un modèle sur les
+**covariables normalisées** (`COVARIATES_ALL` -- `ftle`, `Chla_total`,
+`*_totpig`, `fod`), les mêmes que le pipeline principal CART/RF/XGB, et
+produit une carte de 2023-01-26 SANS AUCUN trou, avec un comptage
+explicite du nombre de pixels "sauvés" par rapport à l'approche RF
+classique (complete-case uniquement). C'est un script exploratoire
+(pas de tuning complet, pas de CV multi-fold) ; utilise `tune_model()`
+avec `make_backend("rfsrc")` si tu veux un vrai tuning avant de
+conclure. Le backend `rfsrc` (`03_models.R`) accepte aussi un jeu de
+covariables personnalisé (`make_backend("rfsrc", covs = ...)`) si tu
+veux un jour comparer avec les pigments bruts (`RAW_COVARIATES_ALL`).
+
 ggplot2, FNN, ranger, xgboost, rpart, rpart.plot, patchwork`.
+
+### Structure de données (mise à jour)
+
+Le jeu d'entraînement (`ds`) a changé de format : les prédicteurs sont
+désormais fournis **déjà normalisés**, plus besoin de calculer des
+ratios `pigment / Chla` à la main comme dans les scripts d'origine.
+
+- `NASC` (réponse) : dérivé de la colonne source `nasc` (log10, après
+  filtre 5e/95e percentile) -- **inchangé**.
+- `lat`, `lon`, `time` : dérivés de `lat_nasc`, `lon_nasc`, `time_nasc`
+  -- **inchangé**. (Les colonnes `*_fod`, `*_pig`, `*_ftle` sont les
+  positions des capteurs sources et ne sont PAS utilisées comme
+  coordonnées du point NASC.)
+- `fod` : facteur, `"NA"` (chaîne) convertie en vrai `NA` -- inchangé.
+- `ftle` : inchangé.
+- `Chla_total` : colonne fournie telle quelle.
+- `Chla_totpig, Per_totpig, But_totpig, Fuco_totpig, Hex_totpig,
+  Allo_totpig, Zea_totpig, Chlb_totpig, DvChla_totpig` : colonnes
+  fournies telles quelles (chaque pigment normalisé par le pigment
+  total).
+
+`COVARIATES_NUM` dans `00_config.R` a été mis à jour en conséquence.
+
+(La partie "grille de prédiction" de cette note a été remplacée par la
+section "Grille de prédiction : fichier unique, structure corrigée"
+plus haut, suite à la clarification de la structure de `all_years`.)
+
 
 ---
 

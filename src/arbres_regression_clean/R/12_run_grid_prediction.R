@@ -1,6 +1,12 @@
 # =====================================================================
-# 12_run_grid_prediction.R -- SCRIPT 3 : prédiction sur grille
+# 12_run_grid_prediction.R -- SCRIPT 3 : prédiction sur grille (mono-date)
 # =====================================================================
+# Utilise le fichier grille unique (`PATH_GRID_ALL_DATES`, structure
+# corrigée -- voir data_generation/generate_ds_ftle_pig_fod_all_dates.R),
+# dont on extrait UNE SEULE date (`TARGET_DATE_SINGLE`, 2023-01-26 par
+# défaut) avec `extract_grid_for_date()` : les ratios *_totpig/Chla_total
+# sont déjà calculés dans le fichier, aucune formule à deviner. Pour les
+# 133 dates d'un coup, voir `13_run_grid_prediction_multidate.R`.
 # Pour chaque (fréquence x modèle x schéma), on recharge les N_CV
 # modèles entraînés en 11_run_training.R, on prédit sur la grille
 # spatiale du jour choisi avec CHACUN des 10 modèles, et on moyenne.
@@ -42,6 +48,8 @@ predict_mean_xgb <- function(models, grid_df, fod_levels) {
 }
 
 all_predictions <- list()
+day_ds <- load_grid_all_dates()
+date_idx_single <- get_date_index(day_ds, TARGET_DATE_SINGLE)
 
 for (freq in FREQS) {
 
@@ -52,7 +60,7 @@ for (freq in FREQS) {
   prep_xgb <- load_and_clean(freq, drop_na_numeric = FALSE)  # juste pour fod_levels
   fod_levels <- prep_xgb$fod_levels
 
-  grid_info  <- build_grid_covariates(fod_levels)
+  grid_info  <- extract_grid_for_date(day_ds, date_idx_single, fod_levels)
   grid_all   <- grid_info$grid
   grid_clean <- grid_all[stats::complete.cases(grid_all[, COVARIATES_ALL]), ]
   date_label <- format(grid_info$date, "%Y-%m-%d")
