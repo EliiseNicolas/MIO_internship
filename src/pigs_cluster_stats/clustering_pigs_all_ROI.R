@@ -1,35 +1,14 @@
 # ============================================================
 # Communautes phytoplanctoniques (PCA + k-means) a partir des
-# ratios pigment/Chla du RDS unique deja aligne (all_ds), au lieu
-# des donnees ESU/NASC ponctuelles du script d'origine.
+# ratios pigment/(somme des pigments hors Chla) du RDS unique
+# deja aligne (all_ds).
 #
-# 1 - normalisation des ratios pigmentaires (proportions)
-# 2 - PCA sur ces proportions
-# 3 - k-means sur les scores PCA -> communautes phytoplanctoniques
-# 4 - distributions des pigments par communaute (+ coloration PFT)
-# 5 - distribution spatiale des communautes (carte raster complete)
-#
-# ADAPTATIONS PAR RAPPORT AU SCRIPT D'ORIGINE :
-#  - Source : grille complete (pixel x date, ~777 600 pixels x
-#    N dates) au lieu de quelques centaines de points ESU le long
-#    de transects acoustiques -> N potentiellement ENORME. On
-#    calcule donc les positions valides directement sur les arrays
-#    (masque booleen + indexation matricielle), SANS jamais
-#    materialiser un data.frame de la grille complete avant filtrage
-#    (un expand.grid() + filter() classique serait bien trop gros).
-#  - Noms des variables : ceux produits par le pipeline d'extraction
-#    (suffixe "_chla" en minuscule + "chla_total"), pas les noms
-#    "Xxx_Chla" du fichier NASC d'origine.
-#  - PCA/k-means ajustes sur un SOUS-ECHANTILLON (sample_n_fit) pour
-#    rester tractable, puis projection de TOUTE la grille valide sur
-#    ce resultat (memes formules center/scale/rotation, puis
-#    affectation au centroide k-means le plus proche).
-#  - Pas de colonne NASC dans all_ds -> la partie "on observe le NASC
-#    le long de ces distributions" mentionnee dans la description
-#    d'origine n'est pas reproduite ici.
-#  - Carte finale : raster complet (geom_raster) au lieu de points
-#    ESU (geom_point) ; deux modes possibles (communaute dominante
-#    par pixel sur toute la periode, ou carte d'une date precise).
+# ADAPTATION : les ratios pigmentaires ne sont plus calcules sur
+# Chla (suffixe "_chla") mais sur la somme de tous les pigments
+# SAUF Chla (suffixe "_totpig"). "chla_total" (= Chla seule) est
+# conserve comme variable a part entiere. "chla_totpig" (ratio de
+# Chla elle-meme sur la somme des autres) existe dans all_ds mais
+# n'est pas utilise ici : il ferait doublon avec "chla_total".
 # ============================================================
 
 library(dplyr)
@@ -39,28 +18,26 @@ library(factoextra)
 library(sf)
 library(rnaturalearth)
 library(rnaturalearthdata)
+
 # ------------------------------------------------------------
 # Options
 # ------------------------------------------------------------
 
 path_all_ds <- "F:/data_elise/prediction_ds/ds_ftle_pig_fod_ALL_DATES.rds"
-n_cluster   <- 5
+n_cluster   <- 6
 out_dir <- "C:/Users/mmolinet/elisou_ta_stagiaire_pref/MIO_internship_III/figures/commu_phyto_cluster_pigs"
 if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
-# La grille complete (pixel x date) peut representer des dizaines de
-# millions de lignes valides -- bien plus que les 403 lignes du
-# script d'origine. On ajuste la PCA/k-means sur un sous-echantillon
-# pour rester tractable (prcomp scale bien, mais kmeans(nstart=100)
-# sur des millions de lignes serait tres lent), puis on projette
-# TOUTES les lignes valides dans cet espace pour la carte finale.
-# Mets sample_n_fit <- Inf pour utiliser toutes les donnees (a ne
-# faire que si ta RAM et ton temps de calcul le permettent).
+
 sample_n_fit <- 200000
 set.seed(123)
 
+# ------------------------------------------------------------
+# Variables utilisees pour la PCA : Chla en concentration totale +
+# les 8 ratios pigment/(somme des pigments hors Chla)
+# ------------------------------------------------------------
 pig_vars <- c(
-  "chla_total", "per_chla", "but_chla", "fuco_chla", "hex_chla",
-  "allo_chla", "zea_chla", "chlb_chla", "dvchla_chla"
+  "chla_total", "per_totpig", "but_totpig", "fuco_totpig", "hex_totpig",
+  "allo_totpig", "zea_totpig", "chlb_totpig", "dvchla_totpig"
 )
 
 # ============================================================
@@ -68,17 +45,13 @@ pig_vars <- c(
 # ============================================================
 
 all_ds <- readRDS(path_all_ds)
-
+str(all_ds)
 dates <- all_ds$date
 lons  <- all_ds$lon
 lats  <- all_ds$lat
 
-# Masque booleen [n_date, n_lon, n_lat] : TRUE la ou TOUS les ratios
-# pigmentaires sont renseignes. Calcule directement sur les arrays
-# (economie de memoire majeure vs. construire d'abord la grille
-# complete en data.frame puis filtrer).
 valid_mask <- Reduce(`&`, lapply(pig_vars, function(v) is.finite(all_ds$pig[[v]])))
-valid_idx  <- which(valid_mask, arr.ind = TRUE)   # matrice [n_valid, 3] : date_idx, lon_idx, lat_idx
+valid_idx  <- which(valid_mask, arr.ind = TRUE)   # [n_valid, 3] : date_idx, lon_idx, lat_idx
 
 data_pca <- data.frame(
   date = dates[valid_idx[, 1]],
@@ -126,9 +99,7 @@ pca <- prcomp(
 )
 
 summary(pca)
-
 fviz_eig(pca, addlabels = TRUE)
-
 fviz_pca_var(pca, col.var = "contrib", repel = TRUE)
 
 pc_scores_fit <- as.data.frame(pca$x)
@@ -152,68 +123,44 @@ wss_df <- data.frame(k = 1:10, WSS = wss)
 p <- ggplot(wss_df, aes(x = k, y = WSS)) +
   geom_line() +
   geom_point(size = 3) +
-  labs(
-    x = "Nombre de clusters",
-    y = "Within-cluster sum of squares",
-    title = "Méthode du coude"
-  ) +
+  labs(x = "Nombre de clusters", y = "Within-cluster sum of squares",
+       title = "Methode du coude") +
   theme_minimal()
-
-ggsave(
-  file.path(out_dir, "elbow_method_kmeans.png"),
-  plot = p,
-  width = 8,
-  height = 8,
-  units = "in",
-  dpi = 300
-)
-# cluster (n_cluster)
+print(p)
+ggsave(file.path(out_dir, "elbow_method_kmeans.png"), plot = p,
+       width = 8, height = 8, units = "in", dpi = 300)
 
 km <- kmeans(pca_scores, centers = n_cluster, nstart = 100)
-
 data_fit$community <- factor(km$cluster)
 
 # ============================================================
-# 3 - Projection de TOUTE la grille valide dans l'espace PCA, puis
-#     affectation au centroide k-means le plus proche (pas seulement
-#     l'echantillon utilise pour ajuster la PCA/k-means)
+# 3 - Projection de TOUTE la grille valide dans l'espace PCA
 # ============================================================
 
 pig_mat_all   <- as.matrix(data_pca[, pig_vars])
 pc_scores_all <- scale(pig_mat_all, center = pca$center, scale = pca$scale) %*% pca$rotation
 
 assign_cluster <- function(pc_mat, centers) {
-  # distance euclidienne a chaque centroide k-means, sur les memes
-  # composantes que celles utilisees par kmeans() (ici PC1-PC7)
   pc_mat_sub <- pc_mat[, colnames(centers), drop = FALSE]
   d <- sapply(seq_len(nrow(centers)), function(k) {
     rowSums((pc_mat_sub - matrix(centers[k, ], nrow(pc_mat_sub), ncol(centers), byrow = TRUE))^2)
   })
-  max.col(-d)   # indice de la distance minimale par ligne
+  max.col(-d)
 }
 
 data_pca$community <- factor(assign_cluster(pc_scores_all, km$centers))
 
 # ============================================================
-# 4 - Distributions des pigments par communaute (sur l'echantillon
-#     d'ajustement, comme dans le script d'origine)
+# 4 - Distributions des pigments par communaute
 # ============================================================
 
 data_long <- data_fit %>%
   select(community, all_of(pig_vars)) %>%
-  pivot_longer(
-    cols = all_of(pig_vars),
-    names_to = "pigment",
-    values_to = "proportion"
-  )
+  pivot_longer(cols = all_of(pig_vars), names_to = "pigment", values_to = "proportion")
 
-# Palette commune aux deux graphiques
 community_colors <- c(
-  "1" = "#1b9e77",
-  "2" = "#d95f02",
-  "3" = "#7570b3",
-  "4" = "#e7298a",
-  "5" = "#66a61e"
+  "1" = "#1b9e77", "2" = "#d95f02", "3" = "#7570b3",
+  "4" = "#e7298a", "5" = "#66a61e", "6" = "#e6ab02"
 )
 
 p <- ggplot(data_long, aes(x = community, y = proportion, color = community)) +
@@ -221,22 +168,13 @@ p <- ggplot(data_long, aes(x = community, y = proportion, color = community)) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
                geom = "errorbar", width = 0.3, linewidth = 0.6) +
   facet_wrap(~ pigment, scales = "free_y") +
-  scale_color_manual(values = community_colors, name = "Communauté") +
-  labs(
-    x = "Communauté",
-    y = "Proportion du pigment (moyenne ± 1 écart-type)",
-    title = "Distribution des pigments au sein des communautés"
-  ) +
+  scale_color_manual(values = community_colors, name = "Communaute") +
+  labs(x = "Communaute", y = "Proportion du pigment (moyenne +/- 1 ecart-type)",
+       title = "Distribution des pigments au sein des communautes") +
   theme_minimal()
 
-ggsave(
-  file.path(out_dir, "distrib_pigments_in_communautes_kmeans_k5_PFT.png"),
-  plot = p,
-  width = 14,
-  height = 8,
-  units = "in",
-  dpi = 300
-)
+ggsave(file.path(out_dir, "distrib_pigments_in_communautes_kmeans_k6_PFT.png"),
+       plot = p, width = 14, height = 8, units = "in", dpi = 300)
 
 library(rstatix)
 library(multcompView)
@@ -245,37 +183,25 @@ library(multcompView)
 # 7 - Tests statistiques : differences de pigments entre communautes
 # ============================================================
 
-# ---- 7.1 Test global (Kruskal-Wallis) par pigment ----
 kw_results <- data_long %>%
   group_by(pigment) %>%
   rstatix::kruskal_test(proportion ~ community) %>%
   rstatix::adjust_pvalue(method = "BH") %>%
   rstatix::add_significance("p.adj")
-
 print(kw_results, n = Inf)
 
-# Taille d'effet (eta² approximé, epsilon-squared de rstatix)
 kw_effsize <- data_long %>%
   group_by(pigment) %>%
   rstatix::kruskal_effsize(proportion ~ community)
-
 print(kw_effsize, n = Inf)
 
-# ---- 7.2 Post-hoc pairwise (test de Dunn) par pigment ----
 dunn_results <- data_long %>%
   group_by(pigment) %>%
   rstatix::dunn_test(proportion ~ community, p.adjust.method = "BH")
-
 print(dunn_results, n = Inf)
 
-# Export des tables de resultats
 write.csv(kw_results,   file.path(out_dir, "stats_kruskal_wallis_pigments.csv"), row.names = FALSE)
 write.csv(dunn_results, file.path(out_dir, "stats_dunn_posthoc_pigments.csv"),   row.names = FALSE)
-
-# ---- 7.3 Lettres de significativite (CLD) pour annoter le plot ----
-# Pour chaque pigment, regroupe les communautes qui ne different pas
-# significativement sous la meme lettre (a, b, c...) -- plus lisible
-# que 10 comparaisons par paires x 9 pigments sur le graphique.
 
 get_cld <- function(dunn_df) {
   pvals <- dunn_df$p.adj
@@ -290,7 +216,6 @@ cld_by_pigment <- dunn_results %>%
   ungroup() %>%
   mutate(community = factor(community, levels = levels(data_long$community)))
 
-# Position verticale des lettres : juste au-dessus de la barre d'erreur
 label_pos <- data_long %>%
   group_by(pigment, community) %>%
   summarise(y_pos = mean(proportion) + sd(proportion), .groups = "drop")
@@ -298,182 +223,104 @@ label_pos <- data_long %>%
 cld_plot_data <- cld_by_pigment %>%
   left_join(label_pos, by = c("pigment", "community"))
 
-# ---- 7.4 Plot annote avec les lettres de significativite ----
 p <- ggplot(data_long, aes(x = community, y = proportion, color = community)) +
   stat_summary(fun = mean, geom = "point", size = 2.5) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
                geom = "errorbar", width = 0.3, linewidth = 0.6) +
-  geom_text(
-    data = cld_plot_data,
-    aes(x = community, y = y_pos, label = cld),
-    color = "black", vjust = -0.6, size = 3.5, fontface = "bold",
-    inherit.aes = FALSE
-  ) +
+  geom_text(data = cld_plot_data, aes(x = community, y = y_pos, label = cld),
+            color = "black", vjust = -0.6, size = 3.5, fontface = "bold", inherit.aes = FALSE) +
   facet_wrap(~ pigment, scales = "free_y") +
-  scale_color_manual(values = community_colors, name = "Communauté") +
-  labs(
-    x = "Communauté",
-    y = "Proportion du pigment (moyenne ± 1 écart-type)",
-    title = "Distribution des pigments au sein des communautés",
-    subtitle = "Lettres différentes = différence significative (test de Dunn, p < 0.05, ajusté BH)"
-  ) +
+  scale_color_manual(values = community_colors, name = "Communaute") +
+  labs(x = "Communaute", y = "Proportion du pigment (moyenne +/- 1 ecart-type)",
+       title = "Distribution des pigments au sein des communautes",
+       subtitle = "Lettres differentes = difference significative (test de Dunn, p < 0.05, ajuste BH)") +
   theme_minimal()
 
 print(p)
 
-ggsave(
-  file.path(out_dir, "distrib_pigments_in_communautes_kmeans_k5_PFT_stats.png"),
-  plot = p,
-  width = 14,
-  height = 8,
-  units = "in",
-  dpi = 300
-)
-# ---- coloration des distrib par Phytoplankton Functional Type (PFT) ----
+ggsave(file.path(out_dir, "distrib_pigments_in_communautes_kmeans_k6_PFT_stats.png"),
+       plot = p, width = 14, height = 8, units = "in", dpi = 300)
+
+# ------------------------------------------------------------
+# Coloration des distributions par Phytoplankton Functional Type
+# (PFT) -- noms de pigments mis a jour avec le suffixe "_totpig"
+# ------------------------------------------------------------
 
 data_long <- data_fit %>%
   select(community, all_of(pig_vars)) %>%
-  pivot_longer(
-    cols = all_of(pig_vars),
-    names_to = "pigment",
-    values_to = "proportion"
-  ) %>%
+  pivot_longer(cols = all_of(pig_vars), names_to = "pigment", values_to = "proportion") %>%
   mutate(
     PFT = case_when(
-      pigment %in% c("dvchla_chla", "zea_chla")          ~ "Picocyanobacteria",
-      pigment %in% c("allo_chla", "hex_chla", "but_chla") ~ "Flagellates",
-      pigment == "fuco_chla"                              ~ "Diatoms",
-      TRUE                                                 ~ "Other"
+      pigment %in% c("dvchla_totpig", "zea_totpig")            ~ "Picocyanobacteria",
+      pigment %in% c("allo_totpig", "hex_totpig", "but_totpig") ~ "Flagellates",
+      pigment == "fuco_totpig"                                  ~ "Diatoms",
+      TRUE                                                      ~ "Other"
     )
   )
 
-p_pigments <- ggplot(
-  data_long,
-  aes(x = pigment, y = proportion, color = PFT)
-) +
-  stat_summary(fun = mean, geom = "point", size = 2.5,
-               position = position_dodge(width = 0.3)) +
+p_pigments <- ggplot(data_long, aes(x = pigment, y = proportion, color = PFT)) +
+  stat_summary(fun = mean, geom = "point", size = 2.5, position = position_dodge(width = 0.3)) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
-               geom = "errorbar", width = 0.3, linewidth = 0.6,
-               position = position_dodge(width = 0.3)) +
+               geom = "errorbar", width = 0.3, linewidth = 0.6, position = position_dodge(width = 0.3)) +
   facet_wrap(~ community, ncol = 1, axes = "all_x") +
-  scale_color_manual(
-    values = c(
-      "Picocyanobacteria" = "#E69F00",
-      "Flagellates"       = "#56B4E9",
-      "Diatoms"           = "#009E73",
-      "Other"             = "grey40"
-    )
-  ) +
-  labs(
-    x = "Pigment",
-    y = "Proportion (moyenne ± 1 écart-type)",
-    color = "Functional group",
-    title = "Pigment distributions within phytoplankton communities"
-  ) +
+  scale_color_manual(values = c(
+    "Picocyanobacteria" = "#E69F00", "Flagellates" = "#56B4E9",
+    "Diatoms" = "#009E73", "Other" = "grey40"
+  )) +
+  labs(x = "Pigment", y = "Proportion (moyenne +/- 1 ecart-type)", color = "Functional group",
+       title = "Pigment distributions within phytoplankton communities") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 p_pigments
 
-ggsave(
-  file.path(out_dir, "distribution_pigments_communautes_kmeans_k5_PFT.png"),
-  plot = p_pigments,
-  width = 8,
-  height = 12,
-  units = "in",
-  dpi = 300
-)
+ggsave(file.path(out_dir, "distribution_pigments_communautes_kmeans_k6_PFT.png"),
+       plot = p_pigments, width = 8, height = 12, units = "in", dpi = 300)
 
 # ============================================================
-# 8 - Distribution des pigments par communauté + tests de
-#     significativité entre pigments au sein de chaque communauté
+# 8 - Distribution des pigments par communaute + tests entre
+#     pigments au sein de chaque communaute
 # ============================================================
 
 data_long <- data_fit %>%
   select(community, all_of(pig_vars)) %>%
-  pivot_longer(
-    cols = all_of(pig_vars),
-    names_to = "pigment",
-    values_to = "proportion"
-  ) %>%
+  pivot_longer(cols = all_of(pig_vars), names_to = "pigment", values_to = "proportion") %>%
   mutate(
     PFT = case_when(
-      pigment %in% c("dvchla_chla", "zea_chla") ~ "Picocyanobacteria",
-      pigment %in% c("allo_chla", "hex_chla", "but_chla") ~ "Flagellates",
-      pigment == "fuco_chla" ~ "Diatoms",
-      TRUE ~ "Other"
+      pigment %in% c("dvchla_totpig", "zea_totpig")            ~ "Picocyanobacteria",
+      pigment %in% c("allo_totpig", "hex_totpig", "but_totpig") ~ "Flagellates",
+      pigment == "fuco_totpig"                                  ~ "Diatoms",
+      TRUE                                                      ~ "Other"
     )
   )
-
-# ------------------------------------------------------------
-# 8.1 Test global : Kruskal-Wallis
-#     comparaison des pigments dans chaque communauté
-# ------------------------------------------------------------
 
 kw_pigment_results <- data_long %>%
   group_by(community) %>%
   rstatix::kruskal_test(proportion ~ pigment) %>%
   rstatix::adjust_pvalue(method = "BH") %>%
   rstatix::add_significance("p.adj")
-
 print(kw_pigment_results, n = Inf)
 
-# Taille d'effet
 kw_pigment_effsize <- data_long %>%
   group_by(community) %>%
   rstatix::kruskal_effsize(proportion ~ pigment)
-
 print(kw_pigment_effsize, n = Inf)
-
-# ------------------------------------------------------------
-# 8.2 Post-hoc de Dunn entre pigments
-#     correction des p-values par Benjamini-Hochberg
-# ------------------------------------------------------------
 
 dunn_pigment_results <- data_long %>%
   group_by(community) %>%
-  rstatix::dunn_test(
-    proportion ~ pigment,
-    p.adjust.method = "BH"
-  )
-
+  rstatix::dunn_test(proportion ~ pigment, p.adjust.method = "BH")
 print(dunn_pigment_results, n = Inf)
 
-# Export des résultats
-write.csv(
-  kw_pigment_results,
-  file.path(out_dir, "stats_kruskal_wallis_pigments_within_community.csv"),
-  row.names = FALSE
-)
-
-write.csv(
-  dunn_pigment_results,
-  file.path(out_dir, "stats_dunn_pigments_within_community.csv"),
-  row.names = FALSE
-)
-
-# ------------------------------------------------------------
-# 8.3 Lettres de significativité (CLD)
-# ------------------------------------------------------------
+write.csv(kw_pigment_results,
+          file.path(out_dir, "stats_kruskal_wallis_pigments_within_community.csv"), row.names = FALSE)
+write.csv(dunn_pigment_results,
+          file.path(out_dir, "stats_dunn_pigments_within_community.csv"), row.names = FALSE)
 
 get_cld_pigments <- function(dunn_df) {
-  
   pvals <- dunn_df$p.adj
-  
-  names(pvals) <- paste(
-    dunn_df$group1,
-    dunn_df$group2,
-    sep = "-"
-  )
-  
+  names(pvals) <- paste(dunn_df$group1, dunn_df$group2, sep = "-")
   cld <- multcompView::multcompLetters(pvals)$Letters
-  
-  data.frame(
-    pigment = names(cld),
-    cld = cld,
-    row.names = NULL
-  )
+  data.frame(pigment = names(cld), cld = cld, row.names = NULL)
 }
 
 cld_pigment_data <- dunn_pigment_results %>%
@@ -481,122 +328,44 @@ cld_pigment_data <- dunn_pigment_results %>%
   group_modify(~ get_cld_pigments(.x)) %>%
   ungroup()
 
-# ------------------------------------------------------------
-# 8.4 Position des lettres
-#     juste au-dessus de la barre d'erreur
-# ------------------------------------------------------------
-
 label_pos_pigment <- data_long %>%
   group_by(community, pigment) %>%
-  summarise(
-    mean_prop = mean(proportion, na.rm = TRUE),
-    sd_prop = sd(proportion, na.rm = TRUE),
-    y_pos = mean_prop + sd_prop,
-    .groups = "drop"
-  )
+  summarise(mean_prop = mean(proportion, na.rm = TRUE),
+            sd_prop = sd(proportion, na.rm = TRUE),
+            y_pos = mean_prop + sd_prop, .groups = "drop")
 
 cld_pigment_plot_data <- cld_pigment_data %>%
-  left_join(
-    label_pos_pigment,
-    by = c("community", "pigment")
-  )
+  left_join(label_pos_pigment, by = c("community", "pigment"))
 
-# ------------------------------------------------------------
-# 8.5 Plot avec lettres de significativité
-# ------------------------------------------------------------
-
-p_pigments <- ggplot(
-  data_long,
-  aes(x = pigment, y = proportion, color = PFT)
-) +
-  stat_summary(
-    fun = mean,
-    geom = "point",
-    size = 2.5,
-    position = position_dodge(width = 0.3)
-  ) +
-  stat_summary(
-    fun.data = mean_sdl,
-    fun.args = list(mult = 1),
-    geom = "errorbar",
-    width = 0.3,
-    linewidth = 0.6,
-    position = position_dodge(width = 0.3)
-  ) +
-  geom_text(
-    data = cld_pigment_plot_data,
-    aes(
-      x = pigment,
-      y = y_pos,
-      label = cld
-    ),
-    color = "black",
-    vjust = -0.6,
-    size = 3.5,
-    fontface = "bold",
-    inherit.aes = FALSE
-  ) +
-  facet_wrap(
-    ~ community,
-    ncol = 1,
-    scales = "free_y"
-  ) +
-  scale_color_manual(
-    values = c(
-      "Picocyanobacteria" = "#E69F00",
-      "Flagellates"       = "#56B4E9",
-      "Diatoms"           = "#009E73",
-      "Other"             = "grey40"
-    )
-  ) +
-  labs(
-    x = "Pigment",
-    y = "Proportion (moyenne ± 1 écart-type)",
-    color = "Functional group",
-    title = "Pigment distributions within phytoplankton communities",
-    subtitle = paste(
-      "Lettres différentes = différence significative",
-      "(Kruskal-Wallis + Dunn, p < 0.05, correction BH)"
-    )
-  ) +
+p_pigments <- ggplot(data_long, aes(x = pigment, y = proportion, color = PFT)) +
+  stat_summary(fun = mean, geom = "point", size = 2.5, position = position_dodge(width = 0.3)) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
+               geom = "errorbar", width = 0.3, linewidth = 0.6, position = position_dodge(width = 0.3)) +
+  geom_text(data = cld_pigment_plot_data, aes(x = pigment, y = y_pos, label = cld),
+            color = "black", vjust = -0.6, size = 3.5, fontface = "bold", inherit.aes = FALSE) +
+  facet_wrap(~ community, ncol = 1, scales = "free_y") +
+  scale_color_manual(values = c(
+    "Picocyanobacteria" = "#E69F00", "Flagellates" = "#56B4E9",
+    "Diatoms" = "#009E73", "Other" = "grey40"
+  )) +
+  labs(x = "Pigment", y = "Proportion (moyenne +/- 1 ecart-type)", color = "Functional group",
+       title = "Pigment distributions within phytoplankton communities",
+       subtitle = "Lettres differentes = difference significative (Kruskal-Wallis + Dunn, p < 0.05, correction BH)") +
   theme_minimal() +
-  theme(
-    axis.text.x = element_text(
-      angle = 45,
-      hjust = 1
-    )
-  )
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 print(p_pigments)
 
-# ------------------------------------------------------------
-# 8.6 Sauvegarde
-# ------------------------------------------------------------
+ggsave(file.path(out_dir, "distribution_pigments_communautes_kmeans_k6_PFT_stats.png"),
+       plot = p_pigments, width = 8, height = 12, units = "in", dpi = 300)
 
-ggsave(
-  file.path(
-    out_dir,
-    "distribution_pigments_communautes_kmeans_k5_PFT_stats.png"
-  ),
-  plot = p_pigments,
-  width = 8,
-  height = 12,
-  units = "in",
-  dpi = 300
-)
 # ============================================================
 # 5 - Distribution spatiale des communautes (grille complete)
 # ============================================================
-# Deux modes possibles :
-#  - "dominant"    : communaute la plus frequente par pixel sur
-#                    toute la periode (vision "province" stable)
-#  - "single_date" : carte d'une seule date precise
-# La grille etant desormais complete (et non des points ESU
-# eparses), on utilise geom_raster plutot que geom_point.
 
-map_mode <- "single_date"
-# map_date <- dates[1]   # utilise seulement si map_mode == "single_date"
-for (map_date in dates) {
+map_mode <- "dominant" #"single_date"
+
+for (map_date in dates[1]) {
   map_date <- as.Date(map_date)
   
   if (map_mode == "dominant") {
@@ -605,11 +374,11 @@ for (map_date in dates) {
       dplyr::group_by(lon, lat) %>%
       dplyr::slice_max(n, n = 1, with_ties = FALSE) %>%
       dplyr::ungroup()
-    map_title <- "Communauté phytoplanctonique dominante par pixel (toutes dates confondues)"
+    map_title <- "Communaute phytoplanctonique dominante par pixel (toutes dates confondues)"
     date_str <- "all_dates"
   } else {
     map_data <- data_pca %>% dplyr::filter(.data$date == map_date)
-    map_title <- paste("Communauté phytoplanctonique -", format(map_date, "%Y-%m-%d"))
+    map_title <- paste("Communaute phytoplanctonique -", format(map_date, "%Y-%m-%d"))
     date_str <- format(map_date, "%Y-%m-%d")
   }
   
@@ -619,27 +388,19 @@ for (map_date in dates) {
     geom_raster(data = map_data, aes(x = lon, y = lat, fill = community)) +
     geom_sf(data = world, fill = "grey85", color = "grey50", linewidth = 0.2) +
     coord_sf(xlim = range(lons), ylim = range(lats)) +
-    scale_fill_manual(values = community_colors, name = "Communauté") +
+    scale_fill_manual(values = community_colors, name = "Communaute") +
     labs(x = "Longitude", y = "Latitude", title = map_title) +
     theme_minimal()
   
   print(p_map)
   
-  ggsave(
-    file.path(out_dir, paste0(date_str, "_map_pigments_communautes_kmeans_k5_PFT.png")),
-    plot = p_map, width = 8, height = 8, units = "in", dpi = 300
-  )
+  ggsave(file.path(out_dir, paste0(date_str, "_map_pigments_communautes_kmeans_k6_PFT.png")),
+         plot = p_map, width = 8, height = 8, units = "in", dpi = 300)
 }
-
-
 
 # ============================================================
 # 6 - Carte de purete de la communaute dominante (toutes dates)
 # ============================================================
-# Purete = proportion des dates ou la communaute dominante d'un
-# pixel donne est effectivement observee sur ce pixel (1 = toujours
-# la meme communaute, 1/n_cluster = aucune communaute ne domine
-# clairement).
 
 map_data_purity <- data_pca %>%
   dplyr::count(lon, lat, community, name = "n") %>%
@@ -655,37 +416,21 @@ p_map_purity <- ggplot() +
   geom_raster(data = map_data_purity, aes(x = lon, y = lat, fill = community, alpha = purity)) +
   geom_sf(data = world, fill = "grey85", color = "grey50", linewidth = 0.2) +
   coord_sf(xlim = range(lons), ylim = range(lats)) +
-  scale_fill_manual(values = community_colors, name = "Communauté\ndominante") +
-  scale_alpha_continuous(
-    range = c(0.25, 1),
-    limits = c(1 / n_cluster, 1),
-    name = "Pureté"
-  ) +
-  labs(
-    x = "Longitude",
-    y = "Latitude",
-    title = "Pureté de la communauté dominante (proportion de dates où elle est observée)"
-  ) +
+  scale_fill_manual(values = community_colors, name = "Communaute\ndominante") +
+  scale_alpha_continuous(range = c(0.25, 1), limits = c(1 / n_cluster, 1), name = "Purete") +
+  labs(x = "Longitude", y = "Latitude",
+       title = "Purete de la communaute dominante (proportion de dates ou elle est observee)") +
   theme_minimal()
 
 print(p_map_purity)
 
-ggsave(
-  file.path(out_dir, "map_purity_communautes_kmeans_k5_PFT.png"),
-  plot = p_map_purity,
-  width = 8,
-  height = 8,
-  units = "in",
-  dpi = 300
-)
-
+ggsave(file.path(out_dir, "map_purity_communautes_kmeans_k6_PFT.png"),
+       plot = p_map_purity, width = 8, height = 8, units = "in", dpi = 300)
 
 # ============================================================
-# Sauvegarde des clusters sous forme de matrice
-# [date, lon, lat] = numero du cluster
+# Sauvegarde des clusters sous forme de matrice [date, lon, lat]
 # ============================================================
 
-# Matrice 3D vide avec les mêmes dimensions que les données d'origine
 cluster_array <- array(
   NA_integer_,
   dim = dim(valid_mask),
@@ -696,45 +441,26 @@ cluster_array <- array(
   )
 )
 
-# Insérer le numéro de cluster aux positions valides
 cluster_array[valid_idx] <- as.integer(data_pca$community)
 
-# Vérification
 dim(cluster_array)
 table(cluster_array, useNA = "ifany")
 
-# ------------------------------------------------------------
-# Sauvegarde
-# ------------------------------------------------------------
-out_dir <- "F:/data_elise/commu_phyto"
-saveRDS(
-  cluster_array,
-  file.path(out_dir, "PCA_kmeans_clusters_array.rds")
-)
-saveRDS(
-  lons,
-  file.path(out_dir, "lons_PCA_kmeans_clusters_array.rds")
-)
-saveRDS(
-  lats,
-  file.path(out_dir, "lats_PCA_kmeans_clusters_array.rds")
-)
-saveRDS(
-  dates,
-  file.path(out_dir, "dates_PCA_kmeans_clusters_array.rds")
-)
+out_dir_clusters <- "F:/data_elise/commu_phyto"
+if (!dir.exists(out_dir_clusters)) dir.create(out_dir_clusters, recursive = TRUE)
 
-# ------------------------------------------------------------
-# Distrib NASC par cluster de pigment
-# ------------------------------------------------------------
-# ------------------------------------------------------------
+saveRDS(cluster_array, file.path(out_dir_clusters, "PCA_kmeans_clusters_array.rds"))
+saveRDS(lons,  file.path(out_dir_clusters, "lons_PCA_kmeans_clusters_array.rds"))
+saveRDS(lats,  file.path(out_dir_clusters, "lats_PCA_kmeans_clusters_array.rds"))
+saveRDS(dates, file.path(out_dir_clusters, "dates_PCA_kmeans_clusters_array.rds"))
+
+# ============================================================
 # Distrib NASC par cluster de pigment (communaute phytoplanctonique)
-# ------------------------------------------------------------
+# ============================================================
+
 compute_interannual_stats_generic <- function(dat, value_col, entity_col,
                                               years_keep = c("2018","2021","2022","2023"),
-                                              log_transform = TRUE,
-                                              y_limits = NULL) {
-  
+                                              log_transform = TRUE, y_limits = NULL) {
   dat_sub <- dat %>%
     dplyr::filter(year %in% years_keep) %>%
     dplyr::mutate(val = if (log_transform) log10(.data[[value_col]]) else .data[[value_col]])
@@ -745,15 +471,10 @@ compute_interannual_stats_generic <- function(dat, value_col, entity_col,
   
   summary_stats <- daily_means %>%
     dplyr::group_by(.data[[entity_col]], year) %>%
-    dplyr::summarise(
-      n_days = dplyr::n(),
-      m      = mean(val_day, na.rm = TRUE),
-      var_v  = var(val_day,  na.rm = TRUE),
-      .groups = "drop"
-    ) %>%
+    dplyr::summarise(n_days = dplyr::n(), m = mean(val_day, na.rm = TRUE),
+                     var_v = var(val_day, na.rm = TRUE), .groups = "drop") %>%
     dplyr::mutate(
-      var_v  = tidyr::replace_na(var_v, 0),
-      sd_v   = sqrt(var_v),
+      var_v  = tidyr::replace_na(var_v, 0), sd_v = sqrt(var_v),
       mean_c = if (log_transform) 10^m else m,
       ymin   = if (log_transform) 10^(m - sd_v) else m - sd_v,
       ymax   = if (log_transform) 10^(m + sd_v) else m + sd_v
@@ -789,12 +510,11 @@ compute_interannual_stats_generic <- function(dat, value_col, entity_col,
   }
   out
 }
+
 plot_interannual_generic <- function(dat, value_col, entity_col, label,
                                      save_dir = out_dir, save = TRUE,
                                      years_keep = c("2018","2021","2022","2023"),
-                                     log_transform = TRUE,
-                                     y_limits = NULL) {
-  
+                                     log_transform = TRUE, y_limits = NULL) {
   stats_df <- compute_interannual_stats_generic(dat, value_col, entity_col, years_keep, log_transform, y_limits)
   
   dat_all <- dat %>%
@@ -807,40 +527,23 @@ plot_interannual_generic <- function(dat, value_col, entity_col, label,
   
   p <- ggplot(dat_all, aes(x = year, y = .data[[value_col]])) +
     geom_violin(trim = TRUE, scale = "width", alpha = 0.8, linewidth = 0.3, fill = "grey80") +
-    geom_errorbar(
-      data = stats_df,
-      aes(x = year, y = mean_c, ymin = ymin, ymax = ymax),
-      inherit.aes = FALSE, width = 0.12, linewidth = 0.5, color = "black"
-    ) +
-    geom_crossbar(
-      data = stats_df,
-      aes(x = year, y = mean_c, ymin = mean_c, ymax = mean_c),
-      inherit.aes = FALSE, width = 0.35, color = "black", linewidth = 0.4, fatten = 1
-    ) +
-    geom_text(
-      data = stats_df,
-      aes(x = year, y = y, label = letter),
-      inherit.aes = FALSE, size = 3.5, fontface = "bold"
-    ) +
+    geom_errorbar(data = stats_df, aes(x = year, y = mean_c, ymin = ymin, ymax = ymax),
+                  inherit.aes = FALSE, width = 0.12, linewidth = 0.5, color = "black") +
+    geom_crossbar(data = stats_df, aes(x = year, y = mean_c, ymin = mean_c, ymax = mean_c),
+                  inherit.aes = FALSE, width = 0.35, color = "black", linewidth = 0.4, fatten = 1) +
+    geom_text(data = stats_df, aes(x = year, y = y, label = letter),
+              inherit.aes = FALSE, size = 3.5, fontface = "bold") +
     facet_wrap(as.formula(paste("~", entity_col))) +
-    labs(
-      x = "Year", y = label,
-      title = paste(label, "distribution across years"),
-      caption = if (log_transform) {
-        "Tiret = moyenne geometrique ; barre = +/- ecart-type (log10) ; lettres = groupes Sidak (p < 0.05)"
-      } else {
-        "Tiret = moyenne ; barre = +/- ecart-type ; lettres = groupes Sidak (p < 0.05)"
-      }
-    ) +
+    labs(x = "Year", y = label, title = paste(label, "distribution across years"),
+         caption = if (log_transform) {
+           "Tiret = moyenne geometrique ; barre = +/- ecart-type (log10) ; lettres = groupes Sidak (p < 0.05)"
+         } else {
+           "Tiret = moyenne ; barre = +/- ecart-type ; lettres = groupes Sidak (p < 0.05)"
+         }) +
     theme_classic() +
-    theme(
-      axis.title  = element_text(size = 12),
-      axis.text   = element_text(size = 11),
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      strip.text  = element_text(size = 12, face = "bold"),
-      plot.title  = element_text(size = 14, face = "bold"),
-      panel.spacing = unit(1.2, "lines")
-    )
+    theme(axis.title = element_text(size = 12), axis.text = element_text(size = 11),
+          axis.text.x = element_text(angle = 45, hjust = 1), strip.text = element_text(size = 12, face = "bold"),
+          plot.title = element_text(size = 14, face = "bold"), panel.spacing = unit(1.2, "lines"))
   
   if (log_transform) {
     p <- p + scale_y_log10(expand = expansion(mult = c(0.05, 0.45)))
@@ -854,29 +557,33 @@ plot_interannual_generic <- function(dat, value_col, entity_col, label,
     ggsave(file.path(save_dir, paste0("violin_interannual_", fname, ".png")), plot = p, width = 12, height = 8, dpi = 300)
     write.csv(stats_df, file.path(save_dir, paste0("stats_interannual_", fname, ".csv")), row.names = FALSE)
   }
-  
   p
 }
+
 # Necessite pca, km, pig_vars, community_colors (script PCA/k-means).
 years_keep <- c("2018", "2021", "2022", "2023")
-freq <- 120
-path_nasc <- paste0(
-  "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
+freq <- 38
+nasc_pig <- readRDS(paste0(
+  "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/new_ratio_ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
   freq, "kHz_mask9.rds"
-)
-
-nasc_pig <- readRDS(path_nasc)
-
+))
+str(nasc_pig)
+# ------------------------------------------------------------
+# Correspondance entre les noms all_ds (pig_vars, cles) et les
+# colonnes du dataset NASC (valeurs) : ce dernier a ete regenere
+# avec la meme nomenclature "_totpig" (cf. adaptation du dataset
+# NASC : Chla_total + ratio pigment/somme(hors Chla)).
+# ------------------------------------------------------------
 pig_map <- c(
-  chla_total  = "Chla_total",
-  per_chla    = "Per_Chla",
-  but_chla    = "But_Chla",
-  fuco_chla   = "Fuco_Chla",
-  hex_chla    = "Hex_Chla",
-  allo_chla   = "Allo_Chla",
-  zea_chla    = "Zea_Chla",
-  chlb_chla   = "Chlb_Chla",
-  dvchla_chla = "DvChla_Chla"
+  chla_total    = "Chla_total",
+  per_totpig    = "Per_totpig",
+  but_totpig    = "But_totpig",
+  fuco_totpig   = "Fuco_totpig",
+  hex_totpig    = "Hex_totpig",
+  allo_totpig   = "Allo_totpig",
+  zea_totpig    = "Zea_totpig",
+  chlb_totpig   = "Chlb_totpig",
+  dvchla_totpig = "DvChla_totpig"
 )
 
 stopifnot(all(pig_map %in% names(nasc_pig)))
@@ -902,17 +609,12 @@ nasc_pig$community <- factor(nasc_pig$community, levels = names(community_colors
 cat("NASC avec communaute assignee :", sum(!is.na(nasc_pig$community)), "/", nrow(nasc_pig), "\n")
 
 nasc_long_comm <- nasc_pig %>%
-  dplyr::mutate(
-    date     = as.Date(time_nasc),
-    year     = format(time_nasc, "%Y"),
-    variable = "NASC"
-  ) %>%
+  dplyr::mutate(date = as.Date(time_nasc), year = format(time_nasc, "%Y"), variable = "NASC") %>%
   dplyr::filter(is.finite(nasc), nasc > 0, year %in% years_keep, !is.na(community))
 
 compute_stats_by_group <- function(dat, value_col, entity_col, entity_val, group_col,
                                    years_keep = c("2018","2021","2022","2023"),
                                    log_transform = TRUE, y_limits = NULL) {
-  
   dat_sub <- dat %>%
     dplyr::filter(.data[[entity_col]] == entity_val, year %in% years_keep) %>%
     dplyr::mutate(val = if (log_transform) log10(.data[[value_col]]) else .data[[value_col]])
@@ -973,7 +675,6 @@ plot_by_group <- function(dat, value_col, entity_col, entity_val, label, group_c
                           save_dir = out_dir, save = TRUE,
                           years_keep = c("2018","2021","2022","2023"),
                           log_transform = TRUE, y_limits = NULL) {
-  
   stats_df <- compute_stats_by_group(dat, value_col, entity_col, entity_val, group_col,
                                      years_keep, log_transform, y_limits)
   
@@ -1028,21 +729,19 @@ plot_by_group <- function(dat, value_col, entity_col, entity_val, label, group_c
   p
 }
 
-# 5.1 Par communaute x annee (echelle log, comme le NASC par FOD)
 plot_by_group(nasc_long_comm, value_col = "nasc", entity_col = "variable",
               entity_val = "NASC", label = paste0("NASC (", freq, " kHz) par communaute phytoplanctonique"),
               group_col = "community", palette = community_colors,
               years_keep = years_keep, log_transform = TRUE)
 
-
-##################################
-
-
+# ============================================================
+# NASC par communaute, par annee (comparaison entre communautes
+# au sein de chaque annee)
+# ============================================================
 
 compute_stats_by_year <- function(dat, value_col, entity_col, entity_val, group_col,
                                   years_keep = c("2018","2021","2022","2023"),
                                   log_transform = TRUE, y_limits = NULL) {
-  
   dat_sub <- dat %>%
     dplyr::filter(.data[[entity_col]] == entity_val, year %in% years_keep) %>%
     dplyr::mutate(val = if (log_transform) log10(.data[[value_col]]) else .data[[value_col]])
@@ -1062,7 +761,6 @@ compute_stats_by_year <- function(dat, value_col, entity_col, entity_val, group_
       ymax   = if (log_transform) 10^(m + sd_v) else m + sd_v
     )
   
-  # ---- Test PAR ANNEE : compare les communautes entre elles ----
   letters_by_year <- daily_means %>%
     dplyr::group_by(year) %>%
     dplyr::group_split() %>%
@@ -1107,7 +805,6 @@ plot_by_year <- function(dat, value_col, entity_col, entity_val, label, group_co
                          save_dir = out_dir, save = TRUE,
                          years_keep = c("2018","2021","2022","2023"),
                          log_transform = TRUE, y_limits = NULL) {
-  
   stats_df <- compute_stats_by_year(dat, value_col, entity_col, entity_val, group_col,
                                     years_keep, log_transform, y_limits)
   
@@ -1117,7 +814,6 @@ plot_by_year <- function(dat, value_col, entity_col, entity_val, label, group_co
     dplyr::left_join(stats_df %>% dplyr::select(year, dplyr::all_of(group_col), mean_c),
                      by = c("year", group_col))
   
-  # ordre fixe des communautes sur l'axe x (coherent avec community_colors)
   group_levels <- names(palette)
   dat_sub  <- dat_sub  %>% dplyr::mutate(!!group_col := factor(.data[[group_col]], levels = group_levels))
   stats_df <- stats_df %>% dplyr::mutate(!!group_col := factor(.data[[group_col]], levels = group_levels))
@@ -1133,11 +829,11 @@ plot_by_year <- function(dat, value_col, entity_col, entity_val, label, group_co
                   inherit.aes = FALSE, width = 0.35, color = "black", linewidth = 0.2) +
     geom_text(data = stats_df, aes(x = .data[[group_col]], y = y, label = letter),
               inherit.aes = FALSE, size = 3.5, fontface = "bold") +
-    scale_fill_manual(values = palette, name = "Communauté") +
+    scale_fill_manual(values = palette, name = "Communaute") +
     facet_wrap(~ year) +
-    labs(x = "Communauté", y = label,
-         title = paste(label, "par communauté phytoplanctonique, par année"),
-         caption = "Tiret = moyenne ; barre = +/- ecart-type ; lettres = groupes Sidak (p < 0.05), comparaison entre communautés au sein de chaque année") +
+    labs(x = "Communaute", y = label,
+         title = paste(label, "par communaute phytoplanctonique, par annee"),
+         caption = "Tiret = moyenne ; barre = +/- ecart-type ; lettres = groupes Sidak (p < 0.05), comparaison entre communautes au sein de chaque annee") +
     theme_classic() +
     theme(axis.title = element_text(size = 12), axis.text = element_text(size = 11),
           strip.text = element_text(size = 12, face = "bold"),
@@ -1162,3 +858,56 @@ plot_by_year(nasc_long_comm, value_col = "nasc", entity_col = "variable",
              entity_val = "NASC", label = paste0("NASC (", freq, " kHz) par communaute phytoplanctonique par annee"),
              group_col = "community", palette = community_colors,
              years_keep = years_keep, log_transform = TRUE)
+
+# ============================================================
+# Effectifs NASC par communaute phytoplanctonique, par annee
+# ============================================================
+
+compute_n_nasc_by_community <- function(dat, value_col, entity_col, entity_val, group_col,
+                                        years_keep = c("2018","2021","2022","2023")) {
+  dat %>%
+    dplyr::filter(.data[[entity_col]] == entity_val, year %in% years_keep,
+                  is.finite(.data[[value_col]])) %>%
+    dplyr::count(year, .data[[group_col]], name = "n_obs")
+}
+
+plot_n_nasc_by_community <- function(dat, value_col, entity_col, entity_val, label, group_col, palette,
+                                     save_dir = out_dir, save = TRUE,
+                                     years_keep = c("2018","2021","2022","2023")) {
+  
+  n_df <- compute_n_nasc_by_community(dat, value_col, entity_col, entity_val, group_col, years_keep) %>%
+    dplyr::mutate(
+      year = factor(year, levels = years_keep),
+      !!group_col := factor(.data[[group_col]], levels = names(palette))
+    )
+  
+  p <- ggplot(n_df, aes(x = year, y = n_obs, fill = .data[[group_col]])) +
+    geom_col(position = position_dodge2(preserve = "single"), color = "black", linewidth = 0.2) +
+    geom_text(aes(label = n_obs), position = position_dodge2(width = 0.9, preserve = "single"),
+              vjust = -0.4, size = 3) +
+    scale_fill_manual(values = palette, name = "Communaute") +
+    labs(
+      x = "Year", y = "Nombre de mesures NASC",
+      title = paste(label, "- effectifs NASC par communaute phytoplanctonique, par annee")
+    ) +
+    theme_classic() +
+    theme(
+      axis.title  = element_text(size = 12),
+      axis.text   = element_text(size = 11),
+      plot.title  = element_text(size = 13, face = "bold")
+    )
+  
+  
+  dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
+  ggsave(file.path(save_dir, paste0("n_nasc_", label, ".png")), plot = p, width = 9, height = 5.5, dpi = 300)
+  write.csv(n_df, file.path(save_dir, paste0("n_nasc_", label, ".csv")), row.names = FALSE)
+
+  
+  p
+}
+
+plot_n_nasc_by_community(nasc_long_comm, value_col = "nasc", entity_col = "variable",
+                         entity_val = "NASC",
+                         label = paste0("NASC (", freq, " kHz) par communaute phytoplanctonique"),
+                         group_col = "community", palette = community_colors,
+                         years_keep = years_keep)

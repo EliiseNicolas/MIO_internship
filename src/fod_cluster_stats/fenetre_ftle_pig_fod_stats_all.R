@@ -1,21 +1,15 @@
 # ============================================================
-# Distributions des RATIOS pigment/Chla et du FTLE au sein des
-# clusters FOD, a partir du RDS unique (all_ds) deja aligne
-# (memes dates, meme grille pour ftle / pig / fod).
+# Distributions des RATIOS pigment/(somme des pigments hors Chla)
+# et du FTLE au sein des clusters FOD, a partir du RDS unique
+# (all_ds) deja aligne (memes dates, meme grille pour ftle / pig /
+# fod).
 #
-# Reprend exactement la meme logique statistique et graphique que
-# le script pigments d'origine (violon + moyenne +/- variance +
-# lettres Sidak), generalisee pour s'appliquer :
-#  - aux ratios pigment/Chla (colonnes *_chla dans all_ds$pig),
-#    par annee x cluster FOD, puis en distribution interannuelle
-#    (echelle LINEAIRE, ylim adapte par ratio -- cf section 6)
-#  - au FTLE, par annee x cluster FOD, puis en distribution
-#    interannuelle (echelle lineaire, axe libre par facette)
-#
-# Etiquettes de facette (strip) colorees par FOD plutot que le
-# violon lui-meme ; NA en gris ; lettres des tests Sidak calees
-# pres du haut visible du panneau (94% de la hauteur), sans jamais
-# depasser.
+# ADAPTATION : les ratios pigmentaires ne sont plus sur Chla
+# (suffixe "_chla") mais sur la somme des pigments hors Chla
+# (suffixe "_totpig"). "chla_totpig" (ratio de Chla elle-meme sur
+# la somme des autres) est exclu de l'analyse, redondant avec
+# "chla_total" -- exactement comme "chla_chla" (toujours = 1) etait
+# exclu dans la version precedente du script.
 # ============================================================
 
 library(dplyr)
@@ -60,12 +54,6 @@ transition_cols <- c(
 )
 fod_cols <- c(cluster_cols, transition_cols)
 
-# ------------------------------------------------------------
-# Renommage des codes FOD en libelles lisibles (clusters = C.,
-# transitions = T.-.), regroupes par cluster de depart (toutes les
-# transitions issues de C1, puis C2, etc.)
-# ------------------------------------------------------------
-
 legend_codes <- c(
   1, 7, 8, 2, 9, 3, 10, 4, 12, 11, 5, 13, 6
 )
@@ -83,16 +71,10 @@ fod_cols_named <- setNames(fod_cols[as.character(legend_codes)], legend_labels)
 
 relabel_fod <- function(fod_vec) {
   fod_chr <- trimws(as.character(fod_vec))
-  
-  # NA réel ou chaîne "NA" -> niveau explicite "NA"
   fod_chr[is.na(fod_chr) | fod_chr == "NA"] <- "NA"
-  
   lbl <- fod_label_map[fod_chr]
-  
-  # Si un code n'est pas dans le mapping, on conserve le code
   unknown <- is.na(lbl)
   lbl[unknown] <- fod_chr[unknown]
-  
   factor(
     lbl,
     levels = c(
@@ -107,7 +89,7 @@ relabel_fod <- function(fod_vec) {
 # ============================================================
 
 all_ds <- readRDS(path_all_ds)
-
+str(all_ds)
 dates <- all_ds$date
 lons  <- all_ds$lon
 lats  <- all_ds$lat
@@ -117,22 +99,24 @@ n_lon  <- length(lons)
 n_lat  <- length(lats)
 
 # fod est stocke en [lon, lat, date] -> on le remet en [date, lon, lat]
-# pour etre coherent avec ftle et les arrays de pig (deja [date, lon, lat])
 fod_arr <- aperm(all_ds$fod, c(3, 1, 2))
 
-# Variables ratio pigment/Chla (suffixe _chla) a etudier
-ratio_vars <- grep("_chla$", names(all_ds$pig), value = TRUE)
+# ------------------------------------------------------------
+# Variables ratio pigment/(somme des pigments hors Chla)
+# (suffixe "_totpig") a etudier
+# ------------------------------------------------------------
+ratio_vars <- grep("_totpig$", names(all_ds$pig), value = TRUE)
 
-# chla_chla vaut toujours 1 (Chla / Chla) : sans interet, exclu
-ratio_vars <- setdiff(ratio_vars, "chla_chla")
+# chla_totpig est le ratio de Chla sur la somme des autres pigments :
+# redondant avec chla_total, exclu de l'analyse (equivalent de
+# l'ancien chla_chla, toujours = 1)
+ratio_vars <- setdiff(ratio_vars, "chla_totpig")
 
 cat("Ratios trouves :", paste(ratio_vars, collapse = ", "), "\n")
 
 # ============================================================
 # 2. Table maitre au format long (1 ligne = 1 pixel x 1 date)
 # ============================================================
-# date_idx en premier : c'est la 1ere dimension des arrays (varie le
-# plus vite en column-major R), pour matcher exactement as.vector().
 
 master_long <- expand.grid(
   date_idx = seq_len(n_date),
@@ -155,11 +139,8 @@ for (v in ratio_vars) {
 master_long <- master_long %>% dplyr::select(-date_idx, -lon_idx, -lat_idx)
 
 # ------------------------------------------------------------
-# Format long des ratios (equivalent de pig_long)
+# Format long des ratios
 # ------------------------------------------------------------
-# Plus de contrainte "> 0" : on ne passe plus par log10, donc 0 est
-# une valeur valide pour un ratio. On garde uniquement les valeurs
-# finies (exclut Inf/NaN issus d'une division par 0/NA).
 
 ratio_long <- master_long %>%
   dplyr::select(date, year, lon, lat, fod, dplyr::all_of(ratio_vars)) %>%
@@ -171,13 +152,13 @@ ratio_long <- master_long %>%
   dplyr::filter(is.finite(ratio), ratio >= 0)
 
 # ------------------------------------------------------------
-# Table FTLE seule (une seule variable, pas de pivot necessaire)
+# Table FTLE seule
 # ------------------------------------------------------------
 
 ftle_long <- master_long %>%
   dplyr::select(date, year, lon, lat, fod, ftle) %>%
   dplyr::filter(is.finite(ftle)) %>%
-  dplyr::mutate(variable = "FTLE")   # colonne factice pour reutiliser les memes fonctions generiques
+  dplyr::mutate(variable = "FTLE")
 
 # ============================================================
 # 3. Fonctions generiques -- par cluster FOD x annee
@@ -192,7 +173,6 @@ compute_stats_by_fod <- function(dat, value_col, entity_col, entity_val,
     dplyr::filter(.data[[entity_col]] == entity_val, year %in% years_keep) %>%
     dplyr::mutate(val = if (log_transform) log10(.data[[value_col]]) else .data[[value_col]])
   
-  # ---- Moyenne par DATE x FOD d'abord (reduit la pseudo-replication) ----
   daily_means <- dat_sub %>%
     dplyr::group_by(date, year, fod) %>%
     dplyr::summarise(val_day = mean(val, na.rm = TRUE), .groups = "drop")
@@ -206,14 +186,13 @@ compute_stats_by_fod <- function(dat, value_col, entity_col, entity_val,
       .groups = "drop"
     ) %>%
     dplyr::mutate(
-      var_v  = tidyr::replace_na(var_v, 0),   # var() vaut NA si n_days == 1
-      sd_v   = sqrt(var_v),                   # ecart-type, coherent avec la legende ("+/- ecart-type")
+      var_v  = tidyr::replace_na(var_v, 0),
+      sd_v   = sqrt(var_v),
       mean_c = if (log_transform) 10^m else m,
       ymin   = if (log_transform) 10^(m - sd_v) else m - sd_v,
       ymax   = if (log_transform) 10^(m + sd_v) else m + sd_v
     )
   
-  # ---- Test sur les moyennes journalieres ----
   letters_by_fod <- daily_means %>%
     dplyr::group_by(fod) %>%
     dplyr::group_split() %>%
@@ -232,14 +211,6 @@ compute_stats_by_fod <- function(dat, value_col, entity_col, entity_val,
     dplyr::mutate(fod = as.character(fod), year = as.character(year)) %>%
     dplyr::left_join(letters_by_fod, by = c("year", "fod"))
   
-  # Position des lettres : le plus haut possible sans jamais depasser.
-  #  - log_transform : +1.5 dex au-dessus du haut de la barre d'erreur
-  #    (multiplicatif, scale-invariant).
-  #  - lineaire : calee a 94% de la hauteur visible du panneau.
-  #    * y_limits fixe (coord_cartesian, ex. ratios) -> le haut visible
-  #      vaut exactement y_limits[2].
-  #    * echelle libre (ex. FTLE, scales="free_y") -> le haut visible
-  #      depend du max reel des donnees de CETTE facette.
   if (log_transform) {
     out <- out %>% dplyr::mutate(y = 10^(log10(ymax) + 1.5))
   } else {
@@ -333,10 +304,6 @@ plot_by_fod <- function(dat, value_col, entity_col, entity_val, label,
   if (log_transform) {
     p <- p + scale_y_log10(expand = expansion(mult = c(0.05, 0.45)))
   } else if (!is.null(y_limits)) {
-    # coord_cartesian recadre l'affichage sans retirer de donnees
-    # (contrairement a scale_y_continuous(limits=...)), donc les
-    # violons/stats hors bornes sont juste coupes a l'affichage,
-    # pas supprimes du calcul.
     p <- p + coord_cartesian(ylim = y_limits, clip = "off")
   }
   
@@ -352,7 +319,7 @@ plot_by_fod <- function(dat, value_col, entity_col, entity_val, label,
 
 # ============================================================
 # 4. Fonctions generiques -- distribution interannuelle, tous FOD
-#    confondus (equivalent de compute_interannual_stats / plot_interannual)
+#    confondus
 # ============================================================
 
 compute_interannual_stats_generic <- function(dat, value_col, entity_col,
@@ -485,12 +452,7 @@ plot_interannual_generic <- function(dat, value_col, entity_col, label,
 }
 
 # ============================================================
-# 5. Diagrammes du nombre de donnees effectives (jours) utilisees
-#    pour calculer chaque moyenne -- PAS de statistiques (pas de
-#    barre d'erreur, pas de lettres). Meme granularite de comptage
-#    que daily_means dans compute_stats_by_fod / compute_interannual_
-#    stats_generic (1 jour = 1 date ou au moins 1 pixel valide),
-#    pour visualiser directement l'effectif derriere chaque violon.
+# 5. Diagrammes du nombre de donnees effectives (jours)
 # ============================================================
 
 compute_n_days_by_fod <- function(dat, value_col, entity_col, entity_val,
@@ -578,11 +540,8 @@ plot_n_days_interannual <- function(dat, value_col, entity_col, label,
 }
 
 # ============================================================
-# 6. Execution -- ratios pigment/Chla
-#    Echelle LINEAIRE, ylim adapte a chaque ratio (99.9e percentile
-#    et sommet des barres d'erreur, avec marge de 25%), pour rendre
-#    lisibles les ratios a faible concentration sans jamais couper
-#    une barre d'erreur.
+# 6. Execution -- ratios pigment/(somme des pigments hors Chla)
+#    Echelle LINEAIRE, ylim adapte a chaque ratio
 # ============================================================
 
 for (rv in ratio_vars) {
@@ -594,7 +553,7 @@ for (rv in ratio_vars) {
     stats::quantile(rv_vals, probs = 0.999, na.rm = TRUE),
     max(stats_rv$ymax, na.rm = TRUE)
   )
-  y_lim_rv <- c(0, rv_upper * 1.25)   # marge genereuse pour laisser respirer violon + lettres
+  y_lim_rv <- c(0, rv_upper * 1.25)
   
   plot_by_fod(ratio_long, value_col = "ratio", entity_col = "ratio_name",
               entity_val = rv, label = rv, years_keep = years_keep,
@@ -605,22 +564,20 @@ for (rv in ratio_vars) {
 
 # 6.2 Distribution interannuelle, tous FOD confondus, un plot facette par ratio
 plot_interannual_generic(ratio_long, value_col = "ratio", entity_col = "ratio_name",
-                         label = "ratios_pigment_chla", years_keep = years_keep,
+                         label = "ratios_pigment_totpig", years_keep = years_keep,
                          log_transform = FALSE)
 plot_n_days_interannual(ratio_long, value_col = "ratio", entity_col = "ratio_name",
-                        label = "ratios_pigment_chla", years_keep = years_keep)
+                        label = "ratios_pigment_totpig", years_keep = years_keep)
 
 # ============================================================
 # 7. Execution -- FTLE (echelle lineaire, axe libre par facette)
 # ============================================================
 
-# 7.1 Par cluster FOD x annee (echelle lineaire)
 plot_by_fod(ftle_long, value_col = "ftle", entity_col = "variable",
             entity_val = "FTLE", label = "FTLE", years_keep = years_keep, log_transform = FALSE)
 plot_n_days_by_fod(ftle_long, value_col = "ftle", entity_col = "variable",
                    entity_val = "FTLE", label = "FTLE", years_keep = years_keep)
 
-# 7.2 Distribution interannuelle, tous FOD confondus (echelle lineaire)
 plot_interannual_generic(ftle_long, value_col = "ftle", entity_col = "variable",
                          label = "FTLE", years_keep = years_keep, log_transform = FALSE)
 plot_n_days_interannual(ftle_long, value_col = "ftle", entity_col = "variable",
@@ -630,29 +587,18 @@ plot_n_days_interannual(ftle_long, value_col = "ftle", entity_col = "variable",
 # 8. Execution -- NASC
 # ============================================================
 
-freq <- 120
+freq <- 38
 nasc_ds <- readRDS(paste0(
-  "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
+  "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/new_ratio_ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
   freq, "kHz_mask9.rds"
 ))
-
-# ------------------------------------------------------------
-# Mise en forme -- meme structure que ratio_long / ftle_long
-# (colonnes date, year, fod, valeur + colonne "variable" factice
-# pour reutiliser plot_by_fod / plot_interannual_generic tel quel)
-# ------------------------------------------------------------
 
 nasc_long <- nasc_ds %>%
   dplyr::mutate(
     date = as.Date(time_nasc),
     year = format(time_nasc, "%Y"),
-    
-    # Suppression des espaces avant/après les codes FOD
     fod = trimws(as.character(fod)),
-    
-    # "NA" et NA réel traités comme NA
     fod = ifelse(is.na(fod) | fod == "NA", NA_character_, fod),
-    
     variable = "NASC"
   ) %>%
   dplyr::filter(
@@ -663,17 +609,16 @@ nasc_long <- nasc_ds %>%
 
 cat("NASC valides :", nrow(nasc_long), "/", nrow(nasc_ds), "\n")
 print(unique(nasc_long$fod))
-# 8.1 Par cluster FOD x annee (echelle log, comme les pigments d'origine)
+
 plot_by_fod(nasc_long, value_col = "nasc", entity_col = "variable",
-            entity_val = "NASC", label = "NASC", years_keep = years_keep,
+            entity_val = "NASC", label = paste0("NASC (", freq, " kHz)"), years_keep = years_keep,
             log_transform = TRUE)
 plot_n_days_by_fod(nasc_long, value_col = "nasc", entity_col = "variable",
-                   entity_val = "NASC", label = "NASC", years_keep = years_keep)
+                   entity_val = "NASC", label = paste0("NASC (", freq, " kHz)"), years_keep = years_keep)
 
-# 8.2 Distribution interannuelle, tous FOD confondus (echelle log)
 plot_interannual_generic(nasc_long, value_col = "nasc", entity_col = "variable",
-                         label = "NASC", years_keep = years_keep, log_transform = TRUE)
+                         label = paste0("NASC (", freq, " kHz)"), years_keep = years_keep, log_transform = TRUE)
 plot_n_days_interannual(nasc_long, value_col = "nasc", entity_col = "variable",
-                        label = "NASC", years_keep = years_keep)
+                        label = paste0("NASC (", freq, " kHz)"), years_keep = years_keep)
 
 sort(unique(nasc_ds$fod))
