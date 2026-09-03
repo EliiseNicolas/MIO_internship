@@ -14,7 +14,7 @@ rmse_fn <- function(obs, pred) sqrt(mean((obs - pred)^2, na.rm = TRUE))
 #    données pour l'entraînement. Les folds ne sont PAS une partition
 #    (contrairement à une k-fold CV classique).
 # ---------------------------------------------------------------------
-build_naive_folds <- function(df, n_folds = N_CV, frac_train = 0.8, seed = 123) {
+build_naive_folds <- function(df, n_folds = NAIVE_N_FOLDS, frac_train = 0.8, seed = 123) {
   set.seed(seed)
   n <- nrow(df)
   folds <- map(seq_len(n_folds), function(k) {
@@ -48,23 +48,29 @@ make_spatial_fold_buffered <- function(data, block_id, buffer_km) {
 }
 
 build_spatial_folds <- function(df, cellsize_x, cellsize_y, buffer_km,
-                                 min_block_n    = BLOCK_MIN_BLOCK_N,
-                                 n_folds_target = BLOCK_N_FOLDS_TARGET,
+                                 min_block_n         = BLOCK_MIN_BLOCK_N,
+                                 max_folds_fraction  = BLOCK_MAX_FOLDS_FRACTION,
+                                 min_folds           = BLOCK_MIN_FOLDS,
+                                 max_folds_abs       = BLOCK_MAX_FOLDS_ABS,
                                  seed = 42) {
   data_blocked <- assign_spatial_block(df, cellsize_x, cellsize_y)
   blocks_count <- data_blocked %>% count(spatial_block)
   blocks_used  <- blocks_count %>% filter(n >= min_block_n) %>% pull(spatial_block)
 
+  # Nombre de folds ADAPTATIF : une fraction des blocs disponibles,
+  # borné par [min_folds, max_folds_abs, nb de blocs disponibles].
+  n_target <- round(length(blocks_used) * max_folds_fraction)
+  n_target <- max(min_folds, min(n_target, max_folds_abs, length(blocks_used)))
+
   set.seed(seed)
-  if (length(blocks_used) > n_folds_target) {
-    blocks_used <- sample(blocks_used, n_folds_target)
-  } else if (length(blocks_used) < n_folds_target) {
-    cat(sprintf(
-      "  [!] seulement %d blocs disponibles (>= %d obs) pour %sx%skm : %d folds au lieu de %d demandes\n",
-      length(blocks_used), min_block_n, cellsize_x, cellsize_y,
-      length(blocks_used), n_folds_target
-    ))
+  if (length(blocks_used) > n_target) {
+    blocks_used <- sample(blocks_used, n_target)
   }
+  cat(sprintf(
+    "  %sx%skm : %d blocs disponibles (>= %d obs) -> %d folds retenus (cible adaptative : %d)\n",
+    cellsize_x, cellsize_y, length(blocks_count %>% filter(n >= min_block_n) %>% pull(spatial_block)),
+    min_block_n, length(blocks_used), n_target
+  ))
 
   folds <- map(blocks_used, ~ make_spatial_fold_buffered(data_blocked, .x, buffer_km))
   names(folds) <- paste0("s_", blocks_used)
@@ -76,7 +82,8 @@ build_spatial_folds <- function(df, cellsize_x, cellsize_y, buffer_km,
   list(
     data = data_blocked, folds = folds, scheme = "spatial_block",
     cellsize_x = cellsize_x, cellsize_y = cellsize_y, buffer_km = buffer_km,
-    n_blocks_total = nrow(blocks_count), n_blocks_used = length(folds)
+    n_blocks_total = nrow(blocks_count), n_blocks_used = length(folds),
+    n_folds_target = n_target
   )
 }
 
@@ -106,23 +113,28 @@ make_temporal_fold <- function(data, block_id, buffer_days) {
 }
 
 build_temporal_folds <- function(df, block_days, buffer_days,
-                                  min_block_n    = BLOCK_MIN_BLOCK_N,
-                                  n_folds_target = BLOCK_N_FOLDS_TARGET,
+                                  min_block_n         = BLOCK_MIN_BLOCK_N,
+                                  max_folds_fraction  = BLOCK_MAX_FOLDS_FRACTION,
+                                  min_folds           = BLOCK_MIN_FOLDS,
+                                  max_folds_abs       = BLOCK_MAX_FOLDS_ABS,
                                   seed = 42) {
   data_blocked <- assign_temporal_block(df, block_days)
   blocks_count <- data_blocked %>% count(temporal_block)
   blocks_used  <- blocks_count %>% filter(n >= min_block_n) %>% pull(temporal_block)
 
+  # Nombre de folds ADAPTATIF, comme pour le blocage spatial (voir plus haut)
+  n_target <- round(length(blocks_used) * max_folds_fraction)
+  n_target <- max(min_folds, min(n_target, max_folds_abs, length(blocks_used)))
+
   set.seed(seed)
-  if (length(blocks_used) > n_folds_target) {
-    blocks_used <- sample(blocks_used, n_folds_target)
-  } else if (length(blocks_used) < n_folds_target) {
-    cat(sprintf(
-      "  [!] seulement %d blocs disponibles (>= %d obs) pour blocs de %d j : %d folds au lieu de %d demandes\n",
-      length(blocks_used), min_block_n, block_days,
-      length(blocks_used), n_folds_target
-    ))
+  if (length(blocks_used) > n_target) {
+    blocks_used <- sample(blocks_used, n_target)
   }
+  cat(sprintf(
+    "  blocs de %d j : %d blocs disponibles (>= %d obs) -> %d folds retenus (cible adaptative : %d)\n",
+    block_days, length(blocks_count %>% filter(n >= min_block_n) %>% pull(temporal_block)),
+    min_block_n, length(blocks_used), n_target
+  ))
 
   folds <- map(blocks_used, ~ make_temporal_fold(data_blocked, .x, buffer_days))
   names(folds) <- paste0("t_", blocks_used)
@@ -134,7 +146,8 @@ build_temporal_folds <- function(df, block_days, buffer_days,
   list(
     data = data_blocked, folds = folds, scheme = "temporal_block",
     block_days = block_days, buffer_days = buffer_days,
-    n_blocks_total = nrow(blocks_count), n_blocks_used = length(folds)
+    n_blocks_total = nrow(blocks_count), n_blocks_used = length(folds),
+    n_folds_target = n_target
   )
 }
 

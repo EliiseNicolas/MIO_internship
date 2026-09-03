@@ -1,16 +1,19 @@
 # =====================================================================
-# 11_run_training.R -- SCRIPT 2 : entraînement 10 folds RF & XGB
+# 11_run_training.R -- SCRIPT 2 : entraînement CART / RF / XGB
 # =====================================================================
-# Pour chaque fréquence (38, 120 kHz), pour RF et XGB, pour :
-#   - naive RS 80/20 (10 tirages)
-#   - blocage spatial 1500x1000km, 200x200km, 20x20km (10 folds cible)
-#   - blocage temporel 1j (10 folds cible)
+# Pour chaque fréquence (38, 120 kHz), pour CART, RF et XGB, pour :
+#   - naive RS 80/20 (NAIVE_N_FOLDS tirages, fixé à N_CV = 10)
+#   - blocage spatial 1500x1000km, 200x200km, 20x20km (nb de folds
+#     ADAPTATIF, cf. 00_config.R / 02_folds.R -- pas forcément 10)
+#   - blocage temporel 1j (nb de folds adaptatif)
 # on charge les meilleurs hyperparamètres trouvés en 10_run_tuning.R et
-# on entraîne 10 modèles (un par fold), en sauvegardant TOUS les
-# diagnostics et plots demandés.
+# on entraîne un modèle par fold, en sauvegardant TOUS les diagnostics
+# et plots demandés. CART et RF partagent le même schéma/folds
+# (`schemes_rf`, données complètes) ; XGB utilise `schemes_xgb`
+# (données avec NA préservés).
 #
 # Sorties, sous outputs_pipeline/training/<freq>kHz/<model>/<schema>/ :
-#   - models.rds              (liste des N_CV modèles, un par fold)
+#   - models.rds              (liste des modèles, un par fold)
 #   - metrics_par_fold.csv
 #   - obs_pred_all.csv
 #   - importance_all.csv
@@ -100,6 +103,24 @@ for (freq in FREQS) {
   schemes_xgb <- build_all_schemes(prep_xgb$df)
 
   for (scheme_name in MODEL_SCHEMES) {
+
+    # ---- CART ----
+    # NB : CART, comme RF, a besoin de données complètes (pas de NA) ->
+    # il utilise le MEME schema/folds que RF (`schemes_rf`), et PAS un
+    # `schemes_cart` séparé (qui n'existerait pas). Les 3 modèles
+    # doivent voir le même train/test par fold pour un schéma donné --
+    # seul XGB diffère car il tolère les NA (`schemes_xgb`).
+    cat("\n-- CART --", scheme_name, "\n")
+    tune_cart <- readRDS(file.path(tuning_dir, sprintf("cart_%dkHz_%s.rds", freq, scheme_name)))
+    backend_cart <- make_backend("cart")
+    scheme_cart  <- schemes_rf[[scheme_name]]
+
+    cv_cart <- run_cv_scheme(scheme_cart, tune_cart$best_params, backend_cart, label = scheme_name)
+    lc_cart <- compute_learning_curve(scheme_cart, tune_cart$best_params, backend_cart)
+
+    out_dir_cart <- file.path(training_dir, paste0(freq, "kHz"), "cart", scheme_name)
+    generate_and_save_all_plots(cv_cart, lc_cart, scheme_cart, out_dir_cart,
+                                 label = sprintf("CART - %d kHz - %s", freq, scheme_name))
 
     # ---- RF ----
     cat("\n-- RF --", scheme_name, "\n")

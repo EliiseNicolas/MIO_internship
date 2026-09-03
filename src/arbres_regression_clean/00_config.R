@@ -68,10 +68,20 @@ TEMPORAL_RESOLUTIONS <- list(
   list(label = "1j", block_days = 1, buffer_days = 1)
 )
 
-# nombre de folds cible pour le blocage : on vise le même N_CV que le
-# naive pour pouvoir comparer les schémas sur un pied d'égalité ; le nombre
-# réel peut être plus petit si trop peu de blocs sont disponibles.
-BLOCK_N_FOLDS_TARGET <- N_CV
-BLOCK_MIN_BLOCK_N     <- 50   # nb minimal d'observations dans un bloc pour l'utiliser
+# Nombre de folds pour le blocage : ADAPTATIF plutôt que fixe. Une
+# résolution fine (20x20km) peut avoir des centaines de blocs -- n'en
+# tirer que N_CV=10 jetterait trop d'information et donnerait une
+# variance inter-fold peu fiable. Une résolution grossière (1500x1000km)
+# peut n'avoir que quelques blocs -- viser un nombre fixe de folds
+# identique à toutes les résolutions n'aurait pas de sens. On prend donc
+# une fraction des blocs disponibles, bornée par un min et un max.
+BLOCK_MIN_BLOCK_N        <- 50    # nb minimal d'observations dans un bloc pour l'utiliser
+BLOCK_MAX_FOLDS_FRACTION <- 0.3   # fraction des blocs disponibles utilisée comme folds
+BLOCK_MIN_FOLDS          <- 5     # plancher (même si peu de blocs dispo)
+BLOCK_MAX_FOLDS_ABS      <- 30    # plafond (même si beaucoup de blocs dispo)
+
+# Nombre de folds pour le naive RS 80/20 : reste fixe (ce n'est pas un
+# nombre de "blocs disponibles", juste un nombre de répétitions Monte-Carlo).
+NAIVE_N_FOLDS <- N_CV
 
 set.seed(42)

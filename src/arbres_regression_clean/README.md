@@ -115,9 +115,18 @@ résolution temporelle) : tuning CART (`cp`, `minsplit`, `maxdepth`), RF
 `outputs_pipeline/tuning/<modele>_<freq>kHz_<schema>.rds` (+ .png).
 
 ### `11_run_training.R`
-Pour chaque fréquence x RF/XGB x schéma : charge les hyperparamètres
-tunés, entraîne 10 modèles (10 folds, comme demandé), et sauvegarde
+Pour chaque fréquence x CART/RF/XGB x schéma : charge les
+hyperparamètres tunés, entraîne un modèle par fold, et sauvegarde
 sous `outputs_pipeline/training/<freq>kHz/<modele>/<schema>/` :
+
+> CART et RF partagent exactement le même schéma/folds (`schemes_rf`,
+> données complètes -- CART a lui aussi besoin de données sans NA dans
+> ce pipeline). XGB utilise `schemes_xgb` (NA préservés). Le nombre de
+> folds pour le naive est fixe (`NAIVE_N_FOLDS = 10`) ; pour le blocage
+> spatial/temporel il est **adaptatif** (cf. section 5 ci-dessous), donc
+> peut différer d'une résolution à l'autre -- tout le code (plots,
+> agrégations) boucle sur `names(scheme$folds)`, pas sur un nombre fixe,
+> donc ça ne casse rien.
 
 - `models.rds` (les 10 modèles), `metrics_par_fold.csv`,
   `obs_pred_all.csv`, `importance_all.csv`
@@ -152,6 +161,36 @@ out-of-fold (la grille de prédiction n'a pas de NASC observé, donc pas
 de "réel" à comparer à cet endroit).
 
 ---
+
+## 4bis. Nombre de folds adaptatif pour le blocage (mise à jour)
+
+Le nombre de folds pour les schémas bloqués (spatial et temporel) n'est
+plus fixé à 10 pour toutes les résolutions : il est maintenant calculé
+comme une **fraction des blocs disponibles** (30% par défaut), bornée
+par un plancher et un plafond :
+
+```r
+BLOCK_MAX_FOLDS_FRACTION <- 0.3   # fraction des blocs disponibles utilisée
+BLOCK_MIN_FOLDS          <- 5     # plancher
+BLOCK_MAX_FOLDS_ABS      <- 30    # plafond
+```
+
+Pourquoi : à 20x20km il peut y avoir des centaines de blocs -- n'en
+tirer que 10 jetterait beaucoup d'information et donnerait une
+variance inter-fold peu fiable ; à 1500x1000km il peut n'y avoir que
+quelques blocs -- viser 10 n'aurait pas de sens. Avec cette règle, une
+résolution fine se retrouve avec jusqu'à 30 folds, une résolution
+grossière avec 5 folds minimum (ou moins si vraiment trop peu de blocs
+ont >= `BLOCK_MIN_BLOCK_N` observations, auquel cas un message
+`[!]`-warning s'affiche). Le naive RS 80/20 reste fixé à
+`NAIVE_N_FOLDS = 10`, car ce n'est pas un nombre de blocs mais un
+nombre de répétitions Monte-Carlo choisi arbitrairement.
+
+Conséquence pour l'interprétation : ne compare pas directement "RMSE
+moyen sur 10 folds (naive)" à "RMSE moyen sur 27 folds (20x20km)"
+comme si c'était la même unité statistique -- regarde plutôt la
+distribution (boxplot / barres d'erreur) et le nombre de folds affiché
+dans chaque `resume_global.txt`.
 
 ## 4. Autres éléments auxquels tu n'avais pas pensé (proposition)
 
