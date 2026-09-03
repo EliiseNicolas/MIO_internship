@@ -92,15 +92,24 @@ names(pig_all) <- list_pigs
 pig_all[["chla_total"]] <- pig_all[["Chla"]]
 
 # ------------------------------------------------------------
-# Ratio de chaque pigment (les 9 pigments bruts) sur la concentration
-# de Chla, ajoutés directement dans pig_all avec un suffixe "_chla"
-# (ex : chla_chla, but_chla, fuco_chla, ...). Vectorisé via lapply :
-# une division élément par élément par pigment, aucune boucle sur
-# les dates/pixels.
+# Somme des concentrations de tous les pigments SAUF Chla
+# (calculee une seule fois, reutilisee comme denominateur commun)
 # ------------------------------------------------------------
 
-ratio_list <- lapply(list_pigs, function(p) pig_all[[p]] / pig_all[["Chla"]])
-names(ratio_list) <- paste0(tolower(list_pigs), "_chla")
+pigs_sans_chla <- setdiff(list_pigs, "Chla")
+
+pig_sum_others <- Reduce(`+`, pig_all[pigs_sans_chla])   # somme elementwise, meme dims [n_date, 1080, 720]
+
+# ------------------------------------------------------------
+# Ratio de chaque pigment (les 9 pigments bruts, Chla incluse) sur
+# la somme des pigments hors Chla, ajoutes dans pig_all avec un
+# suffixe "_totpig" (ex : chla_totpig, but_totpig, fuco_totpig, ...).
+# Vectorise via lapply : une division element par element par
+# pigment, aucune boucle sur les dates/pixels.
+# ------------------------------------------------------------
+
+ratio_list <- lapply(list_pigs, function(p) pig_all[[p]] / pig_sum_others)
+names(ratio_list) <- paste0(tolower(list_pigs), "_totpig")
 
 pig_all <- c(pig_all, ratio_list)
 
