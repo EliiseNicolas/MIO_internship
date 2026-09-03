@@ -12,7 +12,7 @@ dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 model_dir <- "naive_RF_CV_10_folds_models"
 dir.create(model_dir, showWarnings = FALSE, recursive = TRUE)
 
-for (freq in c(18, 38, 70, 120, 200)){
+for (freq in c(38, 120)){
   
   diurnal_period <- 3 # 3 : day, 1: night
   dp <- "day"
@@ -188,7 +188,7 @@ for (freq in c(18, 38, 70, 120, 200)){
     plot = p, width = 7, height = 6, dpi = 300
   )
   
-  day_ds <- readRDS("F:/data_elise/ds_day_ftle_pig_fod/ds_ftle_pig_fod_20230126.rds")
+  day_ds <- readRDS("F:/data_elise/prediction_ds/ds_ftle_pig_fod_20230126.rds")
   
   # ============================================================
   # Prédiction du NASC sur toute la grille, pour une date donnée
@@ -253,6 +253,7 @@ for (freq in c(18, 38, 70, 120, 200)){
       fill = "log10(NASC)"
     )
   print(p)
+  out_dir <- "~/naive_RF_CV_10_folds_mean_prediction"
   ggsave(
     filename = file.path(out_dir, paste0("carte_NASC_pred_", freq, "kHz.png")),
     plot = p, width = 8, height = 6, dpi = 300
