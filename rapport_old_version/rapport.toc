@@ -1,0 +1,30 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}L'Océan Austral}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Contexte Biologique}{3}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Stratification Verticale}{3}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}Réseau Trophique}{3}{subsubsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.3}Contexte Physique}{3}{subsection.1.3}%
+\contentsline {subsubsection}{\numberline {1.3.1}}{3}{subsubsection.1.3.1}%
+\contentsline {section}{\numberline {2}Matériel}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Données issue de campagnes océanographiques/in situ (Marion Dufresnes II)}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Données Environnementales}{4}{subsection.2.2}%
+\contentsline {section}{\numberline {3}Méthode}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Pré-traitement des données}{5}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Gestion des valeurs manquantes}{5}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Estimation semi-paramétrique des profils d'intensité de rétropropagation $Sv$}{5}{subsubsection.3.1.2}%
+\contentsline {paragraph}{\numberline {3.1.2.a}Motivation}{5}{paragraph.3.1.2.1}%
+\contentsline {paragraph}{\numberline {3.1.2.b}B-splines d'ordre $k$ (\blx@tocontentsinit {0}\cite {deBoor})}{5}{paragraph.3.1.2.2}%
+\contentsline {paragraph}{\numberline {3.1.2.c}Espace des splines $\mathbb {S}_{m, \tau }$}{6}{paragraph.3.1.2.3}%
+\contentsline {paragraph}{\numberline {3.1.2.d}Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) (\blx@tocontentsinit {0}\cite {wand2008}, \blx@tocontentsinit {0}\cite {eilers1996})}{6}{paragraph.3.1.2.4}%
+\contentsline {paragraph}{\numberline {3.1.2.e}Réduction de dimension par Functional Principal Component Analysis}{7}{paragraph.3.1.2.5}%
+\contentsline {subparagraph}{Motivation}{8}{section*.4}%
+\contentsline {subparagraph}{Étape 0 : Construction du vecteur de coefficients bivarié}{8}{section*.5}%
+\contentsline {subparagraph}{Étape 1 : Centrage des données}{8}{section*.6}%
+\contentsline {subparagraph}{Étape 2 : Calcul de la covariance empirique}{8}{section*.7}%
+\contentsline {subparagraph}{Étape 3 : Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}{8}{section*.8}%
+\contentsline {subparagraph}{Étape 4 : Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}{9}{section*.9}%
+\contentsline {paragraph}{\numberline {3.1.2.f}Gaussian Mixture Model Clustering}{10}{paragraph.3.1.2.6}%
+\contentsline {subsection}{\numberline {3.2}Sélection de variables (Feature Selection)}{10}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Arbres de régression}{10}{subsubsection.3.2.1}%
+\contentsline {section}{\numberline {4}Conclusion}{11}{section.4}%
+\contentsline {section}{\numberline {5}Discussion}{12}{section.5}%
