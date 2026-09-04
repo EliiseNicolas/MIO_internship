@@ -125,13 +125,37 @@ tune_xgb_early_stopping <- function(scheme, grid, fod_levels,
       params = params, data = dall, nrounds = nrounds_max,
       folds = cv_folds, early_stopping_rounds = early_stopping_rounds, verbose = 0
     )
-    best_iter <- cv_result$best_iteration
+
+    # NE PAS utiliser cv_result$best_iteration : selon la version de
+    # xgboost, ce champ peut être NULL au premier niveau (il a été
+    # déplacé dans une sous-liste $early_stop dans certaines versions
+    # recentes, ex. 3.2.x). On calcule donc `best_iter` nous-mêmes,
+    # directement a partir de evaluation_log (RMSE test minimal) --
+    # robuste quelle que soit la version du package installee.
+    log_names <- names(cv_result$evaluation_log)
+    find_col <- function(pattern) {
+      m <- grep(pattern, log_names, value = TRUE)
+      if (length(m) == 0) {
+        stop(
+          "Colonne introuvable dans evaluation_log pour le motif '", pattern,
+          "'. Colonnes disponibles : ", paste(log_names, collapse = ", ")
+        )
+      }
+      m[1]
+    }
+    col_test_mean  <- find_col("test.*rmse.*mean")
+    col_test_std   <- find_col("test.*rmse.*std")
+    col_train_mean <- find_col("train.*rmse.*mean")
+
+    best_iter <- which.min(cv_result$evaluation_log[[col_test_mean]])
     best_row  <- cv_result$evaluation_log[best_iter, ]
+
     tibble(
       max_depth = max_depth, eta = eta, min_child_weight = min_child_weight,
       nrounds = best_iter,
-      mean_rmse_test = best_row$test_rmse_mean, sd_rmse_test = best_row$test_rmse_std,
-      mean_rmse_train = best_row$train_rmse_mean
+      mean_rmse_test  = best_row[[col_test_mean]],
+      sd_rmse_test    = best_row[[col_test_std]],
+      mean_rmse_train = best_row[[col_train_mean]]
     )
   })
 

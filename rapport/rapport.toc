@@ -1,0 +1,43 @@
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Généralités}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Secteur Indien de l'Océan Austral}{3}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}Contexte physique de la région}{4}{subsubsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.3}Contexte de changement climatique}{5}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Question scientifique}{5}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Matériel}{6}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Données Pigmentaires (PIGMeANN)}{6}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Données hydrologiques (Copernicus)}{6}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Données hydrodynamiques : FTLE}{6}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Données d'acoustique active (OBSAUSTRAL)}{6}{subsection.2.4}%
+\contentsline {section}{\numberline {3}Méthode}{7}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Pré-traitement des données}{7}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Calcul du NASC}{7}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Calcul des Functional Oceanographic Domain (FOD)}{7}{subsubsection.3.1.2}%
+\contentsline {paragraph}{\numberline {3.1.2.a}Présentation des Domaines Océanographiques Fonctionnels}{7}{paragraph.3.1.2.1}%
+\contentsline {paragraph}{\numberline {3.1.2.b}Estimation fonctionelle sur des bases de B-splines Estimation semi-paramétrique des profils de température et salinité}{7}{paragraph.3.1.2.2}%
+\contentsline {subparagraph}{Motivation}{7}{paragraph.3.1.2.2}%
+\contentsline {subparagraph}{B-splines d'ordre $k$ (\blx@tocontentsinit {0}\cite {deBoor})}{7}{paragraph.3.1.2.2}%
+\contentsline {subparagraph}{Espace des splines $\mathbb {S}_{m, \tau }$}{8}{equation.3}%
+\contentsline {subparagraph}{Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) (\blx@tocontentsinit {0}\cite {wand2008}, \blx@tocontentsinit {0}\cite {eilers1996})}{8}{equation.5}%
+\contentsline {paragraph}{\numberline {3.1.2.c}Réduction de dimension par Functional Principal Component Analysis}{10}{paragraph.3.1.2.3}%
+\contentsline {subparagraph}{Motivation}{11}{paragraph.3.1.2.3}%
+\contentsline {subparagraph}{Étape 0 : Construction du vecteur de coefficients bivarié}{11}{paragraph.3.1.2.3}%
+\contentsline {subparagraph}{Étape 1 : Centrage des données}{11}{paragraph.3.1.2.3}%
+\contentsline {subparagraph}{Étape 2 : Calcul de la covariance empirique}{11}{paragraph.3.1.2.3}%
+\contentsline {subparagraph}{Étape 3 : Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}{11}{paragraph.3.1.2.3}%
+\contentsline {subparagraph}{Étape 4 : Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}{12}{paragraph.3.1.2.3}%
+\contentsline {subsubsection}{\numberline {3.1.3}Filtrage des pigments}{13}{subsubsection.3.1.3}%
+\contentsline {subsubsection}{\numberline {3.1.4}Colocalisation NASC/PIG/FTLE/FOD}{13}{subsubsection.3.1.4}%
+\contentsline {subsubsection}{\numberline {3.1.5}Diminution de l'autocorrelation spatio-temporelle}{13}{subsubsection.3.1.5}%
+\contentsline {subsection}{\numberline {3.2}Arbres de Régression}{13}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}CART}{14}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Random Forest}{14}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Extreme Gradient Boosting}{14}{subsubsection.3.2.3}%
+\contentsline {section}{\numberline {4}Résultats}{15}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Tendances inter-annuelles par FOD}{15}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Résultats des régressions}{15}{subsection.4.2}%
+\contentsline {section}{\numberline {5}Discussion}{16}{section.5}%
+\contentsline {section}{\numberline {6}Annexes}{17}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Stratification verticale et horizontale des océans}{17}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Distribution verticale des valeurs manquantes des ESU}{17}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Influence du nombre de composantes principales sur la reconstruction des profils de température et salinité}{17}{subsection.6.3}%
