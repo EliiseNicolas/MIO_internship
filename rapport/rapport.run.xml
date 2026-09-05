@@ -54,10 +54,11 @@
       <file>blx-compat.def</file>
       <file>biblatex.def</file>
       <file>standard.bbx</file>
-      <file>authoryear.bbx</file>
-      <file>authoryear.cbx</file>
+      <file>numeric.bbx</file>
+      <file>numeric-comp.bbx</file>
+      <file>numeric-comp.cbx</file>
       <file>biblatex.cfg</file>
-      <file>english.lbx</file>
+      <file>french.lbx</file>
     </requires>
   </internal>
   <external package="biblatex" priority="5" active="0">
