@@ -18,11 +18,16 @@
 # ---------------------------------------------------------------------
 # ETAPES A EXECUTER (mettre à FALSE pour sauter une étape déjà faite)
 # ---------------------------------------------------------------------
-RUN_TUNING               <- TRUE   # 10_run_tuning.R
+RUN_TUNING               <- FALSE  # 10_run_tuning.R -- deja fait, on saute
 RUN_TRAINING             <- TRUE   # 11_run_training.R
 RUN_PREDICTION_SINGLE    <- TRUE   # 12_run_grid_prediction.R      (1 date)
 RUN_PREDICTION_MULTIDATE <- TRUE   # 13_run_grid_prediction_multidate.R (133 dates -- LONG)
 RUN_RFSRC_RECONSTRUCTION <- TRUE   # 14_run_rfsrc_reconstruction.R
+RUN_TRANSFER_TUNING_TEST <- TRUE   # 15_run_transfer_tuning_test.R (cout de ne pas re-tuner)
+RUN_CROSS_SCHEME_ANALYSIS <- TRUE  # 16_run_cross_scheme_analysis.R (importance/calibration/fuite)
+RUN_MAP_COMPARISON       <- TRUE   # 17_run_map_comparison.R (necessite 12_ ET 14_ deja lances)
+RUN_NOISE_ROBUSTNESS_TEST <- TRUE  # 18_run_noise_robustness_test.R (robustesse au bruit gaussien)
+RUN_VARIOGRAM_ANALYSIS   <- TRUE   # 19_run_variogram_analysis.R (variogrammes, aide au choix des buffers)
 
 # ---------------------------------------------------------------------
 # Utilitaires de log
@@ -92,6 +97,44 @@ if ((RUN_PREDICTION_SINGLE || RUN_PREDICTION_MULTIDATE || RUN_RFSRC_RECONSTRUCTI
 run_step(RUN_PREDICTION_SINGLE,    "R/12_run_grid_prediction.R",         "SCRIPT 3 - Prediction grille (1 date)")
 run_step(RUN_PREDICTION_MULTIDATE, "R/13_run_grid_prediction_multidate.R", "SCRIPT 3bis - Prediction grille (133 dates)")
 run_step(RUN_RFSRC_RECONSTRUCTION, "R/14_run_rfsrc_reconstruction.R",    "SCRIPT 4 - Reconstruction randomForestSRC")
+
+# Verification avant analyse inter-schemas / comparaison de tuning : on
+# a besoin des CSV de diagnostics produits par 11_run_training.R
+if ((RUN_TRANSFER_TUNING_TEST || RUN_CROSS_SCHEME_ANALYSIS) && !dir.exists("outputs_pipeline/training")) {
+  stop(
+    "Aucune sortie de training trouvee dans outputs_pipeline/training/. ",
+    "Lance 11_run_training.R avant les etapes d'analyse inter-schemas."
+  )
+}
+
+run_step(RUN_TRANSFER_TUNING_TEST,  "R/15_run_transfer_tuning_test.R",   "SCRIPT 5 - Cout de ne pas re-tuner")
+run_step(RUN_CROSS_SCHEME_ANALYSIS, "R/16_run_cross_scheme_analysis.R",  "SCRIPT 6 - Diagnostics inter-schemas")
+
+# Verification avant comparaison de cartes : on a besoin des grilles
+# numeriques produites par 12_ ET 14_ (pas juste les PNG)
+if (RUN_MAP_COMPARISON &&
+    (!file.exists("outputs_pipeline/predictions/predictions_all_combined.rds"))) {
+  stop(
+    "Fichier outputs_pipeline/predictions/predictions_all_combined.rds introuvable. ",
+    "Lance 12_run_grid_prediction.R (RUN_PREDICTION_SINGLE <- TRUE) avant la comparaison de cartes."
+  )
+}
+
+run_step(RUN_MAP_COMPARISON, "R/17_run_map_comparison.R", "SCRIPT 7 - Comparaison des cartes de sortie")
+
+# RUN_NOISE_ROBUSTNESS_TEST a besoin des memes fichiers de tuning que
+# RUN_TRANSFER_TUNING_TEST -- meme verification.
+if (RUN_NOISE_ROBUSTNESS_TEST && n_tuning_found < n_tuning_expected) {
+  stop(
+    "Fichiers de tuning incomplets -- lance 10_run_tuning.R avant ",
+    "18_run_noise_robustness_test.R."
+  )
+}
+run_step(RUN_NOISE_ROBUSTNESS_TEST, "R/18_run_noise_robustness_test.R", "SCRIPT 8 - Robustesse au bruit gaussien")
+
+# RUN_VARIOGRAM_ANALYSIS n'a besoin d'aucun modele ni tuning -- calcul
+# purement descriptif sur les donnees d'entrainement, independant.
+run_step(RUN_VARIOGRAM_ANALYSIS, "R/19_run_variogram_analysis.R", "SCRIPT 9 - Variogrammes empiriques")
 
 # ---------------------------------------------------------------------
 # Bilan final

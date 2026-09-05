@@ -16,6 +16,16 @@
 # peut représenter plusieurs centaines de fichiers PNG. Réduis
 # MULTIDATE_PREDICTION_SCHEMES/FREQS si tu veux limiter la sortie.
 #
+# ECHELLE DE COULEUR PARTAGEE (cf. SHARED_SCALE_SCOPE, 00_config.R) :
+# chaque carte (RF, XGB, toutes dates/schémas/fréquences selon la
+# portée choisie) utilise la plage de NASC OBSERVEE A L'ENTRAINEMENT
+# comme échelle fixe -- calculée une seule fois par fréquence (pas
+# besoin de calculer d'abord les 133x2 prédictions pour connaître leur
+# étendue, ce qui éviterait un passage supplémentaire coûteux sur toute
+# la grille). Une prédiction ponctuelle qui dépasserait légèrement cette
+# plage sera simplement écrêtée visuellement (couleur extrême de
+# l'échelle) -- acceptable pour une série de 133 cartes.
+#
 # Sorties, sous outputs_pipeline/predictions_multidate/<freq>kHz/<schema>/ :
 #   - rf_YYYYMMDD.png, xgb_YYYYMMDD.png (une carte par date)
 #   - timeseries_mean_prediction.csv (moyenne spatiale prédite par date)
@@ -36,6 +46,19 @@ dir.create(out_root, showWarnings = FALSE, recursive = TRUE)
 day_ds  <- load_grid_all_dates()
 n_dates <- length(day_ds$date)
 
+# Echelle de couleur partagee : plage de NASC observee a l'entrainement,
+# calculee une fois par frequence (peu couteux, pas besoin de charger la
+# grille pour ca).
+training_nasc_range <- setNames(
+  lapply(FREQS, function(f) range(load_and_clean(f, drop_na_numeric = FALSE)$df$NASC, na.rm = TRUE)),
+  as.character(FREQS)
+)
+shared_limits <- if (SHARED_SCALE_SCOPE == "per_freq") {
+  training_nasc_range
+} else {
+  setNames(rep(list(range(unlist(training_nasc_range))), length(FREQS)), as.character(FREQS))
+}
+
 for (freq in FREQS) {
 
   cat("\n============================================================\n")
@@ -44,6 +67,7 @@ for (freq in FREQS) {
 
   prep_xgb   <- load_and_clean(freq, drop_na_numeric = FALSE)  # juste pour fod_levels
   fod_levels <- prep_xgb$fod_levels
+  lims       <- shared_limits[[as.character(freq)]]
 
   cat(sprintf("Grille multi-date : %d dates, %d x %d pixels\n",
               n_dates, length(day_ds$lon), length(day_ds$lat)))
@@ -83,7 +107,8 @@ for (freq in FREQS) {
         p_rf <- plot_prediction_map(
           grid_rf, title = paste0("NASC predit - RF - ", format(extracted$date, "%Y-%m-%d")),
           subtitle = sprintf("%d kHz - %s - %d/%d pixels complets", freq, scheme_name,
-                              nrow(grid_rf), nrow(grid_all))
+                              nrow(grid_rf), nrow(grid_all)),
+          limits = lims
         )
         ggsave(file.path(out_dir, sprintf("rf_%s.png", date_str)), p_rf, width = 7, height = 5, dpi = 100)
 
@@ -98,7 +123,8 @@ for (freq in FREQS) {
 
         p_xgb <- plot_prediction_map(
           grid_xgb, title = paste0("NASC predit - XGB (avec NA) - ", format(extracted$date, "%Y-%m-%d")),
-          subtitle = sprintf("%d kHz - %s", freq, scheme_name)
+          subtitle = sprintf("%d kHz - %s", freq, scheme_name),
+          limits = lims
         )
         ggsave(file.path(out_dir, sprintf("xgb_%s.png", date_str)), p_xgb, width = 7, height = 5, dpi = 100)
 

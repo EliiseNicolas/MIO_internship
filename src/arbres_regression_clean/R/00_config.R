@@ -119,8 +119,40 @@ BLOCK_MIN_FOLDS          <- 5     # plancher (même si peu de blocs dispo)
 BLOCK_MAX_FOLDS_ABS      <- 30    # plafond (même si beaucoup de blocs dispo)
 
 # Nombre de folds pour le naive RS 80/20 : reste fixe (ce n'est pas un
-# nombre de "blocs disponibles", juste un nombre de répétitions Monte-Carlo).
+# nombre de "blocs disponibles", juste un nombre de répétitions/folds).
 NAIVE_N_FOLDS <- N_CV
+
+# Méthode de CV pour le naive RS 80/20 :
+#   "kfold_repeated" (recommandé) : répétitions de K-fold CV classique
+#     (partition disjointe, K dérivé de frac_train). Voir la justification
+#     complète dans 02_folds.R.
+# Méthode de CV pour le naive RS 80/20 :
+#   "kfold_repeated" (recommandé pour un nouveau tuning) : répétitions de
+#     K-fold CV classique (partition disjointe, K dérivé de frac_train).
+#     Voir la justification complète dans 02_folds.R.
+#   "monte_carlo" : tirages aléatoires indépendants (chevauchement des
+#     tests possible) -- ACTIF ici car c'est la méthode déjà utilisée
+#     pour le tuning existant (10_run_tuning.R) : il faut la même méthode
+#     pour le training/les scripts d'analyse, sinon les folds ne
+#     correspondent plus aux hyperparamètres déjà tunés.
+NAIVE_CV_METHOD <- "monte_carlo"
+
+# ---- Échelles partagées entre plots (axes Y / colorbars identiques) --------
+# Pour permettre une comparaison visuelle DIRECTE entre modèles, schémas
+# et fréquences (même axe = même valeur d'un plot à l'autre).
+#   "global"   : UNE seule échelle pour tout, toutes fréquences confondues.
+#     ATTENTION : 38 kHz et 120 kHz sont deux fréquences acoustiques
+#     distinctes, dont le NASC peut avoir une magnitude intrinsèquement
+#     différente (pas juste un effet du modèle) -- forcer la même échelle
+#     conflate performance du modèle et différence physique entre
+#     fréquences. Défendable seulement si tu veux explicitement comparer
+#     les deux fréquences sur un pied d'égalité visuel.
+#   "per_freq" : une échelle par fréquence (modèles/schémas partagés à
+#     l'intérieur d'une fréquence, mais 38 kHz et 120 kHz peuvent différer).
+#     Plus défendable scientifiquement si les deux fréquences ont des
+#     gammes de NASC différentes -- à envisager si les plots "global"
+#     donnent l'impression qu'une fréquence "écrase" l'autre visuellement.
+SHARED_SCALE_SCOPE <- "global"
 
 # ---- Prédiction sur la grille multi-date (133 jours) ------------------------
 # 133 dates x plusieurs schémas x 2 modèles peut vite représenter des

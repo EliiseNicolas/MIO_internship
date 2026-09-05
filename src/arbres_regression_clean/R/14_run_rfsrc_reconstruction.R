@@ -43,6 +43,20 @@ RFSRC_PARAMS <- list(mtry = 3, nodesize = 15, ntree = 500)
 day_ds <- load_grid_all_dates()
 date_idx <- get_date_index(day_ds, TARGET_DATE_SINGLE)
 
+# Echelle de couleur partagee avec 12_/13_ (meme logique, cf.
+# SHARED_SCALE_SCOPE dans 00_config.R) : plage de NASC observee a
+# l'entrainement, pour que la carte de reconstruction soit directement
+# comparable aux cartes RF/XGB produites par 12_run_grid_prediction.R.
+training_nasc_range <- setNames(
+  lapply(FREQS, function(f) range(load_and_clean(f, drop_na_numeric = FALSE)$df$NASC, na.rm = TRUE)),
+  as.character(FREQS)
+)
+shared_limits <- if (SHARED_SCALE_SCOPE == "per_freq") {
+  training_nasc_range
+} else {
+  setNames(rep(list(range(unlist(training_nasc_range))), length(FREQS)), as.character(FREQS))
+}
+
 for (freq in FREQS) {
 
   cat("\n============================================================\n")
@@ -51,6 +65,7 @@ for (freq in FREQS) {
 
   out_dir <- file.path(out_root, paste0(freq, "kHz"))
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+  lims <- shared_limits[[as.character(freq)]]
 
   # drop_na_numeric = FALSE : randomForestSRC gere le manquant nativement,
   # on garde donc les lignes avec NA sur les covariables numeriques
@@ -109,9 +124,17 @@ for (freq in FREQS) {
     title = "NASC reconstruit - randomForestSRC (imputation native des NA)",
     subtitle = sprintf("%d kHz - %s - %d/%d pixels reconstruits (%.1f%%), dont %d etaient incomplets",
                         freq, format(extracted$date, "%Y-%m-%d"),
-                        n_predicted, n_total, 100 * n_predicted / n_total, n_incomplete)
+                        n_predicted, n_total, 100 * n_predicted / n_total, n_incomplete),
+    limits = lims
   )
   ggsave(file.path(out_dir, "reconstruction_map.png"), p_map, width = 8, height = 6, dpi = 150)
+
+  # Sauvegarde numerique -- necessaire pour la comparaison quantitative
+  # des cartes dans 17_run_map_comparison.R
+  grid_to_save <- grid_all %>%
+    transmute(lon, lat, NASC_pred, freq = freq, scheme = "naive_RS_80_20", model = "rfsrc",
+              layer_id = paste(freq, "rfsrc_reconstruction", sep = "_"))
+  saveRDS(grid_to_save, file.path(out_dir, "reconstruction_grid.rds"))
 
   writeLines(
     sprintf(paste0(

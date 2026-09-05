@@ -63,18 +63,35 @@ compute_fold_diagnostics <- function(fold, data, params, backend,
 
   # ---- distance euclidienne dans l'espace des covariables numériques ----
   # (standardisées sur le train) -- même logique : moyenne + dispersion.
+  # NB : FNN::knn.dist/knnx.dist ne supportent PAS les NA. Pour XGB
+  # (needs_complete = FALSE), train_df/test_df peuvent contenir des NA
+  # sur les covariables numériques -- on filtre donc aux lignes
+  # complètes UNIQUEMENT pour ce diagnostic de distance (n'affecte pas
+  # l'entraînement/la prédiction XGB elle-même, qui continue de voir
+  # tous les NA comme prévu).
   train_num <- as.matrix(train_df[, covs_num])
   test_num  <- as.matrix(test_df[,  covs_num])
   center <- colMeans(train_num, na.rm = TRUE)
   scale_ <- apply(train_num, 2, sd, na.rm = TRUE)
   train_num_s <- scale(train_num, center = center, scale = scale_)
   test_num_s  <- scale(test_num,  center = center, scale = scale_)
-  train_nn <- FNN::knn.dist(train_num_s, k = 1)[, 1]
-  test_nn  <- FNN::knnx.dist(train_num_s, test_num_s, k = 1)[, 1]
-  metrics$mean_covariate_dist <- mean(test_nn)
-  metrics$sd_covariate_dist   <- sd(test_nn)
-  metrics$var_covariate_dist  <- var(test_nn)
-  metrics$extrapolation_index <- mean(test_nn) / mean(train_nn)
+
+  train_complete <- train_num_s[stats::complete.cases(train_num_s), , drop = FALSE]
+  test_complete  <- test_num_s[stats::complete.cases(test_num_s), , drop = FALSE]
+
+  if (nrow(train_complete) < 2 || nrow(test_complete) < 1) {
+    metrics$mean_covariate_dist <- NA_real_
+    metrics$sd_covariate_dist   <- NA_real_
+    metrics$var_covariate_dist  <- NA_real_
+    metrics$extrapolation_index <- NA_real_
+  } else {
+    train_nn <- FNN::knn.dist(train_complete, k = 1)[, 1]
+    test_nn  <- FNN::knnx.dist(train_complete, test_complete, k = 1)[, 1]
+    metrics$mean_covariate_dist <- mean(test_nn)
+    metrics$sd_covariate_dist   <- sd(test_nn)
+    metrics$var_covariate_dist  <- var(test_nn)
+    metrics$extrapolation_index <- mean(test_nn) / mean(train_nn)
+  }
 
   # ---- variance / moyenne / sd des covariables numériques, train vs test ----
   covariate_stats <- bind_rows(
@@ -143,6 +160,38 @@ run_cv_scheme <- function(scheme, params, backend, label = "") {
     importance      = imap_dfr(results, ~ mutate(.x$importance, fold_id = .y)),
     models          = map(results, "model")
   )
+}
+
+# ---------------------------------------------------------------------
+# Importance XGBoost via SHAP, agrégée sur tous les folds d'un schéma --
+# entraîne un modèle XGB par fold (même logique que run_cv_scheme) et
+# calcule les valeurs SHAP sur le TEST de ce fold (pas le train : on
+# veut savoir sur quoi le modèle s'est appuyé pour ses prédictions HORS
+# échantillon, pas sur ce qu'il a mémorisé). Retourne un tibble avec les
+# mêmes colonnes que cv_res$importance -- compatible directement avec
+# plot_importance_mean_sd() sans fonction de tracé dédiée.
+#
+# Usage typique (en complément de l'importance Gain déjà dans cv_res) :
+#   shap_imp <- compute_shap_importance_across_folds(scheme_xgb, best_params, fod_levels)
+#   plot_importance_mean_sd(shap_imp, subtitle = "XGB - SHAP")
+# ---------------------------------------------------------------------
+compute_shap_importance_across_folds <- function(scheme, params, fod_levels,
+                                                   response   = RESPONSE_VAR,
+                                                   covs_model = COVARIATES_ALL,
+                                                   covs_num   = COVARIATES_NUM) {
+  folds   <- scheme$folds
+  data    <- scheme$data
+  backend <- make_backend("xgb", fod_levels = fod_levels)
+
+  cat(sprintf("  -> importance SHAP : %d folds\n", length(folds)))
+
+  imap_dfr(folds, function(f, fid) {
+    train_df <- prep_fold_data(data, f$train, backend, response, covs_model)
+    test_df  <- prep_fold_data(data, f$test,  backend, response, covs_model)
+    model <- backend$fit(train_df, params)
+    importance_xgb_shap(model, test_df, fod_levels, covs_num) %>%
+      mutate(fold_id = fid)
+  })
 }
 
 # ---------------------------------------------------------------------

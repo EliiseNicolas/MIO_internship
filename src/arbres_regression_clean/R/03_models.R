@@ -94,6 +94,47 @@ importance_xgb <- function(model) {
   tibble(variable = imp$Feature, importance = imp$Gain)
 }
 
+# ---------------------------------------------------------------------
+# Importance XGBoost via valeurs SHAP -- alternative a Gain (cf. discussion
+# sur ses limites : correlations entre variables mal gerees, pas de
+# direction d'effet). SHAP decompose CHAQUE prediction individuelle en
+# contributions additives par variable -- theoriquement mieux fonde
+# (coherence de Shapley) et directement comparable en magnitude/signe
+# entre observations.
+#
+# Signature volontairement DIFFERENTE de importance_xgb() : SHAP a besoin
+# de donnees sur lesquelles calculer les contributions (`newdata`), pas
+# seulement du modele -- donc PAS branchee dans make_backend("xgb") par
+# defaut (l'interface generique `importance(model)` est commune aux 4
+# backends). A utiliser en complement, pas en remplacement :
+#   shap_imp <- importance_xgb_shap(model, train_df, fod_levels)
+# Pour une version agregee sur tous les folds d'un schema (compatible
+# avec plot_importance_mean_sd()), voir compute_shap_importance_across_folds()
+# dans 04_diagnostics.R.
+# ---------------------------------------------------------------------
+compute_shap_values <- function(model, newdata, fod_levels, covs_num = COVARIATES_NUM) {
+  X <- build_design_matrix(newdata, covs_num, fod_levels)
+  d <- xgboost::xgb.DMatrix(data = X, missing = NA)
+  shap_raw <- predict(model, d, predcontrib = TRUE)
+  # xgboost ajoute une derniere colonne "BIAS" (terme constant du modele,
+  # identique pour toutes les observations) -- on la retire, elle ne
+  # correspond a aucune covariable.
+  bias_col <- ncol(shap_raw)
+  shap_matrix <- shap_raw[, -bias_col, drop = FALSE]
+  colnames(shap_matrix) <- colnames(X)  # explicite, au cas ou xgboost change son ordre/nommage
+  shap_matrix
+}
+
+importance_xgb_shap <- function(model, newdata, fod_levels, covs_num = COVARIATES_NUM) {
+  shap_matrix <- compute_shap_values(model, newdata, fod_levels, covs_num)
+  # Importance globale standard a partir de SHAP : moyenne de la valeur
+  # ABSOLUE des contributions (une variable qui pousse fort a la hausse
+  # sur certaines observations et fort a la baisse sur d'autres aurait
+  # une moyenne signee proche de 0 malgre un fort impact reel).
+  mean_abs_shap <- colMeans(abs(shap_matrix))
+  tibble(variable = names(mean_abs_shap), importance = as.numeric(mean_abs_shap))
+}
+
 # =====================================================================
 # randomForestSRC (rfsrc) -- gère nativement le manquant via imputation
 # (na.action = "na.impute"), à l'entraînement ET à la prédiction. Utilisé

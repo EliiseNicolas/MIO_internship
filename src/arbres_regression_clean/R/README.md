@@ -17,21 +17,31 @@ R/
   04_diagnostics.R               métriques + distances + distributions par fold (générique)
   05_plots.R                     toutes les fonctions de tracé (génériques)
   06_tuning.R                    fonction de tuning générique + grilles par défaut
+  07_cross_scheme_utils.R        utilitaires pour agréger les sorties de 11_ à travers freq/modèle/schéma
+  08_robustness.R                bruit gaussien sur les covariables du test + boucle par fold
+  09_variogram.R                 détendançage + variogramme empirique (aide au choix des buffers)
   10_run_tuning.R                SCRIPT 1 : tuning CART/RF/XGB, par fréquence x par schéma
   11_run_training.R              SCRIPT 2 : entraînement CART/RF/XGB avec params tunés + tous les diagnostics
   12_run_grid_prediction.R       SCRIPT 3 : prédiction sur grille (une date), cartes avec/sans NA
   13_run_grid_prediction_multidate.R  SCRIPT 3bis : prédiction sur grille, TOUTES les dates (133 cartes)
   14_run_rfsrc_reconstruction.R  SCRIPT 4 : test de reconstruction de carte complète (randomForestSRC)
+  15_run_transfer_tuning_test.R  SCRIPT 5 : coût de ne pas re-tuner (naive params réutilisés vs re-tunés)
+  16_run_cross_scheme_analysis.R SCRIPT 6 : importance naive vs bloqué, calibration, résidu vs latitude, fuite
+  17_run_map_comparison.R        SCRIPT 7 : comparaison quantitative des cartes produites (diff, corrélation, RMSE)
+  18_run_noise_robustness_test.R SCRIPT 8 : robustesse au bruit gaussien sur les covariables
+  19_run_variogram_analysis.R    SCRIPT 9 : variogrammes empiriques spatial/temporel des résidus détendancés
 ```
 
-À exécuter dans l'ordre : `10_run_tuning.R` -> `11_run_training.R` -> `12_/13_run_grid_prediction*.R`.
-`14_run_rfsrc_reconstruction.R` est indépendant (pas besoin d'avoir lancé 10/11 avant).
-Chaque script `10_` à `14_` source les fichiers `00_` à `06_` dont il a besoin.
+À exécuter dans l'ordre : `10_run_tuning.R` -> `11_run_training.R` -> `12_/13_run_grid_prediction*.R`
+-> `15_/16_/18_` (ces derniers analysent des sorties déjà produites, ne réentraînent rien).
+`14_run_rfsrc_reconstruction.R` est indépendant (pas besoin d'avoir lancé 10/11 avant), mais
+`17_run_map_comparison.R` en a besoin (il compare ses cartes à celles de `12_`).
+Chaque script `10_` à `18_` source les fichiers `00_` à `08_` dont il a besoin.
 
 ### Tout lancer d'un coup : `run_all_pipeline.R`
 
 À la racine de `nasc_pipeline/` (à côté de `R/`), `run_all_pipeline.R` enchaîne
-les 5 scripts dans l'ordre, avec logs horodatés, et vérifie entre chaque
+les 9 scripts dans l'ordre, avec logs horodatés, et vérifie entre chaque
 étape que les fichiers nécessaires à l'étape suivante existent bien
 (ex. arrête tout avec un message clair si le tuning ne s'est pas
 terminé correctement avant de lancer le training). Chaque étape peut
@@ -259,6 +269,74 @@ sont déjà couverts par `11_run_training.R` à partir des prédictions
 out-of-fold (la grille de prédiction n'a pas de NASC observé, donc pas
 de "réel" à comparer à cet endroit).
 
+### Scripts 5, 6, 7 : au-delà du RMSE global
+
+Transposition des axes de comparaison utilisés dans un projet DL
+(ViT vs CNN) à CART/RF/XGB x naive/spatial/temporel :
+
+| Axe DL (ViT vs CNN) | Équivalent ici | Script |
+|---|---|---|
+| Perf en régime de données limitées | Courbe d'apprentissage par schéma (dispo. par fold très réduite en blocage fin 20x20km) | déjà dans `11_` (`01_learning_curve.png`) |
+| Robustesse à l'occlusion / perturbation | Bruit gaussien croissant sur les covariables du test (fraction de l'écart-type) | `18_run_noise_robustness_test.R` |
+| Coût d'un transfert moins cher (linear probing vs fine-tuning) | Hyperparamètres tunés en naive réutilisés tels quels sur les schémas bloqués, vs re-tunés | `15_run_transfer_tuning_test.R` |
+| Le modèle regarde-t-il la bonne région pour la bonne raison ? | Importance des variables : naive vs bloqué (une variable qui s'effondre = raccourci d'autocorrélation) | `16_run_cross_scheme_analysis.R` |
+| Biais architecturaux utiles après changement de domaine | CART/RF/XGB comparés sur le changement naive -> bloqué (le "domain shift" ici) | `16_` (RMSE vs distance) + `17_` (cartes) |
+| Fuite d'autocorrélation (spécifique à ce projet) | RMSE vs distance test->train, par fold | `16_run_cross_scheme_analysis.R` |
+| Calibration (spécifique à ce projet) | Moyenne prédite vs observée par bin de prédiction | `16_run_cross_scheme_analysis.R` |
+| Couverture de reconstruction (spécifique à ce projet) | % de pixels prédits selon la stratégie de gestion du NA | `14_run_rfsrc_reconstruction.R` + `17_` |
+
+**`15_run_transfer_tuning_test.R`** : pour chaque modèle x schéma bloqué,
+compare le RMSE avec les hyperparamètres tunés sur naive réutilisés
+tels quels, contre le RMSE avec les hyperparamètres re-tunés
+spécifiquement pour ce schéma (déjà calculés par `10_`). Mêmes folds
+dans les deux cas -- seul le choix des hyperparamètres change. Répond
+à la question "combien perd-on à ne PAS re-tuner par schéma", posée
+plus tôt dans la conversation.
+
+**`16_run_cross_scheme_analysis.R`** : n'entraîne rien, agrège juste les
+CSV déjà produits par `11_` (`metrics_par_fold.csv`, `obs_pred_all.csv`,
+`importance_all.csv`) à travers tous les schémas/modèles/fréquences via
+`07_cross_scheme_utils.R`. Produit :
+- l'importance comparée naive vs bloqué (une variable dont l'importance
+  s'effondre en blocage suggère qu'elle servait de proxy de proximité
+  spatio-temporelle plutôt qu'un vrai signal) ;
+- une courbe de calibration par modèle (facettée par schéma) ;
+- RMSE vs distance géographique et RMSE vs distance covariables, par
+  fold -- si le nuage de points montre une pente positive nette, une
+  partie du score naive est un artefact de fuite plutôt qu'un vrai
+  pouvoir prédictif.
+
+**`17_run_map_comparison.R`** : compare quantitativement (pas juste
+visuellement) toutes les cartes produites par `12_` et `14_` pour
+`TARGET_DATE_SINGLE` -- matrice de corrélation entre TOUTES les paires
+de cartes, table de RMSE par paire (sur les pixels communs), et cartes
+de différence pour 4 paires illustratives (RF vs XGB même schéma, RF
+naive vs RF bloqué 20x20km, XGB avec/sans NA, RF vs randomForestSRC).
+Ne réentraîne et ne reprédit rien -- lit les `.rds` numériques que `12_`
+et `14_` sauvegardent maintenant en plus de leurs PNG
+(`predictions_all_combined.rds`, `reconstruction_grid.rds`).
+
+**`18_run_noise_robustness_test.R`** : pour chaque modèle x schéma,
+entraîne UNE FOIS par fold (hyperparamètres déjà tunés par `10_`), puis
+réévalue le même modèle sur des copies de plus en plus bruitées du même
+jeu de test -- bruit gaussien indépendant sur chaque covariable
+numérique, d'amplitude exprimée en fraction de l'écart-type de cette
+covariable (calculé sur le train, jamais sur le test). Produit une
+courbe RMSE-vs-bruit et une courbe de dégradation relative (%) par
+modèle et par schéma, plus une comparaison directe CART/RF/XGB sur le
+schéma naive. Répond à "quel modèle se dégrade le moins vite sous
+perturbation" -- et permet de vérifier si un modèle robuste au bruit
+l'est aussi au changement de domaine spatial/temporel (comparaison avec
+les résultats de `16_`).
+
+**Non implémenté (occlusion réelle, taux de NA artificiel)** : le script
+`18_` couvre le bruit gaussien continu (perturbation de texture), mais
+pas un test de type "masquer X% des pixels/covariables et mesurer la
+chute" (occlusion dure plutôt que bruit continu). Dis-le moi si tu
+veux ce test en complément -- il se brancherait sur le même principe
+(`08_robustness.R`), en remplaçant l'ajout de bruit par une mise à `NA`
+aléatoire d'une fraction des covariables du test.
+
 ---
 
 ## 4bis. Nombre de folds adaptatif pour le blocage (mise à jour)
@@ -317,3 +395,160 @@ dans chaque `resume_global.txt`.
   interprétable, il suffit de dupliquer le bloc RF dans
   `11_run_training.R` en remplaçant `make_backend("rf")` par
   `make_backend("cart")`.
+
+## Importance des variables XGBoost : Gain vs SHAP
+
+`importance_xgb()` (`03_models.R`, branchée dans `make_backend("xgb")`,
+utilisée partout dans le pipeline) utilise **Gain** : la réduction
+moyenne de la fonction de perte apportée par les splits sur chaque
+variable. C'est le choix standard, mais il a deux limites : il ne dit
+rien sur la **direction** de l'effet, et il répartit arbitrairement le
+crédit entre variables corrélées (assez probable ici entre `Chla_total`
+et les `*_totpig`).
+
+**`importance_xgb_shap()`** (même fichier) calcule une alternative basée
+sur les **valeurs SHAP** (`predict(model, newdata, predcontrib = TRUE)`) :
+décomposition additive de chaque prédiction individuelle en contribution
+par variable, avec signe. L'importance globale retournée est la moyenne
+de la valeur absolue de ces contributions par variable.
+
+Différence de signature avec `importance_xgb()` : SHAP a besoin de
+données sur lesquelles calculer les contributions (`newdata`), pas
+seulement du modèle -- elle n'est donc **pas branchée automatiquement**
+dans `make_backend("xgb")` (l'interface générique `importance(model)`
+est commune aux 4 backends). Pour l'utiliser à travers tous les folds
+d'un schéma (agrégée, compatible avec `plot_importance_mean_sd()`
+directement) :
+
+```r
+shap_imp <- compute_shap_importance_across_folds(scheme_xgb, best_params, fod_levels)
+plot_importance_mean_sd(shap_imp, subtitle = "XGB - SHAP")
+```
+
+(`compute_shap_importance_across_folds()`, dans `04_diagnostics.R`,
+calcule les SHAP sur le **test** de chaque fold, pas le train -- on veut
+savoir sur quoi le modèle s'appuie pour ses prédictions hors échantillon.)
+
+Pas encore branchée automatiquement dans `11_run_training.R` ni
+`16_run_cross_scheme_analysis.R` (uniquement les fonctions de base pour
+l'instant, comme demandé) -- dis-moi si tu veux que je l'y intègre en
+complément de Gain (par exemple un fichier `importance_shap_all.csv` en
+plus de `importance_all.csv`, et un plot comparatif Gain vs SHAP).
+
+## Naive RS 80/20 : K-fold répété au lieu de Monte-Carlo (mise à jour)
+
+Suite à la discussion sur Monte-Carlo CV vs K-fold (partition), le
+naive RS 80/20 utilise maintenant par défaut du **K-fold répété**
+(`build_naive_folds_kfold_repeated()`, `02_folds.R`) plutôt que des
+tirages Monte-Carlo :
+
+- `K` est dérivé de `frac_train` (`K = round(1 / (1 - frac_train))` --
+  `K = 5` pour `frac_train = 0.8`, chaque fold test = 1/5 = 20%).
+- Avec `NAIVE_N_FOLDS = 10`, ça donne **2 répétitions de 5-fold** :
+  chaque répétition est une vraie partition disjointe (chaque
+  observation testée une fois par répétition), avec une nouvelle
+  permutation aléatoire à chaque répétition.
+- Avantages sur Monte-Carlo : couverture complète et disjointe (pas
+  d'observation jamais testée, pas de redondance), pas de
+  sous-estimation de la variance inter-fold (les tests Monte-Carlo se
+  chevauchaient), et une logique de partition cohérente avec les
+  schémas bloqués.
+
+**Basculer entre les deux méthodes** : `NAIVE_CV_METHOD` dans
+`00_config.R` (`"kfold_repeated"` par défaut, `"monte_carlo"` pour
+retrouver l'ancien comportement -- utile si tu veux comparer les deux
+directement, ou reproduire d'anciens résultats).
+
+`build_naive_folds()` reste l'interface publique inchangée (utilisée
+partout ailleurs dans le pipeline) -- elle route juste vers l'une ou
+l'autre des deux implémentations selon `NAIVE_CV_METHOD`. Aucun autre
+fichier n'a besoin d'être modifié.
+
+## Gradient latitudinal : 3 ajouts (diagnostic, blocage, buffers)
+
+Suite à la discussion sur la stationnarité de 1er/2nd ordre :
+
+**1. Plot résidu vs latitude** (`plot_residual_vs_latitude()`,
+`05_plots.R`, branché dans `16_run_cross_scheme_analysis.R`) : nuage de
+points + lissage LOESS du résidu (observé - prédit) en fonction de la
+latitude, coloré par schéma, facetté par modèle. Utilise
+`obs_pred_all.csv` déjà produit par `11_` -- aucun réentraînement.
+Lecture : une courbe lissée plate autour de 0 -> le gradient latitudinal
+est bien absorbé par les covariables. Une pente ou une forme
+systématique -> biais résiduel lié à la latitude non modélisé,
+généralement plus visible en blocage qu'en naive (la CV naive le masque
+partiellement par fuite spatiale). Sortie : `residual_vs_latitude.png`.
+
+**2. Blocage spatial stratifié par latitude** (`stratify_blocks_by_latitude()`,
+`02_folds.R`, appelée automatiquement dans `build_spatial_folds()` dès
+qu'il y a plus de blocs disponibles que de folds cibles) : au lieu d'un
+tirage uniforme parmi tous les blocs éligibles, les blocs disponibles
+sont d'abord répartis en 3 tertiles de latitude (bas/milieu/haut,
+calculés sur la latitude moyenne de chaque bloc), puis le tirage se
+fait à quotas égaux dans chacun des 3 tertiles (avec repli sur le pool
+restant si un tertile manque de blocs). Le message console de
+`build_spatial_folds()` indique maintenant explicitement "stratifiés
+par latitude". Objectif : que la comparaison inter-folds (RMSE, etc.)
+ne soit pas biaisée par le fait qu'un fold test se trouve, par hasard,
+au centre ou au bord de la plage de latitude couverte.
+
+**3. Variogramme des résidus détendancés** (`09_variogram.R` +
+`19_run_variogram_analysis.R`) : `detrend_residuals()` retire une
+tendance simple (`NASC ~ lat` par défaut -- juste une régression
+linéaire, pas un modèle complet, pour isoler la structure spatiale
+résiduelle propre sans mélanger "le modèle a mal appris" et "il reste
+de la vraie autocorrélation locale") ; `compute_empirical_variogram()`
+calcule ensuite la semi-variance par classe de distance sur un
+sous-échantillon (le calcul est en O(n²), donc sous-échantillonné à
+`n_sample = 3000` points par défaut -- ajustable). Le script produit un
+variogramme spatial (km) et un variogramme temporel (jours), avec les
+buffers actuels (`SPATIAL_RESOLUTIONS`, `TEMPORAL_RESOLUTIONS` dans
+`00_config.R`) superposés en pointillés pour comparaison visuelle
+directe : si le buffer tombe bien avant que la courbe plafonne, il est
+probablement trop court (fuite résiduelle au-delà du buffer) ; s'il
+tombe bien après, il est probablement trop large. Ne réentraîne aucun
+modèle -- calcul purement descriptif sur les données d'entraînement.
+
+## Échelles partagées entre plots (axes Y / colorbars identiques)
+
+Pour comparer facilement modèles/schémas/fréquences, `SHARED_SCALE_SCOPE`
+dans `00_config.R` (`"global"` par défaut, `"per_freq"` en alternative --
+voir le commentaire dans le fichier pour le compromis) contrôle
+l'étendue sur laquelle les échelles sont calculées.
+
+**Ce qui est maintenant partagé** (même axe/colorbar sur tous les PNG
+concernés) :
+- **`11_run_training.R`** (restructuré en 2 phases : entraînement +
+  collecte légère, puis calcul des échelles communes et génération de
+  tous les plots) : RMSE (learning curve + barres par fold), R²,
+  variance intra-fold, axes obs/pred, couleur des cartes de résidus
+  (signée et absolue).
+- **`12_/13_/14_`** (cartes de prédiction) : même échelle de couleur
+  viridis = union de la plage de NASC **observée à l'entraînement** et
+  de la plage **prédite**, partagée entre RF/XGB/randomForestSRC, tous
+  schémas, toutes dates (`13_`).
+- **`17_run_map_comparison.R`** : les 4 cartes de différence partagent
+  une échelle symétrique commune (`max(|diff|)` calculé sur les 4 en
+  même temps, avant de tracer).
+- **`18_run_noise_robustness_test.R`** (restructuré en 2 phases) : RMSE
+  absolu et dégradation relative (%) partagés entre CART/RF/XGB et tous
+  les schémas -- légitime ici car c'est la même unité pour les 3 modèles.
+
+**Ce qui reste volontairement NON partagé** (exceptions documentées, pas
+des oublis) :
+- **Importance des variables** (`07_importance_variables.png`) : partagée
+  **au sein d'un même modèle** (entre schémas/fréquences), mais **jamais
+  entre modèles différents** -- le Gain XGBoost et l'importance par
+  permutation RF/CART ne sont pas la même unité ; forcer le même axe
+  serait trompeur, pas juste une question d'esthétique.
+- **Plots de métadonnées** (`11_distances_test_train.png`,
+  `12_covariable_stats.png`, `13_covariable_variance.png`,
+  `14_fod_distribution.png`, `15_distributions_par_fold.png`) : chaque
+  config s'inspecte individuellement pour du contrôle qualité, pas en
+  comparaison directe -- laissés auto-scalés. Dis-le moi si tu veux
+  qu'ils soient unifiés aussi.
+- **`timeseries_mean_prediction.png`** (`13_`, évolution temporelle de la
+  moyenne spatiale prédite) : axe Y auto-scalé par fréquence/schéma --
+  c'est une moyenne spatiale, pas une valeur pixel, donc moins
+  directement comparable à la même échelle que les cartes ; RF vs XGB
+  reste comparable *au sein* de chaque figure (même axe, deux courbes).
