@@ -1,19 +1,23 @@
-[0] Config.pm:328> INFO - This is Biber 2.21
-[0] Config.pm:331> INFO - Logfile is 'rapport.blg'
-[125] biber-MSWIN64:342> INFO - === 
-[187] Biber.pm:421> INFO - Reading 'rapport.bcf'
-[319] Biber.pm:1002> INFO - Found 18 citekeys in bib section 0
-[334] Biber.pm:4487> INFO - Processing section 0
-[350] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
-[453] bibtex.pm:1713> INFO - LaTeX decoding ...
-[481] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
-[633] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'variable = shifted' with 'variable = non-ignorable'
-[634] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[634] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'fr-FR'
-[634] Biber.pm:4313> INFO - No sort tailoring available for locale 'fr-FR'
-[644] bbl.pm:676> INFO - Writing 'rapport.bbl' with encoding 'UTF-8'
-[659] bbl.pm:779> INFO - Output to rapport.bbl
-[660] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_cxTb\33e59b5ca9ec342068223d604c3f8d55_18012.utf8, line 3, warning: 13 characters of junk seen at toplevel
-[660] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_cxTb\33e59b5ca9ec342068223d604c3f8d55_18012.utf8, line 125, warning: 10 characters of junk seen at toplevel
-[660] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_cxTb\33e59b5ca9ec342068223d604c3f8d55_18012.utf8, line 220, warning: 6 characters of junk seen at toplevel
-[660] Biber.pm:134> INFO - WARNINGS: 3
+[0] Config.pm:307> INFO - This is Biber 2.19
+[0] Config.pm:310> INFO - Logfile is 'rapport.blg'
+[132] biber:340> INFO - === Sun Sep  6, 2026, 18:59:28
+[151] Biber.pm:419> INFO - Reading 'rapport.bcf'
+[247] Biber.pm:979> INFO - Found 28 citekeys in bib section 0
+[265] Biber.pm:4419> INFO - Processing section 0
+[277] Biber.pm:4610> INFO - Looking for bibtex file 'references.bib' for section 0
+[279] bibtex.pm:1713> INFO - LaTeX decoding ...
+[318] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[773] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[773] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'variable = shifted' with 'variable = non-ignorable'
+[773] Biber.pm:4239> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'fr-FR'
+[773] Biber.pm:4245> INFO - No sort tailoring available for locale 'fr-FR'
+[797] bbl.pm:660> INFO - Writing 'rapport.bbl' with encoding 'UTF-8'
+[812] bbl.pm:763> INFO - Output to rapport.bbl
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 3, warning: 13 characters of junk seen at toplevel
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 123, warning: 45 characters of junk seen at toplevel
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 156, warning: 32 characters of junk seen at toplevel
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 176, warning: 13 characters of junk seen at toplevel
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 198, warning: 24 characters of junk seen at toplevel
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 240, warning: 9 characters of junk seen at toplevel
+[813] Biber.pm:131> WARN - BibTeX subsystem: /tmp/biber_tmp_97b3/33e59b5ca9ec342068223d604c3f8d55_27245.utf8, line 335, warning: 6 characters of junk seen at toplevel
+[813] Biber.pm:133> INFO - WARNINGS: 7
