@@ -2,7 +2,7 @@
 library(dplyr)
 
 # global var
-for (freq in c(38, 70, 120, 200)){
+for (freq in c(18)){
   ds <- readRDS(paste0("F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_", freq, "kHz_mask9.rds"))
   
   str(ds)
@@ -36,13 +36,18 @@ for (freq in c(38, 70, 120, 200)){
   sum_others <- Reduce(`+`, ds[pigs_sans_chla])
   
   # ------------------------------------------------------------
-  # 4) Ratio de chaque pigment (Chla incluse) sur la somme des
-  #    pigments hors Chla, vectorise sans boucle
+  # 4) Ratio de chaque pigment sur la somme des pigments hors Chla,
+  #    vectorise sans boucle.
+  #
+  #    Chla est EXCLUE de ce calcul : on ne veut pas de Chla_totpig,
+  #    ce ratio n'ayant pas de sens avec ce dénominateur (Chla
+  #    divisée par la somme des 8 AUTRES pigments, sans elle-même).
+  #    On calcule donc les ratios uniquement pour pigs_sans_chla.
   # ------------------------------------------------------------
   ratio_df <- as.data.frame(
-    lapply(list_pigs, function(p) ds[[p]] / sum_others)
+    lapply(pigs_sans_chla, function(p) ds[[p]] / sum_others)
   )
-  names(ratio_df) <- paste0(list_pigs, "_totpig")
+  names(ratio_df) <- paste0(pigs_sans_chla, "_totpig")
   
   ds <- cbind(ds, ratio_df)
   

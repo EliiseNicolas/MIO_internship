@@ -145,8 +145,8 @@ pig_sum_others <- Reduce(`+`, pig_all[pigs_sans_chla])   # somme elementwise, me
 # pigment, aucune boucle sur les dates/pixels.
 # ------------------------------------------------------------
 
-ratio_list <- lapply(list_pigs, function(p) pig_all[[p]] / pig_sum_others)
-names(ratio_list) <- paste0(tolower(list_pigs), "_totpig")
+ratio_list <- lapply(pigs_sans_chla, function(p) pig_all[[p]] / pig_sum_others)
+names(ratio_list) <- paste0(tolower(pigs_sans_chla), "_totpig")
 
 pig_all <- c(pig_all, ratio_list)
 
