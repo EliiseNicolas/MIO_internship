@@ -8,6 +8,10 @@
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
 \usepackage{csquotes}
+\usepackage{tabularx} 
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{booktabs}
 \usepackage{lmodern}
 \usepackage{microtype}
 \usepackage{amsmath}
@@ -147,7 +151,8 @@ urlcolor=black
 {1.5ex plus .2ex}
 
 \setcounter{secnumdepth}{3}
-
+\usepackage{pdflscape}   % à mettre dans le préambule
+\usepackage{subcaption}  % à mettre dans le préambule
 \begin{document}
 	
 	\begin{titlepage}
@@ -317,39 +322,46 @@ urlcolor=black
 	
 	\section{Concentrations de pigments photosynthétiques (PIGMeANN)}
 	L'analyse de la couleur des océans à partir d'images satellite permet de d'étudier le phytoplancton sur une échelle spatiale et temporelle large. Historiquement les études se sont concentrées sur l'analyse de la chlorophylle-a de surface \cite{thomalla2023Widespread}. Plus récemment, des méthodes de deep learning on permis la caractérisation de "Phytoplankton Functional Types" et de "Phytoplakton Size Classes"  depuis des images satellites (par exemple Physat).  La radiance renvoyée par les océans a une couleur dépendant des pigments photosynthétiques qu'ils contiennent. L'idée est d'identifier une empreinte spectrale et de l'associer (deep learning) avec des mesures \textit{in-situ} High Performance Liquid Chromatography \footnote{L’échantillon est injecté dans une colonne traversée par un solvant sous haute pression, où ses différents composés sont séparés puis détectés individuellement. Permet de séparer et quantifier les pigments afin d’identifier les différents groupes présents.} et de cytométrie en flux\footnote{Les cellules sont entraînées individuellement devant un laser qui mesure leur diffusion (taille/forme des cellules) et leur fluorescence. On peut ensuite identifier les taxons.} qui caractérisent la présence et la structure des communauté phytoplanctoniques. 
-	\begin{table}[H]
-		\centering
-		\begin{tabular}{ll}
+\begin{table}[H]
+	\centering
+	\renewcommand{\arraystretch}{1.3}
+	\begin{tabular}{
+			>{\raggedright\arraybackslash}p{3.4cm}
+			>{\raggedright\arraybackslash}p{2.0cm}
+			>{\raggedright\arraybackslash}p{4.8cm}
+			>{\raggedright\arraybackslash}p{2.6cm}
+		}
 		\hline
-		\textbf{Pigment} & \textbf{Abréviation} \\
+		\textbf{Pigment} & \textbf{Abréviation} & \textbf{Groupe phytoplanctonique associé (PFD)} & \textbf{Classe de taille} \\
 		\hline
-		Divinyl chlorophylle $a$ & dvChla \\
-		Chlorophylle $a$ & Chla \\
-		Chlorophylle $b$ & Chlb \\
-		Zéaxanthine & Zea \\
-		Fucoxanthine & Fuco \\
-		19'-hexanoyloxyfucoxanthine & Hex \\
-		19'-butanoyloxyfucoxanthine & But \\
-		Alloxanthine & Allo \\
-		Péridinine & Per \\
+		Divinyl chlorophylle $a$ & dvChla & Procaryotes picoplanctoniques (\textit{Prochlorococcus}) & Picophytoplancton \\
+		Chlorophylle $a$ & Chla & Marqueur de biomasse totale (tous groupes) & -- \\
+		Chlorophylle $b$ & Chlb & Chlorophycées / Prasinophycées & Picophytoplancton \\
+		Zéaxanthine & Zea & Cyanobactéries (\textit{Synechococcus}) & Picophytoplancton \\
+		Fucoxanthine & Fuco & Diatomées (dominantes) & Microphytoplancton \\
+		19'-hexanoyloxyfucoxanthine & Hex & Prymnésiophycées (haptophytes) & Nanophytoplancton \\
+		19'-butanoyloxyfucoxanthine & But & Prymnésiophycées / pélagophytes & Nanophytoplancton \\
+		Alloxanthine & Allo & Cryptophycées & Nanophytoplancton \\
+		Péridinine & Per & Dinoflagellés (péridiniens) & Microphytoplancton \\
 		\hline
 	\end{tabular}
-	\caption{Pigments photosynthétiques analysés.}
+	\renewcommand{\arraystretch}{1}
+	\caption{Pigments photosynthétiques analysés et groupes phytoplanctoniques associés (PFD) dans le secteur de Kerguelen en été/printemps austral, d'après Lasbleiz et al. (2014).}
 	\label{tab:pigments}
-	\end{table}
+\end{table}
 	
 	Sari El Dine a récemment mis en place la méthode de deep-learning PIGMeANN \cite{sari2026regional} permettant de distinguer des les concentrations de surfce de neuf pigments photosynthétiques(tableau \ref{tab:pigments}) sur l'ensemble de la couverture spatiale de l'image satellite donnée en entrée (exemple de prédiction avec la Chorophylle-a figure \ref{fig:mapchla2023-01-26}).  
 	
-	\begin{figure}
+	\begin{figure}[H]
 		\centering
 		\includegraphics[width=0.8\textwidth]{images/02_materiel/map_chla_2023-01-26}
 		\caption{Carte de prédiction de la concentration de Chlorophylle-a le 2023-01-26 sur le secteur indient du SO, prédictions issue de l'alorithme PIGMeANN développé par Sari el Dine \cite{sari2026regional}.}
 		\label{fig:mapchla2023-01-26}
 	\end{figure}
 	
-	A partir de la connaissance des différentes communautés phytoplanctoniques présente dans la région d'étude, et en s'appuyant notamment sur des études récentes \cite{sari2025influence}, \cite{heidemann2024drivers}, on peut relier certains pigments à des groupes phytoplanctoniques (PFD) ou Phytoplankton Size Classes (PSC). Ainsi on peut identifier la composition des communautés phytoplanctoniques à partir des différents assemblage de concentration de pigments prédites. A noter que plusieurs taxons phytoplanctoniques peuvent partager les mêmes pigments photosynthétiques, ce pourquoi on identifie des PFD/PSC et non des taxons.
+	A partir de la connaissance des différentes communautés phytoplanctoniques présente dans la région d'étude, et en s'appuyant notamment sur des études récentes \cite{sari2025influence}, \cite{heidemann2024drivers} \cite{Georges2014}, on peut relier certains pigments à des groupes phytoplanctoniques (PFD) ou Phytoplankton Size Classes (PSC). Ainsi on peut identifier la composition des communautés phytoplanctoniques à partir des différents assemblage de concentration de pigments prédites \ref{tab:pigments}. A noter que plusieurs taxons phytoplanctoniques peuvent partager les mêmes pigments photosynthétiques, ce pourquoi on identifie des PFD/PSC et non des taxons.
 	
-	
+	Dans notre étude, les concentrations de pigments photo-synthétiques ne sont pas manipulées directement. On s'intéresse à la proportion de chaque pigment dans la quantité de pigments totale. Pour chaque pigment, on calcule donc son ratio sur la somme de tous les pigments\footnote{La Chlorophylle-a est exclue car peu informative : en effet, il est présent à de fortes concentration, la majorité des organismes possèdant ce pigment.}
 	
 	\section{Données hydrologiques de température et salinité (CMEMS)}
 	Les données de températures et salinité sont issues de la plateforme Copernicus \footnote{Programme d’observation de la Terre de l’Union européenne, qui fournit notamment des données et services permettant de surveiller et comprendre l’état de l’environnement, dont l’océan \cite{copernicus2026services}}. Ce sont des données issues des observations temps-réelles CMEMS \footnote{Copernicus Marine Environment Monitoring Service, service marin de Copernicus} et réanalysées par le modèle NEMO \footnote{Nucleus for European Modelling of the Ocean, modèle numérique de l’océan qui simule l’évolution de paramètres comme la température, la salinité, les courants et le niveau de la mer}, et ERA5 \footnote{Modèle atmosphérique de l'ECMWF (European Centre for Medium-Range Weather Forecasts) qui fournit les conditions atmosphériques nécessaires pour forcer le modèle océanique NEMO à sa surface}.
@@ -540,9 +552,401 @@ urlcolor=black
 	\subsubsection{Présentation des Domaines Océanographiques Fonctionnels}
 	Les Domaines Océanographiques Fonctionels (ou Functional Oceanographic Domain) sont des masses d'eau ayant des caractéristiques thermohalines similaires. La méthode d'identification des FOD a été développé par Fonvieille N. et Nerini D. \cite{fonvieille2024}. Les données thermohalines (des modèles de Copernicus dans notre cas) sont, dans un premier temps (1), estimées dans un espace fonctionnel par projection sur une base de B-spline. Dans un second temps (2), la dimension de la matrice des coefficients de pondération des B-splines est réduite par une Analyse par Composante Principale (ACP ou PCA en anglais). Dans un dernier temps (3), un clusterning (GMM) est appliqué à cette nouvelle matrice de coefficients de pondération des B-splines. Ces trois étapes seront développés dans les paragraphes suivants.
 	
-	\subsubsection{Estimation fonctionelle sur des bases de B-splines Estimation semi-paramétrique des profils de température et salinité}
+	Sont obtenus 13 clusters distincts : 6 clusters de FOD et 7 clusters de dits de "transitions" \footnote{La classe "NA" correspond aux clusters manquants sur le plateau de Kerguelen. Les profils de température et salinité allant de 20 à 500m, sont retirés des calculs tout profils ayant des données manquantes entre ces deux valeurs. Les zones où la bathymétrie est inférieure à 500m sont donc exclues de ces calculs.} (voir figure \ref{fig:comparaisondofmap}). 
 	
-	\paragraph{Basis-splines de degré $m$ \cite{deBoor}}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{images/03_methodology/comparaison_dof_map}
+		\caption{(a) Carte du secteur Indien de l'Océan Austral et des courants \cite{shetye2013} (b) Carte des Domaines Océanographiques Fonctionnels du 2023-01-26 générée par la méthode développée par Fonvieille N. et Nerini D. \cite{fonvieille2024}. Identification du Front Polaire (FP, cluster T2-3), du Front Subantarctique (SAF, cluster T3-4) et du Front Subtropical (STF, clusters T4-5 et T4-6)}
+		\label{fig:comparaisondofmap}
+	\end{figure}
+	\begin{figure}[H]
+		\centering
+		\begin{subfigure}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{images/03_methodology/temperature_clusters_transitions}
+			\caption{Profil de température (°C) moyen par cluster}
+			\label{fig:temperatureclusterstransitions_a}
+		\end{subfigure}
+		\hfill
+		\begin{subfigure}[b]{0.48\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{images/03_methodology/salinity_clusters_transitions}
+			\caption{Profil de salinité (PSU) moyen par cluster}
+			\label{fig:temperatureclusterstransitions_b}
+		\end{subfigure}
+		\caption{}
+		\label{fig:temperatureclusterstransitions}
+	\end{figure}
+	
+	Les FOD correspondent alors à des masses d'eau ayant des propriétés thermohalines similaires et permettent de visualiser l'hydrodynamisme de la région (tourbillons emprisonnant les masses d'eau en leurs coeur, filaments, fronts), voir figure \ref{fig:comparaisondofmap}. Historiquement, la zone d'étude était régionalisée selon l'apport d'eau de glace. On mentionne les Coastal and Continental Shelf Zone (CCSZ), Seasonal Ice Zone (SIZ), Permanently Open Ocean Zone (POOZ), Polar Frontal Zone (PFZ) ou Sub-Antarctic Zone (SAZ) \cite{treguer1992}. Plus récemment, les termes de WIZ (Winter Ice Zone) et MIEZ (Maximum Ice Extent Zone) ont également été introduits \cite{adroli2026}. En effet, ces zones présentent des régimes de productivité très différents. Travailler avec les FOD permet de retrouver cette régionalisation puisque chaque cluster encode les caractéristiques thermohaline de l'eau et donc encode l'adoucissement de l'eau due à la fonte des glaces. La seule exception concerne la SZ : cette zone est marquée par des apports minéraux et en fer d'origine continentale (mise en suspension de sédiments du plateau, fonte glaciaire). Ces processus, propres au domaine côtier, ne sont pas capturés par notre modèle de régionalisation, fondé uniquement sur les propriétés thermohalines des masses d'eau.
+		
+	\subsection{Colocalisation NASC/PIG/FTLE/FOD}
+	Afin d'étudier la relation entre la distribution des organismes détectés acoustiquement (NASC), la dynamique de surface, les conditions hydrologiques et l'activité phytoplanctonique; les données de NASC ont été colocalisées avec lese \textit{Finite-Time Lyapunov Exponents} (FTLE), les \textit{concentration pigmentaire} (PIGMeANN) et les \textit{Domaine Océanographique Fonctionnel }(FOD).
+	
+	Le jeu de données d'acoustique active contient, pour chaque unité élémentaire d'échantillonnage (ESU), la date et l'heure d'acquisition, ses coordonnées géographiques (latitude et longitude) et la valeur de NASC associée (calculée à partir du volume de rétropropagation $S_v$).
+	
+	Les données environnementales sont fournies sous la forme de grilles spatiales, principalement organisées en fichiers NetCDF journaliers. Pour chaque fréquence acoustique considérée (38 et 120 kHz), les dates présentes dans le jeu de données acoustique sont identifiées. Pour chacune de ces dates, les données environnementales correspondantes sont recherchées et chargées afin d'être associées aux observations acoustiques.
+	
+	La colocalisation repose sur une correspondance temporelle à l'échelle journalière et sur une association spatiale par la méthode du plus proche voisin. Pour chaque ESU, ses coordonnées géographiques sont comparées aux coordonnées de la grille spatiale de chacune des variables environnementales. Le pixel dont les coordonnées sont les plus proches de celles de l'ESU est alors sélectionné. Cette recherche est effectuée indépendamment selon les dimensions de latitude et de longitude :
+
+	\begin{equation}
+		i_{\mathrm{lon}} =
+		\underset{i}{\operatorname{argmin}}
+		\left|
+		\mathrm{lon}_{X,i} -
+		\mathrm{lon}_{\mathrm{ESU}}
+		\right|
+	\end{equation}
+	
+	et
+	
+	\begin{equation}
+		i_{\mathrm{lat}} =
+		\underset{i}{\operatorname{argmin}}
+		\left|
+		\mathrm{lat}_{X,i} -
+		\mathrm{lat}_{\mathrm{ESU}}
+		\right|
+	\end{equation}
+
+	
+	
+	où $\mathrm{lon}_{X,i}$ et $\mathrm{lat}_{X,i}$ correspondent respectivement aux coordonnées de longitude et de latitude de la grille de la variable environnementale $X$ considérée.
+	
+	La valeur environnementale associée à chaque ESU est ensuite extraite au niveau du pixel correspondant aux indices sélectionnés :
+	\begin{equation}
+		X(i_{\mathrm{lon}},i_{\mathrm{lat}}),
+	\end{equation}
+	
+	où $X$ représente l'une des variables environnementales considérées (FTLE, PIGMeANN ou FOD).
+	
+	Cette procédure est appliquée indépendamment à chaque variable environnementale. Les données finales permettent ainsi d'associer, à chaque ESU acoustique, sa position géographique, sa date d'acquisition, sa valeur de NASC ainsi que les valeurs des différentes variables environnementales correspondantes (FTLE, PIGMeANN et FOD). Ce jeu de données colocalisé constitue la base des analyses par machine learning visant à étudier les relations entre la distribution acoustique des organismes et les caractéristiques de leur environnement.
+	
+	\section{Décrire la structuration des communautés phytoplanctoniques de la région}
+	\label{section:pigs}
+	Cette section décris la méthode effectuée pour comprendre comment groupes d'rganismes photosynthétiques (PFD et PSC) sont structurés spatio-temporellement. 
+	
+	Dans un premier temps, les données pigmentaires (en ratio) de toute la région d'étude ([45, 90]°E de longitude, [-30, -60]°N de latitude) ont été extraits. On obtient une matrice $pigs = \mathbb{R}^{dates \times npigments \times lon \times lat}$ (npigments = 9, voir \ref{tab:pigments}) sur laquelle on effetcue une Analyse pas Composante Principale. On regroupe ensuite les données similaires avec un clustering de type k-means (nclust = 6, choix par méthode du coude, voir Annexe \ref{annexe : cluster_pig}, figure \ref{fig:elbowmethodkmeans}) sur les 7 premières composantes principales (>=97.7\% expl. var., voir Annexe \ref{annexe : cluster_pig}, figure \ref{fig:explainedvarpig})). Des analyses de distributions des ratios de concentration de pigments sont ensuite réalisées afin d'étudier la composition pigmentaire de chaque communauté. Finalement, afin de comprendre la structure spatiale et temporelle des communautés, les clusters sont projetés sur des cartes journalières et totales (avec un indice de pureté associé). 
+	
+	
+	\section{Prédire le NASC en fonction de variables environnementals : arbres de régression}
+	Cette section décrit comment nous avons cherché à (1) identifier la structure prédictive du NASC à partir des variables environnementales (FOD, FTLE) et phytoplanctoniques, et (2) étudier les relations structurelles entre le NASC et ces variables prédictives (FOD, ratios de pigments, FTLE). Pour cela, nous avons utilisé trois modèles d'arbres de régression : CART, Random Forest et XGBoost. Ces modèles ont été choisis pour leurs propriétés complémentaires et leur gestion différente du compromis biais-variance, inhérent à tout problème d'apprentissage automatique.
+	
+	%"Depending on the problem, the basic purpose of a classification/regression study can be either to produce an accurate classifier or to uncover the predictive structure of the problem." (classif. and regression trees p.6)
+	%Notre objectif ici est chercher à connaître la prédictibilié du NASC en fonction de la structure des communautés phytoplanctoniques, en lien avec l'activité de mésoéchelle. The goal is to understand the structural relationship between  the response and the measured variables. (p.221)
+
+
+	\subsection{Description des modèles}
+	\subsubsection{Classification and Regression Trees (CART)}
+	Le modèle CART \cite{breiman1984classification} construit un arbre de décision par partitionnement binaire récursif de l'espace des variables explicatives. À chaque nœud, l'algorithme sélectionne la variable et le seuil de coupure qui minimisent le plus la variance intra-groupe des sous-ensembles résultants (critère d'impureté : réduction de la somme des carrés des résidus). Ce processus est répété récursivement jusqu'à ce qu'un critère d'arrêt soit atteint : profondeur maximale de l'arbre (\texttt{maxdepth}), nombre minimal d'observations requis pour tenter un nouveau split (\texttt{minsplit}), ou gain d'impureté insuffisant pour justifier une division supplémentaire (\texttt{cp}, paramètre de complexité). La prédiction d'une nouvelle observation correspond à la moyenne des valeurs observées dans la feuille terminale où elle est routée.
+	
+	Un arbre unique est un modèle à faible biais mais à forte variance : sans contrainte de régularisation, il peut s'ajuster jusqu'à isoler chaque observation d'entraînement dans sa propre feuille (biais faible, mais surapprentissage possible et forte sensibilité à toute perturbation du jeu de données d'entraînement). Les hyperparamètres \texttt{cp}, \texttt{minsplit} et \texttt{maxdepth} contrôlent directement ce compromis en limitant la profondeur/complexité de l'arbre. CART est se démarque des autres méthodes par sa forte interprétabilité : la structure de l'arbre est directement lisible comme une succession de règles de décision.
+	
+	\subsubsection{Random Forest (RF)}
+	Le Random Forest \cite{breiman2001random} est un ensemble de $B$ arbres CART entraînés indépendamment et dont les prédictions sont moyennées. Deux sources de randomisation permettent de décorréler les arbres entre eux :
+	\begin{itemize}
+		\item \textbf{Bagging} (bootstrap aggregating) : chaque arbre est entraîné sur un échantillon bootstrap (tirage aléatoire avec remise) du jeu d'entraînement, de même taille que celui-ci.
+		\item \textbf{Sous-échantillonnage des variables} : à chaque split, seul un sous-ensemble de \texttt{mtry} variables (tirées aléatoirement parmi l'ensemble des covariables) est considéré comme candidat à la division, plutôt que la totalité des variables disponibles.
+	\end{itemize}
+	
+	Cette double randomisation maximise la diversité entre arbres et empêche l'obtention d'une forêt d'arbres quasi identiques et fortement corrélés, ce qui serait le cas si chaque arbre avait accès à l'intégralité des données et des variables à chaque split. Or, la réduction de variance obtenue en moyennant $B$ estimateurs n'a lieu que si ces estimateurs sont peu corrélés entre eux : moyenner des arbres corrélés apporte un gain de variance bien plus limité que moyenner des arbres indépendants. Random Forest permet ainsi de conserver le faible biais propre aux arbres de décision profonds tout en réduisant fortement leur variance individuelle, sans nécessiter la même régularisation stricte qu'un CART isolé. Les hyperparamètres \texttt{mtry} (nombre de variables candidates par split) et \texttt{min.node.size} (taille minimale des feuilles) contrôlent la profondeur/complexité de chaque arbre individuel, tandis que \texttt{num.trees} fixe la taille de l'ensemble. Un nombre d'arbres insuffisant ne permet pas à la réduction de variance par moyennage de converger, tandis qu'au-delà d'un certain seuil, l'ajout d'arbres supplémentaires n'apporte plus de gain significatif.
+	
+	\subsubsection{XGBoost}
+	XGBoost (Extreme Gradient Boosting) \cite{chen2016xgboost} est une méthode d'ensemble séquentielle, par opposition au moyennage parallèle du Random Forest (bagging). Les arbres sont construits un à un, chaque nouvel arbre étant entraîné pour corriger les erreurs résiduelles de l'ensemble des arbres précédents. La prédiction finale correspond à la somme pondérée des contributions de tous les arbres de la séquence.
+	
+	Contrairement au bagging, où chaque estimateur est indépendant et où l'objectif est de réduire la variance sans biaiser l'estimateur moyen, le boosting réduit progressivement le biais de l'ensemble à chaque itération, celà au prix d'un risque de surapprentissage croissant avec le nombre d'itérations. XGBoost intègre plusieurs mécanismes de régularisation pour limiter ce risque : un taux d'apprentissage (\texttt{eta}) qui pondère la contribution de chaque nouvel arbre (un taux faible ralentit la convergence mais limite le surapprentissage), une profondeur maximale par arbre (\texttt{max\_depth}), un poids minimal d'observations requis par feuille (\texttt{min\_child\_weight}), ainsi qu'un sous-échantillonnage des observations et des variables à chaque itération (\texttt{subsample}, \texttt{colsample\_bytree}). Le nombre d'itérations de boosting (\texttt{nrounds}) est un hyperparamètre particulièrement sensible : trop faible, l'ensemble sous-ajuste (biais élevé) ; trop élevé, il surapprend le jeu d'entraînement (variance élevée).
+	
+	\subsection{Calcul de l'importance des variables}
+	L'importance d'une variable explicative quantifie sa contribution à la qualité des prédictions du modèle. LesCART, Random Forest et XGBoost ne calculent pas cette quantité de la même manière et les valeurs obtenues ne sont donc pas directement comparables entre modèles (ni en échelle, ni en unité), même si elles peuvent l'être entre schémas de validation croisée ou fréquences pour un même modèle.
+	
+	\subsubsection{CART}
+	Pour un arbre de décision unique, l'importance d'une variable est calculée comme la somme, sur l'ensemble des nœuds où cette variable est utilisée comme critère de split, de la réduction d'impureté qu'elle apporte (la RSS dans notre cas) \cite{breiman1984classification}. Une variable qui n'intervient dans aucun split de l'arbre final a une importance nulle. Cette mesure est directement issue de la structure de l'arbre entraîné (fonction \texttt{variable.importance} du package \texttt{rpart}) et ne nécessite aucun calcul supplémentaire après l'entraînement.
+	
+	\subsubsection{Random Forest}
+	Random Forest utilise l'\textbf{importance par permutation} \cite{breiman2001random}, calculée pour chaque arbre de la forêt sur ses observations out-of-bag (OOB, celles non tirées dans l'échantillon bootstrap de cet arbre) : on calcule l'erreur de prédiction OOB du modèle, puis on permute aléatoirement les valeurs d'une variable donnée entre les observations OOB et on recalcule l'erreur. L'importance de cette variable correspond à l'augmentation moyenne de l'erreur (ici, l'augmentation du MSE) causée par cette permutation, moyennée sur l'ensemble des arbres de la forêt \cite{wright2017ranger}. Une variable dont la permutation n'affecte pas (ou peu) la performance du modèle a une importance faible ou nulle (contrairement à une variable dont le modèle dépend fortement). Cette méthode a été préférée à l'importance par impureté (\textit{Gini/RSS importance}, analogue à celle de CART mais moyennée sur tous les arbres), car elle est moins sensible aux biais liés à l'échelle ou à la cardinalité des variables \cite{strobl2007bias}.
+	
+	\subsubsection{XGBoost}
+	L'importance des variables dans XGBoost est calculée à partir du Gain : pour chaque split de chaque arbre de la séquence de boosting, on calcule la réduction de la fonction de perte qu'il apporte. Le Gain d'une variable est la somme de ces réductions sur tous les splits où elle est utilisée, sur l'ensemble des arbres \cite{chen2016xgboost}. Cette mesure est directement disponible en sortie du modèle entraîné (fonction \texttt{xgb.importance}) sans calcul supplémentaire.
+	
+	Le Gain présente cependant deux limites : il ne renseigne pas sur le sens de l'effet d'une variable (contribution positive ou négative à la prédiction), et il répartit arbitrairement le crédit entre variables fortement corrélées. 
+	
+	\subsection{Schéma de validation, Tuning, entraînement et prédiction}
+	
+	\subsubsection{Proximité spatio-temporelle et dépendance spatiale des données}
+	Les données environnementales et biologiques présentent une structuration dépendante de la latitude. Les hypothèses de stationnarité d'ordre 1 et 2 ne sont donc pas respectées. 
+	De plus, lors des campagnes océanographiques, une onde acoustique est émise toutes les 3 à 4 secondes. La conséquence de cette proximité spatio-temporelle est la présence de pseudo-duplicatas dans le jeu de données. Cet élément est à prendre en considération lors de la construction du schéma de validation croisé afin d'obtenir un jeu de données de validation sans fuite du jeu de données d'entraînement (data leakage). 
+	
+	\subsubsection{Schémas de validation croisée}
+	La validation croisée consiste à diviser l'ensemble des données en $K$ sous-ensemble de taille à peu près identiques, appelés \textit{folds}. 1 fold sert d'ensemble de validation/test et les $K-1$ folds restants servent d'ensemble d'entraînement. On obtient donc $K$ prédictions pour un même modèle. 
+	
+	Il existe différentes manières de sous-échantillonner les données pour construire les folds. Dans notre étude, nous avons testés différentes méthodes : Monte-Carlo CV et la validation croisée par blocking spatio-temporel.
+	
+	La \textbf{Monte Carlo Cross Validation} \cite{xu2004monte} (appelée aussi Repeated Random Sub-sampling Validation) consiste à effectuer K tirages aléatoires indépendants sur une certaine proportion $P$ des données pour sélectionner l'ensemble d'entraînement, la proportion de données restante sert d'ensemble de test \footnote{A noter que dans cette méthode, les tirages se chevauchent, ce n'est pas une partition exhaustive comme le K-fold CV}. Dans notre cas, la proportion de donnée d'entraînement choisie est $P=80$ \% et 20\% de test. Le nombre de fold a été fixé arbitrairement à $K =  10$.
+	
+	La \textbf{validation croisée par blocking spatio-temporel} \cite{roberts2017crossvalidation} consiste à partitionner l'espace (ou le temps) selon une grille de résolution choisie. Elle permet de limiter la fuite de données (dataleakage) et les effets de la dépendance spatio-temporelle. Le sous-échantillonage est choisi en isolant un block de cette grille (le bloc test), les blocs situés dans un rayon tampon (buffer) autour de ce bloc sont exclus de l'entraînement et les blocs restants (hors buffer) servent d'ensemble d'entraînement. Dans notre cas, plusieurs résolution ont été retenues : 1500km de longitude x 1000km de latitude, 200 km x 200 km, 20 km x 20 km et 1 journée (selon les tests effectués, voir annexe \ref{annexe:choix_valid_croisee_autocorr}). Dans ce schéma de validation croisée, le nombre de fold dépend de la résolution de la grille spatio-temporelle choisie. Ici nous avons déterminé le nombre de folds en procédant comme suis : après avoir découpé l'espace (ou le temps) en une grille (de résolution choisie), on regarde le nombre de points que contiennent chaque cellule et on garde les cellules (nombre de blocks éligibles) avec un nombre de point supérieur à $n=50$ points. Le nombre de folds correspond alors à 30 \% du nombre de blocs éligibles, plafonnée à un maximum de 30 folds et à un minimum de 5 folds, sans jamais dépasser le nombre de blocs réellement éligibles disponibles. Le nombre de fold pour XGB diffère à cause du nombre de données supérieures utilisé dans cette méthode qui tolère les valeurs manquantes. Le choix des folds a également été contraint par la latitude pour forcer une représentation homogène des données selon cet axe.
+	
+	\begin{table}[htbp]
+		\centering
+		\caption{Schémas de validation croisée et nombre de folds retenus (38 kHz)}
+		\label{tab:cv_schemes}
+		\small
+		\begin{tabularx}{\textwidth}{@{} l l r r r X @{}}
+			\toprule
+			Schéma & Sous-ensemble & Buffer & Blocs disp. & Folds retenus \\
+			\midrule
+			Naive RS 80/20 (Monte Carlo) & CART/RF/XGB & -- & -- & 10 \\
+			\midrule
+			Bloc spatial 1500$\times$1000\,km & CART/RF & 100\,km & 6   & 5 \\
+			Bloc spatial 1500$\times$1000\,km & XGB     & 100\,km & 9   & 5 \\
+			\midrule
+			Bloc spatial 200$\times$200\,km & CART/RF & 20\,km & 24  & 7 \\
+			Bloc spatial 200$\times$200\,km & XGB     & 20\,km & 76  & 23 \\
+			\midrule
+			Bloc spatial 20$\times$20\,km & CART/RF & 5\,km & 106 & 30 \\
+			Bloc spatial 20$\times$20\,km & XGB     & 5\,km & 663 & 30 \\
+			\midrule
+			Bloc temporel 1 jour & CART/RF & 1 jour & 19  & 6   \\
+			Bloc temporel 1 jour & XGB     & 1 jour & 81  & 24  \\
+			\bottomrule
+		\end{tabularx}
+	\end{table}
+	
+	\subsubsection{Tuning}
+	Etant donné le nombre important de modèles ($3 \text{ modèles } \times 5 \text{ schémas de validation croisée } \times \text{ K folds } \times 2 \text{ fréquences}$), seule une petite grille de tuning des hyperparamètres a été utilisée (voir tableau \ref{tab:tuning_grids}). On retient les hyperparamètres qui minimisent la RMSE test moyenne inter-fold. Une exception est faite pour le tuning du modèle XGBoost, le paramètre \texttt{nrounds} est optimisé ici par early stopping plutôt que par recherche sur grille : l'entraînement est interrompu dès que le RMSE de validation cesse de s'améliorer pendant un nombre d'itérations consécutives fixé (patience).
+	
+		\begin{table}[htbp]
+			\centering
+			\caption{Grilles d'hyperparamètres testées lors du tuning}
+			\label{tab:tuning_grids}
+			\begin{tabularx}{\textwidth}{l l X r}
+				\toprule
+				Modèle & Hyperparamètre & Valeurs testées & Comb. \\
+				\midrule
+				\multirow{3}{*}{CART}
+				& \texttt{cp}        & 0.0005 ; 0.001 ; 0.005 ; 0.01 & \multirow{3}{*}{36} \\
+				& \texttt{minsplit}  & 10 ; 20 ; 40                  & \\
+				& \texttt{maxdepth}  & 5 ; 10 ; 15                   & \\
+				\midrule
+				\multirow{3}{*}{RF (ranger)}
+				& \texttt{mtry}           & 2 ; 3 ; 4      & \multirow{3}{*}{18} \\
+				& \texttt{min.node.size}  & 5 ; 10 ; 20    & \\
+				& \texttt{num.trees}      & 300 ; 500      & \\
+				\midrule
+				\multirow{4}{*}{XGBoost}
+				& \texttt{max\_depth}         & 3 ; 4 ; 6          & \multirow{4}{*}{27} \\
+				& \texttt{eta}                & 0.01 ; 0.05 ; 0.1  & \\
+				& \texttt{min\_child\_weight} & 1 ; 3 ; 5           & \\
+				& \texttt{nrounds}            & optimisé par \emph{early stopping} (max. 1000, patience 20) & \\
+				\bottomrule
+			\end{tabularx}
+		\end{table}
+		
+		\subsubsection{Entraînement et prédiction}
+		Chaque fold de chaque modèle est entraîné indépendamment avec les meilleurs paramètres obtenus par le tuning (voir annexe \ref{annexe:tuning_res}) et les métriques associées (R², RMSE, résidus) sont calculées. La prédiction finale d'un modèle correspond à la moyenne des prédictions des $K$ folds de ce modèle.
+		
+		Une carte de prédiction est ensuite générée à partir des données de variables environnementales de toute la ROI (FOD, concentrations de pigments)\footnote{Cet ensemble de donnée diffère de l'ensemble d'entraînement qui contient uniquement les valeurs des variables environnementales associées aux points de coordonnée longitude/latitude du transect de la campagne océanographique collectant les données d'acoustiques qu'on prédit}. 
+		
+		
+	
+	
+	
+	\clearpage
+	\chapter{Résultats}
+	\section{Distributions}
+	\subsection{Concentrations de pigments photosynthétiques}
+	On s'intéresse ici aux distributions inter-annuelles des contributions de chaque pigment (et donc chaque PFD) sur la production primaire totale.
+	La Fucoxantine, pigment associé aux diatomée, diminue progressivement entre 2018 et 2022 de manière significative puis retrouve une contribution identique à celle de 2018 (voir figure \ref{fig:violininterannualratiospigmenttotpig}). La contribution du 19'-hexanoyloxyfucoxantine, associée aux haptophytes, est stable entre 2018 et 2022 et augmente légèrement, mais significativement en 2023. Le 19'butanoyloxyfucoxantine diminue faiblement entre 2018 et 2023. On n'observe pas de tendance claire et significative pour les autres pigments.
+	Concernant la Chlorophylle-a, sa concentration diminue significativement entre 2018 et 2021 puis se stabilise \ref{fig:violininterannualchlaa}.
+	
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=\textwidth]{images/04_resultats/01_distrib_ftle_nasc_ratio_chla/distrib_ftle_nasc_pig_interannual/violin_interannual_ratios_pigment_totpig}
+			\caption{Distributions interanuelles (2018, 2021, 2022, 2023) estivales (janvier-mars) des contributions des pigments photosynthétiques dans la concentration de pigments photosynthétique totale, estimés à partir de l'algorithme PIGMeANN}
+			\label{fig:violininterannualratiospigmenttotpig}
+		\end{figure}
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.8\textwidth]{images/04_resultats/01_distrib_ftle_nasc_ratio_chla/distrib_ftle_nasc_pig_interannual/violin_interannual_Chla_a}
+			\caption{Distributions interanuelles (2018, 2021, 2022, 2023) estivales (janvier-mars) de la concentration en Chlorophylle-a, estimée par l'algorithme PIGMeANN}
+			\label{fig:violininterannualchlaa}
+		\end{figure}
+		
+		Sur les années 2018, 2021, 2022, 2023, en période estivale et dans la région étudiée, on n'observe donc pas de tendances claire et significative d'augmentation ou de diminution de la contribution d'un groupe phytoplanctonique. Ces observations vont dans le sens de celles émises par Adroli dans sa publication récente \cite{adroli2026} : le secteur indien semble moins impacté par des changements de structuration des communautés phytoplanctoniques que les autres bassins de l'océan austral.
+		
+		
+	\subsection{Finite-Time Lyapunov Exponant}
+		L'hydrodynamisme de la région, plus particulièrement la convergence/divergence des trajectoires de particules d'eau caractérisée par les FTLE diminue légèrement et de manière continue entre 2018 et 2023.
+		
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.7\textwidth]{images/04_resultats/01_distrib_ftle_nasc_ratio_chla/distrib_ftle_nasc_pig_interannual/violin_interannual_FTLE}
+			\caption{Distributions interanuelles (2018, 2021, 2022, 2023) estivales (janvier-mars) des Finite-Tile Lyapunov Exponent (FTLE) calculés à partir des données de courant CMEMS}
+			\label{fig:violininterannualftle}
+		\end{figure}
+	
+	
+	\subsection{NASC}
+	Les biomasses de poissons pélagiques et d'euphausiacés sont caractérisées par acoutique active respectivement à 38 et 120 kHz. La biomasse de poissons pélagiques, sur les transects étudiés, augmente significativement entre 2018 et 2021 puis se stabilise  (figure \ref{fig:violininterannualnasc38khz}). La biomasse d'Euphausiacés est stable sur toute la période étudiée (figure \ref{fig:violininterannualnasc120khz})
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\textwidth]{images/04_resultats/01_distrib_ftle_nasc_ratio_chla/distrib_ftle_nasc_pig_interannual/violin_interannual_NASC__38_kHz_}
+		\caption[Distribution du NASC (38 kHz) inter-annuelle (2018, 2021, 2022, 2023) estivale (janvier-mars) obtenus lors des campagnes océanographiques OBSAUSTRAL/THEMISTO]{Distribution du NASC inter-annuelle (2018, 2021, 2022, 2023) estivale (janvier-mars) obtenus lors des campagnes océanographiques OBSAUSTRAL/THEMISTO.}
+		\label{fig:violininterannualnasc38khz}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\textwidth]{images/04_resultats/01_distrib_ftle_nasc_ratio_chla/distrib_ftle_nasc_pig_interannual/violin_interannual_NASC__120_kHz_}
+		\caption[Distribution du NASC (120 kHz) inter-annuelle (2018, 2021, 2022, 2023) estivale (janvier-mars) obtenus lors des campagnes océanographiques OBSAUSTRAL/THEMISTO]{Distribution du NASC inter-annuelle (2018, 2021, 2022, 2023) estivale (janvier-mars) obtenus lors des campagnes océanographiques OBSAUSTRAL/THEMISTO.}
+		\label{fig:violininterannualnasc120khz}
+	\end{figure}
+	
+	
+	\section{Communautés phytoplanctoniques de la région d'étude}
+	A partir de la méthode décrite \label{section:pig}, 6 communautés phytoplanctoniques ont été mises en évidence (figure \ref{fig:distributionpigmentscommunauteskmeansk6pftstats}). La communauté 4 est dominée par la contribution de la Zéaxanthine et de la Divinyl Chlorophylle-a, caractéristique des procaryotes picoplanctoniques et des cyanobactéries (voir tableau \ref{tab:pigments}). Les communautés 1, 3, 5 et 6 sont dominées par la contribution de la 19' hexanoyloxyfucoxantine et de la fucoxantine, typiquement associées à des diatomées et des haptophytes, organismes connus pour être en compétition dans cette région \cite{sari2025influence}.
+	Elles diffèrent cependant entre elles (voir figure \ref{fig:distribpigmentsincommunauteskmeansk6pftstats}, Annexe \ref{annexe:distrib_commu_phyto}) par (1) leur intensité de biomasse totale (concentration de chlorophylle-a totale (chla\_total)), les communautés 1, 3, 6 sont associées a de fortes biomasses; (2) leur concentratione en 19' butanoyloxyfucoxantine, élevée dans la communauté 1 et 3; (3) La concentration en Alloxanthine, supérieure dans la communauté 6.
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{images/04_resultats/03_commu_phyto_cluster_pigs/distribution_pigments_communautes_kmeans_k6_PFT_stats}
+		\caption{Distributions de la contribution des pigments (ratios) par cluster (communauté phytoplanctonique).}
+		\label{fig:distributionpigmentscommunauteskmeansk6pftstats}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{images/04_resultats/03_commu_phyto_cluster_pigs/map_purity_communautes_kmeans_k6_PFT}
+		\caption{Communauté dominante et pureté associée : à chaque pixel, le communauté la plus représentée sur toute la période d'étude est illustrée. Selon son taux de présence/absence, un indice de pureté est associé. Plus une couleur est intense, plus la communauté associée est présente de façon consistante à cet endroit.}
+		\label{fig:mappuritycommunauteskmeansk6pft}
+	\end{figure}
+	
+	Les communautés semblent structurées selon la latitude (voir \ref{fig:mappuritycommunauteskmeansk6pft}) et correspondre à certaines masses d'eau identifiées par les FOD : la communauté 4 est présente au Nord de la région, ce qui est cohérent avec les travaux récents qui montrent l'absence de Prochlorococcus (Cyanobactérie) à des latitudes très faibles \cite{Pan2020}, \cite{Johnson2006}. La communauté 6 est présente principalement aux alentours de Kerguelen (Shelf Zone, non décrite par les FOD, zone riche en fer présentants de forts blooms phytoplanctoniques). La communauté 2 est présente à la latitude de 35°S, aux alentours du front subtropical. La communauté 3 est présente plus au Sud et à l'Est, à partir de 60°E et 50°S environ (correspondant au FOD 1). La communauté 1 est présente entre 40 et 45°S (correspondant au FOD 3). La communauté 5 est présente dans plusieurs régions : en dessous du front subtropical ($\approx$ 35°S) et à partir de 45°S, plutôt à l'Ouest de la région.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{"images/04_resultats/03_commu_phyto_cluster_pigs/violin_NASC (38 kHz) par communaute phytoplanctonique par annee"}
+		\caption{Distribution du NASC (38 kHz) par année (2018, 2021, 2022, 2023) et par communauté phytoplanctonique.}
+		\label{fig:violinnasc-38-khz-par-communaute-phytoplanctonique-par-annee}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{"images/04_resultats/03_commu_phyto_cluster_pigs/violin_NASC (120 kHz) par communaute phytoplanctonique par annee"}
+		\caption{Distribution du NASC (120 kHz) par année (2018, 2021, 2022, 2023) et par communauté phytoplanctonique.}
+		\label{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee}
+	\end{figure}
+	
+	Aucune différence significative de biomasse de zooplancton/micronecton n'a été détectée entre les différentes communautés phytoplanctoniques pour chaque année (voir figure \ref{fig:violinnasc-38-khz-par-communaute-phytoplanctonique-par-annee}, \ref{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee}). 
+	
+	\section{Résultats des régressions}
+	
+	\clearpage
+	\chapter{Discussion}
+	euphausiaces pcq consommateurs primaires et donc diminution du biais lié au temps de transfet d'energie suite a un bloom pp
+	
+	0) description des distributions/régionalisation statistiques de significativité 
+	1) importance des vars => coherent avec litterature sur la structuration physique et chaines trophiques de la roi
+	2) performances prédictives dans un contexte de sous echantillonage de cette zone de l'ocean + ds necessité d'informer le monitoring des nti sous chgmts phyto (pk le modele est utile, au vu de ces perfs)
+	3) limites des modèles (bruit gaussien/overfit/biais d'echantillonage, effet latitude etc)
+	4) incertitudes
+	des données : acoustique active(DVM, echantillonage partiel en profondeur, fréquence, bullage, changements de densité, burit electronique, comblage des NAs)
+	phyto (algo de ziad, couverture nuageuse et données manquantes, biais d'echantillonage aussi dcp, nommage commu phyto/pigs)
+	fod +ftle = données modèles : biais (décalage spatial potentiels + lissage des données)
+	
+	5) Approche locale statique vs approche spatio-temporelle dynamique (avec advection) : effet de lag entre bloom et nti connus dans evt mouvant
+	
+	6) perspectives
+	
+	\section{Influence des fréquences}
+	Les NTI sont des poissons pourvu ou non de vessies natatoire \footnote{organe permettant à l'organisme de contrôler sa flottaison}. (mettre dans la partie )
+	
+	\section{Complétion des NAs et influence sur le NASC}
+	
+	\section{FOD : nombre de composante principale, données modèles, non prise en compte des données chimique (fer) et sea ice}
+	
+	\section{définition de communauté phyto à partir des bio-optical water types}
+	however an increase ein chl-a i snot necessarily associated with an increase in biomass, particularly in the iron light co-limited SO where phytoplankton can adjust their cellular chl-a to carbon ratios in response to environemental stresses \cite{thomalla2023Widespread} (pas la ref n°1)
+	beaucoup de valeurs manquantes a cause de couverture nuageuse
+	complétion possible des données avec des méthodes de deep learning 
+	
+	\section{effet du temps sur les corrélations mésoéchelle/phyto/zoo/nti}
+	
+	- : commu phyto/nasc : effet du time gap entre les distributions des deux pouvant masquer les corrélations. On sait qu'un bloom de phyto donne + de biomasse des NTI supérieurs, mais + tard
+	
+	- ftle/phyto/nasc du modèle : critiques 
+	
+	\section{test statistiques : effet du nombre de données et dispersion sur la significativité, tendance vs climate change trend}
+	
+	30-40 years of PP data are necessary to distinguish a climate trend change (pas la ref n°1) \cite{thomalla2023Widespread}
+	
+	\section{Influence sur la prédiction : gradient latitudinal, overfit, déséquilibre de l'échantillonage}
+	gradient latitudinal = hypothèse de stationnarité de 1eret second ordre pas respecté, plots pour analyser cet effet
+	overfit du RS et capacité de transfer learning (spatial nested cv) : plots
+	effet du déséquilibre de l'échantillonage sur les cartes de prédictions
+	Le tuning des hyperparamètres a été réalisé en amont sur l'ensemble du jeu de données, puis les hyperparamètres optimaux ont été appliqués à l'entraînement de chacun des K folds. Cette approche, plus économe en temps de calcul qu'un tuning imbriqué (nested cross-validation), induit un léger optimisme dans les métriques de performance rapportées, les folds de test ayant potentiellement contribué à la sélection des hyperparamètres. L'écart attendu reste toutefois limité, les hyperparamètres capturant des tendances générales plutôt que des particularités locales des données."
+	
+	\section{Choix des variables prédictives, manque de variables}
+	variance, distance geo par fold et capacité prédictives -> hypothèse de manque de variable prédictive
+	
+	\section{Interprétation de l'importance des variables}
+	comment XGB et RF et CART n'ont pas les mêmes algos et comment ça veit en fait dire des choses différentes, méfiance sur l'interprétation, bien se renseigner (lire les articles)
+	
+	\section{Evaluation des performances prédictives du modèle}
+	résistance aux valeurs manquantes
+	résistance au bruit d'échantillonage
+	
+	\clearpage
+	\chapter{Conclusion}
+	
+	\clearpage
+	\chapter{Annexes}
+	\section{Stratification verticale et horizontale des océans}
+	\label{annexe:strat_vert}
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.6\textwidth]{images/01_intro/strat_vertical_el_marine_ecology}
+		\caption{Stratification verticale de l'eau selon la pénétration de la lumière et de la pression, stratification horizontale selon la distance au plateau continental \cite{dipper2022}.}
+		\label{fig:stratverticalelmarineecology}
+	\end{figure}
+	
+	\section{Réponse fréquentielle des organismes pélagiques}
+	\label{annexe:rep_freq}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.7\textwidth]{images/05_annexes/02_materiel/freq_response_organisms_benoit_bird}
+			\caption{Réponse fréquentielle des organismes pélagiques selon la fréquence de l'onde émise \cite{benoitbird2016ecological}}
+			\label{fig:freqresponse}
+		\end{figure}
+		
+	\section{Valeurs manquantes sur le volume de rétropropagation acoustique $S_v$ en fonction de la profondeur et de la fréquence de l'échosondeur}
+	\label{annexe:missing_values}
+		\begin{figure}[H]
+			\centering
+			
+			\begin{subfigure}[b]{0.49\textwidth}
+				\centering
+				\includegraphics[width=\textwidth]{images/05_annexes/02_materiel/nasc_nas_per_depth/38kHz/diag_NA_by_depth_per_esu_38kHz}
+				\caption{Fréquence de 38 kHz}
+				\label{fig:diagnabydepthperesu38khz}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[b]{0.49\textwidth}
+				\centering
+				\includegraphics[width=\textwidth]{images/05_annexes/02_materiel/nasc_nas_per_depth/120kHz/diag_NA_by_depth_per_esu_120kHz}
+				\caption{Fréquence de 120 kHz}
+				\label{fig:diagnabydepthperesu120khz}
+			\end{subfigure}
+			
+			\caption{Valeurs manquantes du coefficient de rétrodiffusion volumique $S_v$ en fonction de la profondeur, pour les fréquences de fonctionnement de l'échosondeur de 38 kHz et 120 kHz.}
+			\label{fig:diagnabydepthperesu}
+		\end{figure}
+	
+	\section{Calcul des FOD}
+	\subsection{Estimation fonctionelle sur des bases de B-splines Estimation semi-paramétrique des profils de température et salinité}
+	
+	\subsubsection{Basis-splines de degré $m$ \cite{deBoor}}
 	Les Basis-splines (B-splines) peuvent servir de base pour l'estimation par projection (estimation semi-paramétrique ou fonctionelle). Ce sont des fonctions à support local pouvant être définies par la récurrence de Cox-de-Boor \cite{deBoor} :
 	\begin{figure}[H]
 		\centering
@@ -574,11 +978,17 @@ urlcolor=black
 	\end{enumerate}
 	
 	
-	\paragraph{Espace des splines et base de B-splines}
+	\subsubsection{Espace des splines et base de B-splines}
 	Soit $\tau = (\tau_1,\ldots,\tau_{2m+L+2})$ une suite de noeuds définie par
 	\begin{equation} \underbrace{a = \tau_1 = \tau_2 = \cdots = \tau_{m+1}}_{m+1 \text{ noeuds répétés en } a} < \underbrace{\tau_{m+2} < \cdots < \tau_{m+L+1}}_{L \text{ noeuds intérieurs}} < \underbrace{\tau_{m+L+2} = \cdots = \tau_{2m+L+2}=b}_{m+1 \text{ noeuds répétés en } b} \end{equation}
 	
-	On note $\mathbb{S}_{m,\tau}$ l'espace des fonctions splines de degré $m$ associées à cette suite de noeuds. Une spline $f\in\mathbb{S}_{m,\tau}$ est une fonction polynomiale par morceaux de degré au plus $m$, définie sur les intervalles délimités par les noeuds $\tau$, et satisfaisant les conditions de continuité imposées par les multiplicités des noeuds (Voir Annexe \ref{section:b_spline})..
+	On note $\mathbb{S}_{m,\tau}$ l'espace des fonctions splines de degré $m$ associées à cette suite de noeuds. Une spline $f\in\mathbb{S}_{m,\tau}$ est une fonction polynomiale par morceaux de degré au plus $m$, définie sur les intervalles délimités par les noeuds $\tau$, et satisfaisant les conditions de continuité imposées par les multiplicités des noeuds \footnote{\begin{itemize}
+			\item Continuité : $\phi_{i, m}(x) \in C^{m-1}$ aux noeuds. Pour une B-spline cubique ($m=3$), $\phi_{i, 3} \in \mathcal{C}^{2}$,
+			\item Support compact : $\text{supp}(\phi_{i,m}) = [\tau_i, \tau_{i+m+1}]$, 
+			donc $\langle \phi_{i,m}, \phi_{j,m} \rangle = 0$ si $|i-j| \geq m+1$.
+			\item Positivité : $\phi_{i,m}(x) > 0$ sur $(\tau_i, \tau_{i+m+1})$ 
+			et $\phi_{i,m}(x) = 0$ sinon.
+	\end{itemize}}.
 	
 	Les B-splines de degré $m$ associées à la suite de noeuds $\tau$, notées $\{\phi_{i,m}\}_{i=1}^{L+m+1}$	constituent une base de l'espace $\mathbb{S}_{m,\tau}$ ($\dim(\mathbb{S}_{m,\tau})=L+m+1$).
 	
@@ -590,7 +1000,7 @@ urlcolor=black
 		}
 	\end{equation}
 	
-	\paragraph{Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) \cite{wand2008}, \cite{eilers1996}}
+	\subsubsection{Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) \cite{wand2008}, \cite{eilers1996}}
 	\label{par:moindres_carres}
 	
 	Appliquons maintenant ce cadre à l'estimation fonctionnelle des profils de température et de salinité. Soit $l$ un indice spatio-temporel (combinaison d'un instant, d'une longitude et d'une latitude) et $v \in {T,S}$ la variable considérée. Le profil brut $\mathbf{v}_l \in \mathbb{R}^{n_{depths}}$ correspond aux valeurs de $v$ issues du modèle Copernicus aux profondeurs discrètes $z_1,\ldots,z_{n_{depths}}$. On suppose que ces observations proviennent de l'évaluation d'une fonction sous-jacente $f_l$ aux profondeurs considérées :
@@ -668,7 +1078,7 @@ urlcolor=black
 		\label{fig:profilbsplinetempsal}
 	\end{figure}
 	
-	\subsubsection{Réduction de dimension par Analyse en Composante Principale}
+	\subsection{Réduction de dimension par Analyse en Composante Principale}
 	
 	Suite à l'estimation fonctionnelle réalisée à l'étape précédente, chaque profil $l$ est désormais représenté par un couple de fonctions de la profondeur, la température et la salinité, estimées sur la même base de B-splines $(\Phi_k)_{1\leq k \leq K}$ définie sur $[d_{min}, d_{max}]$ :
 	\[
@@ -685,7 +1095,7 @@ urlcolor=black
 	
 	Une approche pour réduire la dimension des données est l'analyse par composante principale (ACP ou PCA pour Principal Component Analysis). Puisque les données sont dans un espace fonctionnel $\mathbb{S}_{m,\tau}$, on parle alors d'Analyse par Composante Principale \textit{fonctionnelle} (ACPf ou FPCA). La logique est identique à celle d'une PCA classique mais les outils sont adaptés pour manipuler les fonctions. Ici, la fPCA est réalisée conjointement sur les deux variables, on parle de fPCA bivariée.
 	
-	\paragraph{Construction du vecteur de coefficients bivarié}
+	\subsubsection{Construction du vecteur de coefficients bivarié}
 	Pour chaque profil $l$, on concatène les coefficients de B-spline de température et de salinité en un unique vecteur $\alpha_l \in \mathbb{R}^{2K}$ :
 	\[
 	\alpha_l = \begin{pmatrix} \alpha_l^{T} \\ \alpha_l^{S} \end{pmatrix}, 
@@ -694,7 +1104,7 @@ urlcolor=black
 	\]
 	En empilant les $N$ profils, on obtient la matrice $\alpha \in \mathbb{R}^{N \times 2K}$.
 	
-	\paragraph{Centrage des données}
+	\subsubsection{Centrage des données}
 	Soit $\overline{\alpha} \in \mathbb{R}^{2K}$ la moyenne empirique, sur l'ensemble des $N$ profils, des coefficients de chaque B-spline pour la partie température et pour la partie salinité :
 	\[
 	\overline{\alpha} = \frac{1}{N} \sum_{l=1}^{N} \alpha_l
@@ -711,7 +1121,7 @@ urlcolor=black
 	\in\mathbb{R}^{2K}
 	$$
 	
-	\paragraph{Calcul de la covariance empirique}
+	\subsubsection{Calcul de la covariance empirique}
 	
 	On définit la matrice bivariée de fonctions de base $\boldsymbol{\Phi}(z) \in \mathbb{R}^{2\times 2K}$ comme la concaténation de la base $\Phi$ utilisée pour chacune des deux composantes :
 	
@@ -769,7 +1179,7 @@ urlcolor=black
 	
 	Cette matrice contient à la fois les covariances intra-variables, correspondant aux blocs température--température et salinité--salinité, et les covariances croisées température--salinité.
 	
-	\paragraph{Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}
+	\subsubsection{Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}
 	
 	On effectue la décomposition spectrale de l'opérateur de covariance $\hat{V}$ :
 	\[
@@ -813,7 +1223,7 @@ urlcolor=black
 	\end{align*}
 	La matrice $W^{1/2}\tilde\alpha^\top\tilde\alpha\, W^{1/2}$ est bien symétrique (elle est de la forme $M^\top M$ avec $M = \tilde\alpha W^{1/2}$), ce qui garantit des valeurs propres réelles $\rho$ et des vecteurs propres $u$ orthogonaux. Une fois $u$ obtenu, on retrouve $b = W^{-1/2} u$, puis la fonction propre bivariée $\xi(t) = \boldsymbol{\Phi}^\top(t)\, b$, dont les deux moitiés de $b$ (les $K$ premiers et les $K$ derniers coefficients) donnent respectivement la composante "température" $\xi^T$ et la composante "salinité" $\xi^S$ de la fonction propre.
 	
-	\paragraph{ Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}
+	\subsubsection{ Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}
 	Une fois les fonctions propres bivariées $\xi_j = (\xi_j^T, \xi_j^S)$ et valeurs propres $\rho_j$ calculées, on peut calculer les projections $c_{l,j}$ des profils bivariés centrés $\tilde X_l = (\tilde T_l, \tilde S_l)$ sur l'espace propre. On note $c_{l,j}$ le score du profil $l$ sur la $j$-ème composante principale (commun à la température et à la salinité, puisque la composante principale est bivariée) :
 	\begin{align*}
 		c_{l, j} &= \langle \tilde X_l, \xi_j\rangle \\
@@ -843,200 +1253,9 @@ urlcolor=black
 		\label{fig:profilpcatempsallon45}
 	\end{figure}
 	
-	\subsubsection{Gaussian Model Mixture Clustering}
+	\subsection{Gaussian Model Mixture Clustering}
 	Afin de regrouper les profils de température et salinité similaires et identifier des Domaines Océanographiques Fonctionnels, on effectue un GMM clustering sur la matrice des coefficients réduite $c$ obtenue à l'étape précédente. Le fonctionnement de la méthode ne sera pas développée ici, se référer a \cite{bishop2006pattern} pour une explication. Le GMM clustering a été implémenté avec le package mclust \cite{scrucca2016mclust}, \cite{fraley2002mclust} disponible sous R. Le modèle le plus flexible (model="VVV") a été utilisé, permettant un ajustement des ellipsoïde non contraint en volume, orientation et forme, celà au prix d'une augmentation du nombre d'hyperparamètres. Avec les précédents travaux réalisés par Fonvieille N. et Molinet M. \cite{fonvieille2024}, \cite{molinetLinkingOceanographic}, la recherche d'une nombre de cluster a été restreinte entre 4 et 6 clusters, réduisant ainsi le coût computationnel. Les clusters ont été définis lorsque la probabilité d'appartenance à un cluster était suppérieur au seuil fixé à 0.75. Des classes de transitions ont été créées en fonction des deux clusters ayant une probabilité d'appartenance maximale. 
-	Sont obtenus 13 clusters distincts : 6 clusters de FOD et 7 clusters de dits de "transitions" \footnote{La classe "NA" correspond aux clusters manquants sur le plateau de Kerguelen. Les profils de température et salinité allant de 20 à 500m, sont retirés des calculs tout profils ayant des données manquantes entre ces deux valeurs. Les zones où la bathymétrie est inférieure à 500m sont donc exclues de ces calculs.} (voir figure \ref{label}). 
-	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=\textwidth]{images/03_methodology/comparaison_dof_map}
-		\caption{(a) Carte du secteur Indien de l'Océan Austral et des courants \cite{shetye2013} (b) Carte des Domaines Océanographiques Fonctionnels du 2023-01-26 générée par la méthode développée par Fonvieille N. et Nerini D. \cite{fonvieille2024}. Identification du Front Polaire (FP, cluster T2-3), du Front Subantarctique (SAF, cluster T3-4) et du Front Subtropical (STF, clusters T4-5 et T4-6)}
-		\label{fig:comparaisondofmap}
-	\end{figure}
-	
-	Les FOD correspondent alors à des masses d'eau ayant des propriétés thermohalines similaires et permettent de visualiser l'hydrodynamisme de la région (tourbillons emprisonnant les masses d'eau dans leurs coeur, filaments, fronts), voir figure \ref{fig:comparaisondofmap}.
-		
-	\subsection{Colocalisation NASC/PIG/FTLE/FOD}
-	Afin d'étudier la relation entre la distribution des organismes détectés acoustiquement (NASC), la dynamique de surface, les conditions hydrologiques et l'activité phytoplanctonique; les données de NASC ont été colocalisées avec lese \textit{Finite-Time Lyapunov Exponents} (FTLE), les \textit{concentration pigmentaire} (PIGMeANN) et les \textit{Domaine Océanographique Fonctionnel }(FOD).
-	
-	Le jeu de données d'acoustique active contient, pour chaque unité élémentaire d'échantillonnage (ESU), la date et l'heure d'acquisition, ses coordonnées géographiques (latitude et longitude) et la valeur de NASC associée (calculée à partir du volume de rétropropagation $S_v$).
-	
-	Les données environnementales sont fournies sous la forme de grilles spatiales, principalement organisées en fichiers NetCDF journaliers. Pour chaque fréquence acoustique considérée (38 et 120 kHz), les dates présentes dans le jeu de données acoustique sont identifiées. Pour chacune de ces dates, les données environnementales correspondantes sont recherchées et chargées afin d'être associées aux observations acoustiques.
-	
-	La colocalisation repose sur une correspondance temporelle à l'échelle journalière et sur une association spatiale par la méthode du plus proche voisin. Pour chaque ESU, ses coordonnées géographiques sont comparées aux coordonnées de la grille spatiale de chacune des variables environnementales. Le pixel dont les coordonnées sont les plus proches de celles de l'ESU est alors sélectionné. Cette recherche est effectuée indépendamment selon les dimensions de latitude et de longitude :
 
-	\begin{equation}
-		i_{\mathrm{lon}} =
-		\underset{i}{\operatorname{argmin}}
-		\left|
-		\mathrm{lon}_{X,i} -
-		\mathrm{lon}_{\mathrm{ESU}}
-		\right|
-	\end{equation}
-	
-	et
-	
-	\begin{equation}
-		i_{\mathrm{lat}} =
-		\underset{i}{\operatorname{argmin}}
-		\left|
-		\mathrm{lat}_{X,i} -
-		\mathrm{lat}_{\mathrm{ESU}}
-		\right|
-	\end{equation}
-
-	
-	
-	où $\mathrm{lon}_{X,i}$ et $\mathrm{lat}_{X,i}$ correspondent respectivement aux coordonnées de longitude et de latitude de la grille de la variable environnementale $X$ considérée.
-	
-	La valeur environnementale associée à chaque ESU est ensuite extraite au niveau du pixel correspondant aux indices sélectionnés :
-	\begin{equation}
-		X(i_{\mathrm{lon}},i_{\mathrm{lat}}),
-	\end{equation}
-	
-	où $X$ représente l'une des variables environnementales considérées (FTLE, PIGMeANN ou FOD).
-	
-	Cette procédure est appliquée indépendamment à chaque variable environnementale. Les données finales permettent ainsi d'associer, à chaque ESU acoustique, sa position géographique, sa date d'acquisition, sa valeur de NASC ainsi que les valeurs des différentes variables environnementales correspondantes (FTLE, PIGMeANN et FOD). Ce jeu de données colocalisé constitue la base des analyses par machine learning visant à étudier les relations entre la distribution acoustique des organismes et les caractéristiques de leur environnement.
-	
-	\section{Arbres de Régression}
-	"Depending on the problem, the basic purpose of a classification/regression study can be either to produce an accurate classifier or to uncover the predictive structure of the problem." (classif. and regression trees p.6)
-	Notre objectif ici est chercher à connaître la prédictibilié du NASC en fonction de la structure des communautés phytoplanctoniques, en lien avec l'activité de mésoéchelle. The goal is to understand the structural relationship between  the response and the measured variables. (p.221)
-	
-	\subsection{CART}
-	\subsubsection{Description du modèle}
-	\subsubsection{Importance des variables}
-	\subsubsection{Compromis biais-variance}
-	
-	\subsection{Random Forest}
-	\subsubsection{Description du modèle}
-	\subsubsection{Importance des variables}
-	\subsubsection{Compromis biais-variance}
-	
-	\subsection{Extreme Gradient Boosting}
-	\subsubsection{Description du modèle}
-	\subsubsection{Importance des variables}
-	\subsubsection{Compromis biais-variance}
-	
-	\subsection{Tuning, entraînement, validation et prédiction}
-	
-	\clearpage
-	\chapter{Résultats}
-	\section{distrib interanuelles générales}
-	description des distribs de ftle nasc et pigs au global
-	
-	\section{FOD}
-	Description des caractéristiques des masses d'eau(profil T/S moyen) et mise en relation avec leur propriétés physico-chimique potentielles, la provenance de l'eau etc
-	mise en lien des FOD avec la structuration couremment utilisée du SO (Tréguer et Jacques 1992 et Sullivan et al 1998 : SAZ, SSIZ, MIZ, CZ (climate drivers of SO, Krumhardt2022))
-	
-	Description des conentrations de pigments par fod, est ce qu'il y a des tendances ? déplacement des communauté phyto ? 
-	NASC par fod 
-	ftle par fod
-	
-	\section{Cluster de pigments}
-	Description des classes de pigments 
-	identification des communautés phyto selon la ref de Ziad (Influence of the phyto community nature 2025)
-	Description des tendances interanuelle en terme de concentration
-	Description de la régionalisation des cluster de pigs et des fod (intersection entre les 2 ?)
-	déplacement des communauté phyto ? (distrib des fod par an par cluster)
-	Description du NASC par cluster de pigment
-	
-	\section{Résultats des régressions}
-	
-	\clearpage
-	\chapter{Discussion}
-	\section{Influence des fréquences}
-	Les NTI sont des poissons pourvu ou non de vessies natatoire \footnote{organe permettant à l'organisme de contrôler sa flottaison}. (mettre dans la partie )
-	
-	\section{Complétion des NAs et influence sur le NASC}
-	
-	\section{FOD : nombre de composante principale, données modèles, non prise en compte des données chimique (fer) et sea ice}
-	
-	\section{définition de communauté phyto à partir des bio-optical water types}
-	however an increase ein chl-a i snot necessarily associated with an increase in biomass, particularly in the iron light co-limited SO where phytoplankton can adjust their cellular chl-a to carbon ratios in response to environemental stresses \cite{thomalla2023Widespread} (pas la ref n°1)
-	beaucoup de valeurs manquantes a cause de couverture nuageuse
-	complétion possible des données avec des méthodes de deep learning 
-	
-	\section{effet du temps sur les corrélations mésoéchelle/phyto/zoo/nti}
-	
-	- : commu phyto/nasc : effet du time gap entre les distributions des deux pouvant masquer les corrélations. On sait qu'un bloom de phyto donne + de biomasse des NTI supérieurs, mais + tard
-	
-	- ftle/phyto/nasc du modèle : critiques 
-	
-	\section{test statistiques : effet du nombre de données et dispersion sur la significativité, tendance vs climate change trend}
-	
-	30-40 years of PP data are necessary to distinguish a climate trend change (pas la ref n°1) \cite{thomalla2023Widespread}
-	
-	\section{Influence sur la prédiction : gradient latitudinal, overfit, déséquilibre de l'échantillonage}
-	gradient latitudinal = hypothèse de stationnarité de 1eret second ordre pas respecté, plots pour analyser cet effet
-	overfit du RS et capacité de transfer learning (spatial nested cv) : plots
-	effet du déséquilibre de l'échantillonage sur les cartes de prédictions
-	
-	\section{Choix des variables prédictives, manque de variables}
-	variance, distance geo par fold et capacité prédictives -> hypothèse de manque de variable prédictive
-	
-	\section{Interprétation de l'importance des variables}
-	comment XGB et RF et CART n'ont pas les mêmes algos et comment ça veit en fait dire des choses différentes, méfiance sur l'interprétation, bien se renseigner (lire les articles)
-	
-	\section{Evaluation des performances prédictives du modèle}
-	résistance aux valeurs manquantes
-	résistance au bruit d'échantillonage
-	
-	\clearpage
-	\chapter{Conclusion}
-	
-	\clearpage
-	\chapter{Annexes}
-	\section{Stratification verticale et horizontale des océans}
-	\label{annexe:strat_vert}
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.6\textwidth]{images/01_intro/strat_vertical_el_marine_ecology}
-		\caption{Stratification verticale de l'eau selon la pénétration de la lumière et de la pression, stratification horizontale selon la distance au plateau continental \cite{dipper2022}.}
-		\label{fig:stratverticalelmarineecology}
-	\end{figure}
-	
-	\section{Réponse fréquentielle des organismes pélagiques}
-	\label{annexe:rep_freq}
-		\begin{figure}[H]
-			\centering
-			\includegraphics[width=0.7\textwidth]{images/05_annexes/02_materiel/freq_response_organisms_benoit_bird}
-			\caption{Réponse fréquentielle des organismes pélagiques selon la fréquence de l'onde émise \cite{benoitbird2016ecological}}
-			\label{fig:freqresponse}
-		\end{figure}
-		
-	\section{Valeurs manquantes sur le volume de rétropropagation acoustique $S_v$ en fonction de la profondeur et de la fréquence de l'échosondeur}
-	\label{annexe:missing_values}
-		\begin{figure}[H]
-			\centering
-			
-			\begin{subfigure}[b]{0.49\textwidth}
-				\centering
-				\includegraphics[width=\textwidth]{images/05_annexes/02_materiel/nasc_nas_per_depth/38kHz/diag_NA_by_depth_per_esu_38kHz}
-				\caption{Fréquence de 38 kHz}
-				\label{fig:diagnabydepthperesu38khz}
-			\end{subfigure}
-			\hfill
-			\begin{subfigure}[b]{0.49\textwidth}
-				\centering
-				\includegraphics[width=\textwidth]{images/05_annexes/02_materiel/nasc_nas_per_depth/120kHz/diag_NA_by_depth_per_esu_120kHz}
-				\caption{Fréquence de 120 kHz}
-				\label{fig:diagnabydepthperesu120khz}
-			\end{subfigure}
-			
-			\caption{Valeurs manquantes du coefficient de rétrodiffusion volumique $S_v$ en fonction de la profondeur, pour les fréquences de fonctionnement de l'échosondeur de 38 kHz et 120 kHz.}
-			\label{fig:diagnabydepthperesu}
-		\end{figure}
-	
-	\section{Propriétés des B-Splines de degré $m$ : Support, positivité et régularité}
-	\label{section:b_spline}
-	La B-spline $\phi_{i, m}(x)$ est un polynôme par morceau de degré $m$ (et d'ordre $m+1$) avec des points de rupture (noeuds) $\tau_i, \ldots, \tau_{i+m+1}$ et les propriétés suivantes :
-	\begin{itemize}
-		\item Continuité : $\phi_{i, m}(x) \in C^{m-1}$ aux noeuds (les dérivées jusqu'à l'ordre $m-1$ sont continues sur les noeuds). Pour une B-spline cubique ($m=3$), $\phi_{i, 3} \in \mathcal{C}^{2}$,
-		\item Support compact : $\text{supp}(\phi_{i,m}) = [\tau_i, \tau_{i+m+1}]$, 
-		donc $\langle \phi_{i,m}, \phi_{j,m} \rangle = 0$ si $|i-j| \geq m+1$.
-		\item Positivité : $\phi_{i,m}(x) > 0$ sur $(\tau_i, \tau_{i+m+1})$ 
-		et $\phi_{i,m}(x) = 0$ sinon.
-	\end{itemize}
 	
 	\section{Influence du nombre de composantes principales sur la reconstruction des profils de température et salinité}
 	\label{annexe:methode_fod}
@@ -1091,6 +1310,147 @@ urlcolor=black
 		\label{fig:profilpcatempsalcompare}
 	\end{figure}
 	
+	
+	\section{Clustering des données pigmentaires}
+	\label{annexe : cluster_pig}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.8\textwidth]{images/05_annexes/04_resultats/comu_phyto_cluster_pigs/explained_var}
+			\caption{Histogramme de la variance expliquée par composante principale (triées par ordre décroissantes)}
+			\label{fig:explainedvarpig}
+		\end{figure}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=0.6\textwidth]{images/05_annexes/04_resultats/comu_phyto_cluster_pigs/elbow_method_kmeans}
+			\caption{Méthode du coude (Elbow method) : inertie intra-classe (somme des carrés intra-cluster) en fonction du nombre de cluster.}
+			\label{fig:elbowmethodkmeans}
+		\end{figure}
+		
+	\section{Choix du modèle de validation croisée}
+	\label{annexe:choix_valid_croisee_autocorr}
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_chla}
+		\caption{Diagnostique d'autocorrelation spatio-temporelle de la chlorophylle-a sur l'ensemble de la ROI et des années d'étude (2018, 2021, 2022, 2023, janvier-mars)}
+		\label{fig:diagautocorrelationspatiotempchla}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_lat_lon_tous_pigments}
+		\caption{Diagnostique d'autocorrelation spatio-temporelle de l'ensemble des pigments photosynthétiques, sur toute la ROI et sur toutes les années d'étude (2018, 2021, 2022, 2023, janvier-mars)}
+		\label{fig:diagautocorrelationlatlontouspigments}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_Sv_18kHz_day}
+		\caption{Diagnostique d'autocorrelation spatio-temporelle du NASC (38kHz, jour) sur l'ensemble des transects (2018, 2021, 2022, 2023, janvier-mars)}
+		\label{fig:diagautocorrelationspatiotempsv18khzday}
+	\end{figure}
+	\begin{figure}
+		\centering
+		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_Sv_120kHz_day}
+		\caption{Diagnostique d'autocorrelation spatio-temporelle du NASC (120kHz, jour) sur l'ensemble des transects (2018, 2021, 2022, 2023, janvier-mars)}
+		\label{fig:diagautocorrelationspatiotempsv120khzday}
+	\end{figure}
+	
+	\section{Résultats de tuning des modèles}
+	\label{annexe:tuning_res}
+	faire un tableau et mettre les graphiques de tuning générés
+	
+	\section{Distribution des variables environnementales et du NASC par FOD}
+		\begin{figure}[p]
+			\centering
+			
+			% --- Rangée 1 ---
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_allo_totpig}
+				\caption{Alloxanthine / $\Sigma$pigments}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_but_totpig}
+				\caption{19'-Butanoyloxyfucoxanthine / $\Sigma$pigments}
+			\end{subfigure}
+			
+			\vfill
+			
+			% --- Rangée 2 ---
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_chlb_totpig}
+				\caption{Chlorophylle b / $\Sigma$pigments}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_dvchla_totpig}
+				\caption{Divinyl-chlorophylle a / $\Sigma$pigments}
+			\end{subfigure}
+			
+			\vfill
+			
+			% --- Rangée 3 ---
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_fuco_totpig}
+				\caption{Fucoxanthine / $\Sigma$pigments}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_hex_totpig}
+				\caption{19'-Hexanoyloxyfucoxanthine / $\Sigma$pigments}
+			\end{subfigure}
+			
+			\caption[Distributions inter-annuelles au sein des clusters FOD]{Distributions inter-annuelles (2018, 2021, 2022, 2023) des variables pigmentaires, du FTLE et acoustiques au sein des clusters FOD obtenus lors des campagnes océanographiques OBSAUSTRAL/THEMISTO. Les variables pigmentaires sont exprimées comme le rapport de chaque pigment accessoire à la somme des pigments (hors chlorophylle a).}
+			\label{fig:annexe_violins_all}
+		\end{figure}
+		
+		\begin{figure}[p]
+			\ContinuedFloat
+			\centering
+			
+			% --- Rangée 1 ---
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_per_totpig}
+				\caption{Péridinine / $\Sigma$pigments}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_zea_totpig}
+				\caption{Zéaxanthine / $\Sigma$pigments}
+			\end{subfigure}
+			
+			\vfill
+			
+			% --- Rangée 2 ---
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_FTLE}
+				\caption{FTLE}
+			\end{subfigure}
+			\hfill
+			\begin{subfigure}[t]{0.48\textwidth}
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_NASC__38_kHz_}
+				\caption{NASC 38 kHz}
+			\end{subfigure}
+			
+			\vfill
+			
+			% --- Rangée 3 (1 seule image) ---
+			\begin{subfigure}[t]{0.48\textwidth}
+				\centering
+				\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/distrib_ftle_nasc_pig_per_fod/violin_NASC__120_kHz_}
+				\caption{NASC 120 kHz}
+			\end{subfigure}
+			
+			\caption[Distributions inter-annuelles au sein des clusters FOD]{Distributions inter-annuelles (suite) : variables pigmentaires, FTLE et acoustiques au sein des clusters FOD.}
+		\end{figure}
+		
+	\section{Distribution des concentrations pigmentaires par communauté phytoplanctonique}
+	\label{annexe:distrib_commu_phyto}
+		\begin{figure}[H]
+			\centering
+			\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/comu_phyto_cluster_pigs/distrib_pigments_in_communautes_kmeans_k6_PFT_stats}
+			\caption{Distribution des contribution de pigments par communauté phytoplanctonique.}
+			\label{fig:distribpigmentsincommunauteskmeansk6pftstats}
+		\end{figure}
+		
 	\clearpage
 	\chapter*{Liste d'abbréviations}
 	lon : Longitude
