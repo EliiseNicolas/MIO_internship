@@ -60,13 +60,17 @@ load_basemap_sf <- function(force_refresh = FALSE) {
   }
   suppressPackageStartupMessages(library(sf))  # necessaire pour que geom_sf() dispatche correctement
 
-  bbox_sf <- sf::st_as_sfc(sf::st_bbox(
-    c(xmin = BASEMAP_BBOX["xmin"], xmax = BASEMAP_BBOX["xmax"],
-      ymin = BASEMAP_BBOX["ymin"], ymax = BASEMAP_BBOX["ymax"]),
-    crs = 4326
-  ))
-
   land <- tryCatch({
+    # bbox construite avec [[ ]] (valeur scalaire "nue") plutot que [ ]
+    # (qui garde le nom "xmin" et provoquait un nom compose "xmin.xmin"
+    # une fois passe dans c(xmin = ...) -- st_bbox() ne reconnaissait
+    # alors plus les noms attendus, d'ou l'erreur "!anyNA(x) n'est pas
+    # TRUE" en aval).
+    bbox_sf <- sf::st_as_sfc(sf::st_bbox(c(
+      xmin = BASEMAP_BBOX[["xmin"]], ymin = BASEMAP_BBOX[["ymin"]],
+      xmax = BASEMAP_BBOX[["xmax"]], ymax = BASEMAP_BBOX[["ymax"]]
+    ), crs = sf::st_crs(4326)))
+
     cat("Fond de carte : chargement des polygones de pays (donnees locales, pas de reseau)...\n")
     countries <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
 
