@@ -56,9 +56,10 @@ TARGET_DATE_SINGLE <- as.Date("2023-01-26")
 # normalisés dans le fichier et les noms utilisés dans COVARIATES_NUM
 # (voir plus bas) -- PAS de formule à deviner, ces champs sont déjà
 # calculés dans le fichier source.
+# NB : Chla_totpig retirée de la structure de données (mise à jour du
+# jeu de données) -- plus dans cette table ni dans COVARIATES_NUM.
 MULTIDATE_PIG_NAME_MAP <- c(
   chla_total    = "Chla_total",
-  chla_totpig   = "Chla_totpig",
   per_totpig    = "Per_totpig",
   but_totpig    = "But_totpig",
   fuco_totpig   = "Fuco_totpig",
@@ -80,15 +81,17 @@ path_out <- function(...) file.path(OUTPUT_ROOT, ...)
 # plus besoin de calculer des ratios à la main.
 #   - ftle              : directement dans la table
 #   - fod               : facteur (chaîne "NA" à convertir en NA)
-#   - Chla_total        : Chla normalisé (variable distincte de Chla_totpig)
-#   - <pigment>_totpig  : chaque pigment normalisé par le pigment total
-#     (Chla_totpig, Per_totpig, But_totpig, Fuco_totpig, Hex_totpig,
-#      Allo_totpig, Zea_totpig, Chlb_totpig, DvChla_totpig)
+#   - Chla_total        : Chla normalisé
+#   - <pigment>_totpig  : chaque pigment (SAUF Chla) normalisé par le
+#     pigment total (Per_totpig, But_totpig, Fuco_totpig, Hex_totpig,
+#     Allo_totpig, Zea_totpig, Chlb_totpig, DvChla_totpig) --
+#     Chla_totpig RETIREE (mise à jour de la structure de données, ne
+#     figure plus dans le jeu de données source)
 RESPONSE_VAR   <- "NASC"   # construit à partir de la colonne source `nasc` (log10)
 
 COVARIATES_NUM <- c(
   "ftle", "Chla_total",
-  "Chla_totpig", "Per_totpig", "But_totpig", "Fuco_totpig",
+  "Per_totpig", "But_totpig", "Fuco_totpig",
   "Hex_totpig", "Allo_totpig", "Zea_totpig", "Chlb_totpig", "DvChla_totpig"
 )
 COVARIATES_ALL <- c(COVARIATES_NUM, "fod")
@@ -153,6 +156,22 @@ NAIVE_CV_METHOD <- "monte_carlo"
 #     gammes de NASC différentes -- à envisager si les plots "global"
 #     donnent l'impression qu'une fréquence "écrase" l'autre visuellement.
 SHARED_SCALE_SCOPE <- "global"
+
+# ---- Colorbar des cartes de prédiction NASC : override manuel par fréquence ----
+# Par défaut (NULL), la colorbar est calculée automatiquement (union de
+# la plage NASC observée à l'entraînement et de la plage prédite --
+# cf. 12_/13_/14_run_*.R). Renseigne une fréquence ici pour FORCER une
+# plage fixe à la place (ex. si l'échelle auto-calculée n'est pas
+# adaptée pour une fréquence donnée).
+PREDICTION_COLOR_LIMITS_OVERRIDE <- list(
+  "38"  = NULL,
+  "120" = c(0, 3)
+)
+
+get_prediction_color_limits <- function(freq, auto_limits) {
+  override <- PREDICTION_COLOR_LIMITS_OVERRIDE[[as.character(freq)]]
+  if (!is.null(override)) override else auto_limits
+}
 
 # ---- Prédiction sur la grille multi-date (133 jours) ------------------------
 # 133 dates x plusieurs schémas x 2 modèles peut vite représenter des

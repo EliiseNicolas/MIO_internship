@@ -36,10 +36,13 @@ source("R/01_data_prep.R")
 source("R/02_folds.R")
 source("R/03_models.R")
 source("R/05_plots.R")
+source("R/10_basemap.R")
 
 training_dir <- path_out("training")
 out_root     <- path_out("predictions_multidate")
 dir.create(out_root, showWarnings = FALSE, recursive = TRUE)
+
+basemap <- load_basemap_sf()  # NULL si sf/rnaturalearth absents -- cartes sans fond dans ce cas
 
 # Chargée UNE SEULE fois (fichier potentiellement volumineux, identique
 # pour toutes les fréquences)
@@ -67,7 +70,7 @@ for (freq in FREQS) {
 
   prep_xgb   <- load_and_clean(freq, drop_na_numeric = FALSE)  # juste pour fod_levels
   fod_levels <- prep_xgb$fod_levels
-  lims       <- shared_limits[[as.character(freq)]]
+  lims       <- get_prediction_color_limits(freq, shared_limits[[as.character(freq)]])
 
   cat(sprintf("Grille multi-date : %d dates, %d x %d pixels\n",
               n_dates, length(day_ds$lon), length(day_ds$lat)))
@@ -105,10 +108,10 @@ for (freq in FREQS) {
         grid_rf$NASC_pred <- rowMeans(preds_rf)
 
         p_rf <- plot_prediction_map(
-          grid_rf, title = paste0("NASC predit - RF - ", format(extracted$date, "%Y-%m-%d")),
+          grid_rf, title = "NASC predit - RF",
           subtitle = sprintf("%d kHz - %s - %d/%d pixels complets", freq, scheme_name,
                               nrow(grid_rf), nrow(grid_all)),
-          limits = lims
+          limits = lims, basemap = basemap, date_label = format(extracted$date, "%Y-%m-%d")
         )
         ggsave(file.path(out_dir, sprintf("rf_%s.png", date_str)), p_rf, width = 7, height = 5, dpi = 100)
 
@@ -122,9 +125,9 @@ for (freq in FREQS) {
         grid_xgb$NASC_pred <- rowMeans(preds_xgb)
 
         p_xgb <- plot_prediction_map(
-          grid_xgb, title = paste0("NASC predit - XGB (avec NA) - ", format(extracted$date, "%Y-%m-%d")),
+          grid_xgb, title = "NASC predit - XGB (avec NA)",
           subtitle = sprintf("%d kHz - %s", freq, scheme_name),
-          limits = lims
+          limits = lims, basemap = basemap, date_label = format(extracted$date, "%Y-%m-%d")
         )
         ggsave(file.path(out_dir, sprintf("xgb_%s.png", date_str)), p_xgb, width = 7, height = 5, dpi = 100)
 

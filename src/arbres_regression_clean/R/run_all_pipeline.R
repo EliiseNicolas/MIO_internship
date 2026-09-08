@@ -19,7 +19,7 @@
 # ETAPES A EXECUTER (mettre à FALSE pour sauter une étape déjà faite)
 # ---------------------------------------------------------------------
 RUN_TUNING               <- FALSE  # 10_run_tuning.R -- deja fait, on saute
-RUN_TRAINING             <- TRUE   # 11_run_training.R
+RUN_TRAINING             <- FALSE   # 11_run_training.R
 RUN_PREDICTION_SINGLE    <- TRUE   # 12_run_grid_prediction.R      (1 date)
 RUN_PREDICTION_MULTIDATE <- TRUE   # 13_run_grid_prediction_multidate.R (133 dates -- LONG)
 RUN_RFSRC_RECONSTRUCTION <- TRUE   # 14_run_rfsrc_reconstruction.R
@@ -28,6 +28,8 @@ RUN_CROSS_SCHEME_ANALYSIS <- TRUE  # 16_run_cross_scheme_analysis.R (importance/
 RUN_MAP_COMPARISON       <- TRUE   # 17_run_map_comparison.R (necessite 12_ ET 14_ deja lances)
 RUN_NOISE_ROBUSTNESS_TEST <- TRUE  # 18_run_noise_robustness_test.R (robustesse au bruit gaussien)
 RUN_VARIOGRAM_ANALYSIS   <- TRUE   # 19_run_variogram_analysis.R (variogrammes, aide au choix des buffers)
+RUN_REGULARIZATION_STRESS_TEST <- TRUE  # 20_run_regularization_stress_test.R (sur-regularise ou plafond d'info ?)
+RUN_MONTHLY_COMPOSITE    <- TRUE   # 21_run_monthly_composite.R (moyenne + purete mensuelle)
 
 # ---------------------------------------------------------------------
 # Utilitaires de log
@@ -135,6 +137,22 @@ run_step(RUN_NOISE_ROBUSTNESS_TEST, "R/18_run_noise_robustness_test.R", "SCRIPT 
 # RUN_VARIOGRAM_ANALYSIS n'a besoin d'aucun modele ni tuning -- calcul
 # purement descriptif sur les donnees d'entrainement, independant.
 run_step(RUN_VARIOGRAM_ANALYSIS, "R/19_run_variogram_analysis.R", "SCRIPT 9 - Variogrammes empiriques")
+
+# RUN_REGULARIZATION_STRESS_TEST a besoin des memes fichiers de tuning
+# que RUN_TRANSFER_TUNING_TEST -- meme verification.
+if (RUN_REGULARIZATION_STRESS_TEST && n_tuning_found < n_tuning_expected) {
+  stop(
+    "Fichiers de tuning incomplets -- lance 10_run_tuning.R avant ",
+    "20_run_regularization_stress_test.R."
+  )
+}
+run_step(RUN_REGULARIZATION_STRESS_TEST, "R/20_run_regularization_stress_test.R", "SCRIPT 10 - Stress-test regularisation")
+
+# RUN_MONTHLY_COMPOSITE a besoin des modeles XGB entraines (11_).
+if (RUN_MONTHLY_COMPOSITE && !dir.exists("outputs_pipeline/training")) {
+  stop("Aucun modele entraine trouve -- lance 11_run_training.R avant 21_run_monthly_composite.R.")
+}
+run_step(RUN_MONTHLY_COMPOSITE, "R/21_run_monthly_composite.R", "SCRIPT 11 - Composite mensuel (moyenne + purete)")
 
 # ---------------------------------------------------------------------
 # Bilan final

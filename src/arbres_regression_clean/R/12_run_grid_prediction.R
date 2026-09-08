@@ -39,10 +39,13 @@ source("R/01_data_prep.R")
 source("R/02_folds.R")
 source("R/03_models.R")
 source("R/05_plots.R")
+source("R/10_basemap.R")
 
 training_dir  <- path_out("training")
 prediction_dir <- path_out("predictions")
 dir.create(prediction_dir, showWarnings = FALSE, recursive = TRUE)
+
+basemap <- load_basemap_sf()  # NULL si sf/rnaturalearth absents -- cartes sans fond dans ce cas
 
 MODEL_SCHEMES <- c("naive_RS_80_20",
                    paste0("blocked_spatial_", map_chr(SPATIAL_RESOLUTIONS, "label")),
@@ -107,7 +110,9 @@ for (freq in FREQS) {
       plot_jobs[[length(plot_jobs) + 1]] <- list(
         type = "single", layer_id = layer_rf, out_dir = out_dir, filename = "rf_prediction_map_no_NA.png",
         title = "NASC predit - RF (moyenne 10 folds)",
-        subtitle = paste0(label_base, " -- ", nrow(grid_rf), "/", nrow(grid_all), " pixels (complets uniquement)")
+        subtitle = sprintf("%d kHz - %s -- %d/%d pixels (complets uniquement)",
+                            freq, scheme_name, nrow(grid_rf), nrow(grid_all)),
+        date_label = date_label
       )
     } else {
       cat("  [!] modele RF introuvable pour", scheme_name, "-- avez-vous lance 11_run_training.R ?\n")
@@ -134,7 +139,8 @@ for (freq in FREQS) {
         type = "xgb_combo", layer_id_all = layer_all, layer_id_clean = layer_clean,
         out_dir = out_dir, filename = "xgb_prediction_map_with_and_without_NA.png",
         n_all = nrow(grid_xgb_all), n_clean = nrow(grid_xgb_clean),
-        title = paste("NASC predit - XGB (moyenne 10 folds) -", label_base)
+        title = sprintf("NASC predit - XGB (moyenne 10 folds) - %d kHz - %s", freq, scheme_name),
+        date_label = date_label
       )
     } else {
       cat("  [!] modele XGB introuvable pour", scheme_name, "-- avez-vous lance 11_run_training.R ?\n")
@@ -168,14 +174,15 @@ if (SHARED_SCALE_SCOPE == "per_freq") {
   limits_by_scope <- list(ALL = compute_shared_limits(FREQS))
 }
 
-get_limits_for_freq <- function(f) limits_by_scope[[scope_key_freq(f)]]
+get_limits_for_freq <- function(f) get_prediction_color_limits(f, limits_by_scope[[scope_key_freq(f)]])
 
 for (job in plot_jobs) {
 
   if (job$type == "single") {
     grid_df <- all_predictions[[job$layer_id]]
     lims <- get_limits_for_freq(grid_df$freq[1])
-    p <- plot_prediction_map(grid_df, title = job$title, subtitle = job$subtitle, limits = lims)
+    p <- plot_prediction_map(grid_df, title = job$title, subtitle = job$subtitle, limits = lims,
+                              basemap = basemap, date_label = job$date_label)
     ggsave(file.path(job$out_dir, job$filename), p, width = 8, height = 6, dpi = 150)
     cat("  ->", file.path(job$out_dir, job$filename), "\n")
 
@@ -185,9 +192,11 @@ for (job in plot_jobs) {
     lims <- get_limits_for_freq(grid_all_j$freq[1])
 
     p_all <- plot_prediction_map(grid_all_j, title = "Avec NA (XGBoost gere le manquant)",
-                                  subtitle = paste0(job$n_all, " pixels predits"), limits = lims)
+                                  subtitle = paste0(job$n_all, " pixels predits"), limits = lims,
+                                  basemap = basemap, date_label = job$date_label)
     p_clean <- plot_prediction_map(grid_clean_j, title = "Sans NA (pixels complets uniquement)",
-                                    subtitle = paste0(job$n_clean, " pixels predits"), limits = lims)
+                                    subtitle = paste0(job$n_clean, " pixels predits"), limits = lims,
+                                    basemap = basemap, date_label = job$date_label)
     p_combo <- (p_all + p_clean) +
       plot_annotation(title = job$title,
                        subtitle = "Comparaison : gestion native des NA (XGBoost) vs filtrage strict")
@@ -208,7 +217,7 @@ if (nrow(predictions_all) > 0) {
       coord_quickmap() +
       facet_grid(model ~ scheme) +
       theme_bw() +
-      labs(title = paste0("NASC predit -- comparaison tous schemas/modeles -- ", f, " kHz"),
+      labs(title = paste0("NASC predit -- comparaison tous schemas/modeles -- ", f, " kHz -- ", format(TARGET_DATE_SINGLE)),
            x = "Longitude", y = "Latitude", fill = "log10(NASC)")
     ggsave(file.path(prediction_dir, paste0("comparaison_globale_", f, "kHz.png")),
            p_compare, width = 16, height = 10, dpi = 150)

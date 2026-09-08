@@ -136,14 +136,34 @@ plot_abs_residual_map <- function(obs_pred_all, subtitle = "", color_limits = NU
 # ---------------------------------------------------------------------
 # 6. Carte de prédiction sur grille (avec ou sans NA)
 # ---------------------------------------------------------------------
-plot_prediction_map <- function(grid_df, title, subtitle = "", limits = NULL) {
-  ggplot(grid_df, aes(x = lon, y = lat, fill = NASC_pred)) +
-    geom_raster() +
+# `basemap` : objet sf (continents + iles), typiquement obtenu via
+# load_basemap_sf() dans 10_basemap.R -- NULL = pas de fond de carte
+# (fallback silencieux si le package sf/rnaturalearth est absent).
+# `date_label` : si fourni, ajoute la date DIRECTEMENT dans le titre
+# (pas seulement le sous-titre).
+plot_prediction_map <- function(grid_df, title, subtitle = "", limits = NULL,
+                                 basemap = NULL, date_label = NULL) {
+  full_title <- if (!is.null(date_label)) paste0(title, " -- ", date_label) else title
+
+  p <- ggplot(grid_df, aes(x = lon, y = lat, fill = NASC_pred)) +
+    geom_raster()
+
+  if (!is.null(basemap)) {
+    lon_range <- range(grid_df$lon, na.rm = TRUE)
+    lat_range <- range(grid_df$lat, na.rm = TRUE)
+    p <- p +
+      geom_sf(data = basemap, inherit.aes = FALSE, fill = "grey40", color = "grey20", linewidth = 0.2) +
+      coord_sf(xlim = lon_range, ylim = lat_range, expand = FALSE)
+  } else {
+    p <- p + coord_quickmap()
+  }
+
+  p +
     scale_fill_viridis_c(limits = limits) +
-    coord_quickmap() +
     theme_pipeline +
-    labs(title = title, subtitle = subtitle, x = "Longitude", y = "Latitude", fill = "log10(NASC)")
+    labs(title = full_title, subtitle = subtitle, x = "Longitude", y = "Latitude", fill = "log10(NASC)")
 }
+
 
 # ---------------------------------------------------------------------
 # 7. Métriques par fold : RMSE, R², variance intra-fold
@@ -243,6 +263,15 @@ plot_spatial_train_test <- function(scheme, subtitle = "") {
     df_status$fold_id <- fid
     df_status
   })
+
+  # Ordre de dessin explicite : "Exclu" puis "Train" puis "Test" EN
+  # DERNIER (dessiné par-dessus les autres) -- sinon les points rouges
+  # du bloc test, souvent peu nombreux et compacts, se retrouvent
+  # recouverts par les points bleus du train dessinés après eux dans
+  # l'ordre naturel des lignes du data.frame.
+  status_by_fold <- status_by_fold %>%
+    mutate(status = factor(status, levels = c("Exclu par le buffer", "Train conserve", "Test (bloc isole)"))) %>%
+    arrange(fold_id, status)
 
   ggplot(status_by_fold, aes(x = lon, y = lat, color = status)) +
     geom_point(size = 0.5, alpha = 0.6) +
@@ -449,5 +478,30 @@ plot_variogram <- function(variogram_df, current_buffer = NULL, subtitle = "", x
                hjust = -0.05, vjust = 1, size = 3.2)
   }
   p
+}
+
+# ---------------------------------------------------------------------
+# 20. Stress-test de régularisation : hyperparamètres actuels (tunés)
+# vs hyperparamètres extrêmes (flexibilité maximale, quasi pas de
+# régularisation) -- R² train et RMSE test côte à côte, par modèle x
+# schéma. Sert à distinguer "sur-régularisé" (le train remonte fort ET
+# le test s'améliore en mode extrême) de "plafond d'information" (le
+# train ne bouge presque pas même sans régularisation).
+# ---------------------------------------------------------------------
+plot_stress_test <- function(stress_df, metric = c("r2_train", "rmse_test"), subtitle = "") {
+  metric <- match.arg(metric)
+  long <- stress_df %>%
+    select(model, scheme, dplyr::all_of(paste0(metric, c("_actuel", "_extreme")))) %>%
+    pivot_longer(-c(model, scheme), names_to = "regime", values_to = "value") %>%
+    mutate(regime = ifelse(grepl("actuel", regime), "Actuel (tuné)", "Extrême (non régularisé)"))
+
+  y_lab <- if (metric == "r2_train") "R\u00b2 train" else "RMSE test"
+
+  ggplot(long, aes(x = scheme, y = value, fill = regime)) +
+    geom_col(position = "dodge") +
+    facet_wrap(~model, scales = "free_x") +
+    labs(title = paste0("Stress-test de regularisation : ", y_lab, " (actuel vs extreme)"),
+         subtitle = subtitle, x = NULL, y = y_lab, fill = NULL) +
+    theme_pipeline + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom")
 }
 

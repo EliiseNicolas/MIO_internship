@@ -30,9 +30,12 @@ source("R/02_folds.R")
 source("R/03_models.R")
 source("R/04_diagnostics.R")
 source("R/05_plots.R")
+source("R/10_basemap.R")
 
 out_root <- path_out("rfsrc_reconstruction")
 dir.create(out_root, showWarnings = FALSE, recursive = TRUE)
+
+basemap <- load_basemap_sf()  # NULL si sf/rnaturalearth absents -- cartes sans fond dans ce cas
 
 # Hyperparametres par defaut (pas de tuning complet pour ce test
 # exploratoire -- utilise 06_tuning.R::tune_model() avec
@@ -65,7 +68,7 @@ for (freq in FREQS) {
 
   out_dir <- file.path(out_root, paste0(freq, "kHz"))
   dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
-  lims <- shared_limits[[as.character(freq)]]
+  lims <- get_prediction_color_limits(freq, shared_limits[[as.character(freq)]])
 
   # drop_na_numeric = FALSE : randomForestSRC gere le manquant nativement,
   # on garde donc les lignes avec NA sur les covariables numeriques
@@ -122,10 +125,9 @@ for (freq in FREQS) {
   p_map <- plot_prediction_map(
     grid_all,
     title = "NASC reconstruit - randomForestSRC (imputation native des NA)",
-    subtitle = sprintf("%d kHz - %s - %d/%d pixels reconstruits (%.1f%%), dont %d etaient incomplets",
-                        freq, format(extracted$date, "%Y-%m-%d"),
-                        n_predicted, n_total, 100 * n_predicted / n_total, n_incomplete),
-    limits = lims
+    subtitle = sprintf("%d kHz - %d/%d pixels reconstruits (%.1f%%), dont %d etaient incomplets",
+                        freq, n_predicted, n_total, 100 * n_predicted / n_total, n_incomplete),
+    limits = lims, basemap = basemap, date_label = format(extracted$date, "%Y-%m-%d")
   )
   ggsave(file.path(out_dir, "reconstruction_map.png"), p_map, width = 8, height = 6, dpi = 150)
 

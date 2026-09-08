@@ -27,10 +27,21 @@
 #     partir de TOUTES les combinaisons collectées, puis reproduit tous
 #     les plots avec ces échelles communes.
 #
+# REGENERER LES PLOTS SANS REENTRAINER : avec SKIP_EXISTING_TRAINING =
+# TRUE (defaut), relancer ce script recharge les modeles/CSV deja sur
+# disque (aucun reentrainement) et regenere TOUS les plots -- y compris
+# les plots "de reference" (points par fold, train/test/buffer) et les
+# plots de metadonnees (distances, covariables, distributions), qui
+# sont maintenant persistes en CSV (covariate_stats.csv, fod_dist.csv,
+# numeric_dist.csv) precisement pour permettre ce rechargement sans
+# reentrainement. C'est le moyen normal d'appliquer un changement fait
+# uniquement dans 05_plots.R (ex. correction d'un ordre d'affichage) a
+# des runs deja entraines.
+#
 # Sorties, sous outputs_pipeline/training/<freq>kHz/<model>/<schema>/ :
 #   - models.rds, metrics_par_fold.csv, obs_pred_all.csv, importance_all.csv
-#   - learning_curve_summary.csv
-#   - tous les plots (voir liste dans generate_scale_dependent_plots ci-dessous)
+#   - learning_curve_summary.csv, covariate_stats.csv, fod_dist.csv, numeric_dist.csv
+#   - tous les plots (voir Phase 1 / Phase 2 ci-dessous)
 
 source("R/00_config.R")
 source("R/01_data_prep.R")
@@ -51,9 +62,10 @@ MODELS <- c("cart", "rf", "xgb")
 # Si TRUE (defaut) : une combinaison (freq/modele/schema) deja entrainee
 # avec succes lors d'un run precedent (tous ses fichiers de sortie
 # presents sur disque) est RECHARGEE au lieu d'etre reentrainee -- utile
-# pour reprendre apres une interruption/erreur sans perdre le travail
-# deja fait. Mettre a FALSE pour forcer un reentrainement complet (ex.
-# apres avoir change les hyperparametres tunes).
+# pour reprendre apres une interruption/erreur, ou pour regenerer tous
+# les plots (ex. apres une correction dans 05_plots.R) sans perdre le
+# travail deja fait. Mettre a FALSE pour forcer un reentrainement
+# complet (ex. apres avoir change les hyperparametres tunes).
 SKIP_EXISTING_TRAINING <- TRUE
 
 REQUIRED_OUTPUT_FILES <- c(
@@ -62,8 +74,9 @@ REQUIRED_OUTPUT_FILES <- c(
 )
 
 # ---------------------------------------------------------------------
-# PHASE 1 : entraînement + sauvegarde immédiate des objets lourds +
-# collecte des tables légères pour la phase 2
+# PHASE 1 : entraînement (ou rechargement) + sauvegarde/regeneration
+# immediate des plots qui n'ont pas besoin d'echelle partagee + collecte
+# des tables légères pour la phase 2
 # ---------------------------------------------------------------------
 all_runs <- list()
 
@@ -85,35 +98,8 @@ for (freq in FREQS) {
 
       out_dir <- file.path(training_dir, paste0(freq, "kHz"), model, scheme_name)
 
-      # ---- Deja fait ? Recharge depuis le disque, ne reentraine pas ----
-      already_done <- SKIP_EXISTING_TRAINING &&
-        all(file.exists(file.path(out_dir, REQUIRED_OUTPUT_FILES)))
-
-      if (already_done) {
-        cat("  [deja fait]", model, "-", scheme_name, "-- rechargement depuis disque\n")
-        metrics_df    <- read.csv(file.path(out_dir, "metrics_par_fold.csv"))
-        obs_pred_df   <- read.csv(file.path(out_dir, "obs_pred_all.csv"))
-        importance_df <- read.csv(file.path(out_dir, "importance_all.csv"))
-        lc_summary_df <- read.csv(file.path(out_dir, "learning_curve_summary.csv"))
-
-        all_runs[[length(all_runs) + 1]] <- list(
-          freq = freq, model = model, scheme = scheme_name, out_dir = out_dir,
-          n_folds = nrow(metrics_df),
-          metrics = metrics_df, obs_pred = obs_pred_df,
-          importance = importance_df, lc_summary = lc_summary_df
-        )
-        next
-      }
-
-      cat(" ", model, "-", scheme_name, "\n")
-
-      tuning_path <- file.path(tuning_dir, sprintf("%s_%dkHz_%s.rds", model, freq, scheme_name))
-      if (!file.exists(tuning_path)) {
-        cat("  [!] tuning introuvable --", tuning_path, "-- saute.\n")
-        next
-      }
-      params <- readRDS(tuning_path)$best_params
-
+      # scheme est TOUJOURS disponible sans cout supplementaire (schemes_rf/
+      # schemes_xgb sont deja construits ci-dessus, qu'on reentraine ou non)
       if (model == "xgb") {
         backend <- make_backend("xgb", fod_levels = fod_levels)
         scheme  <- schemes_xgb[[scheme_name]]
@@ -123,59 +109,112 @@ for (freq in FREQS) {
         scheme  <- schemes_rf[[scheme_name]]
       }
 
-      cv_res <- run_cv_scheme(scheme, params, backend, label = scheme_name)
-      lc     <- compute_learning_curve(scheme, params, backend)
+      already_done <- SKIP_EXISTING_TRAINING &&
+        all(file.exists(file.path(out_dir, REQUIRED_OUTPUT_FILES)))
 
+      if (already_done) {
+        cat("  [deja fait]", model, "-", scheme_name, "-- rechargement depuis disque (replot sans reentrainement)\n")
+        metrics_df    <- read.csv(file.path(out_dir, "metrics_par_fold.csv"))
+        obs_pred_df   <- read.csv(file.path(out_dir, "obs_pred_all.csv"))
+        importance_df <- read.csv(file.path(out_dir, "importance_all.csv"))
+        lc_summary_df <- read.csv(file.path(out_dir, "learning_curve_summary.csv"))
+
+        # Tables de metadonnees : presentes si le run date d'apres l'ajout
+        # de leur persistance CSV -- sinon, plots 11-15 sautes avec avis
+        # (retrainer une fois avec SKIP_EXISTING_TRAINING <- FALSE pour
+        # les faire apparaitre).
+        meta_files <- file.path(out_dir, c("covariate_stats.csv", "fod_dist.csv", "numeric_dist.csv"))
+        has_meta <- all(file.exists(meta_files))
+        if (has_meta) {
+          covariate_stats_df <- read.csv(meta_files[1])
+          fod_dist_df        <- read.csv(meta_files[2])
+          numeric_dist_df     <- read.csv(meta_files[3])
+        }
+
+      } else {
+        cat(" ", model, "-", scheme_name, "\n")
+
+        tuning_path <- file.path(tuning_dir, sprintf("%s_%dkHz_%s.rds", model, freq, scheme_name))
+        if (!file.exists(tuning_path)) {
+          cat("  [!] tuning introuvable --", tuning_path, "-- saute.\n")
+          next
+        }
+        params <- readRDS(tuning_path)$best_params
+
+        cv_res <- run_cv_scheme(scheme, params, backend, label = scheme_name)
+        lc     <- compute_learning_curve(scheme, params, backend)
+
+        dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+
+        # -- sauvegarde immediate des objets lourds (modeles) + tables --
+        saveRDS(cv_res$models, file.path(out_dir, "models.rds"))
+        write.csv(cv_res$metrics,         file.path(out_dir, "metrics_par_fold.csv"), row.names = FALSE)
+        write.csv(cv_res$obs_pred,        file.path(out_dir, "obs_pred_all.csv"), row.names = FALSE)
+        write.csv(cv_res$importance,      file.path(out_dir, "importance_all.csv"), row.names = FALSE)
+        write.csv(lc$summary,             file.path(out_dir, "learning_curve_summary.csv"), row.names = FALSE)
+        write.csv(cv_res$covariate_stats, file.path(out_dir, "covariate_stats.csv"), row.names = FALSE)
+        write.csv(cv_res$fod_dist,        file.path(out_dir, "fod_dist.csv"), row.names = FALSE)
+        write.csv(cv_res$numeric_dist,    file.path(out_dir, "numeric_dist.csv"), row.names = FALSE)
+
+        metrics_df    <- cv_res$metrics
+        obs_pred_df   <- cv_res$obs_pred
+        importance_df <- cv_res$importance
+        lc_summary_df <- lc$summary
+        covariate_stats_df <- cv_res$covariate_stats
+        fod_dist_df        <- cv_res$fod_dist
+        numeric_dist_df     <- cv_res$numeric_dist
+        has_meta <- TRUE
+      }
+
+      # -- plots qui n'ont PAS besoin d'echelle partagee : (re)generes a
+      #    CHAQUE run, qu'on ait reentraine ou juste recharge -- pour que
+      #    les changements de 05_plots.R (ex. ordre d'affichage) prennent
+      #    effet sans avoir a reentrainer --
       dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+      run_label <- sprintf("%s - %d kHz - %s", toupper(model), freq, scheme_name)
 
-      # -- sauvegarde immediate des objets lourds (modeles) --
-      saveRDS(cv_res$models, file.path(out_dir, "models.rds"))
-      write.csv(cv_res$metrics,     file.path(out_dir, "metrics_par_fold.csv"), row.names = FALSE)
-      write.csv(cv_res$obs_pred,    file.path(out_dir, "obs_pred_all.csv"), row.names = FALSE)
-      write.csv(cv_res$importance,  file.path(out_dir, "importance_all.csv"), row.names = FALSE)
-      write.csv(lc$summary,         file.path(out_dir, "learning_curve_summary.csv"), row.names = FALSE)
-
-      # -- plots qui n'ont PAS besoin d'echelle partagee : generes tout de
-      #    suite (cartes de reference spatiale, categorique) --
-      p_points <- plot_points_colored_by_fold(scheme, subtitle = sprintf("%s - %d kHz - %s", toupper(model), freq, scheme_name))
+      p_points <- plot_points_colored_by_fold(scheme, subtitle = run_label)
       ggsave(file.path(out_dir, "16_carte_points_par_fold.png"), p_points, width = 8, height = 6, dpi = 150)
       if (scheme$scheme != "naive_RS_80_20") {
-        p_buffer <- plot_spatial_train_test(scheme, subtitle = sprintf("%s - %d kHz - %s", toupper(model), freq, scheme_name))
+        p_buffer <- plot_spatial_train_test(scheme, subtitle = run_label)
         ggsave(file.path(out_dir, "17_carte_train_test_buffer.png"), p_buffer, width = 10, height = 8, dpi = 150)
       }
-      # -- plots de metadonnees (distances/distributions) : pas prioritaires
-      #    pour la comparabilite inter-config (chaque config est inspectee
-      #    individuellement), generes tout de suite aussi --
-      p_dist   <- plot_distances_per_fold(cv_res$metrics, subtitle = scheme_name)
-      ggsave(file.path(out_dir, "11_distances_test_train.png"), p_dist, width = 9, height = 5, dpi = 150)
-      p_cov    <- plot_covariate_stats(cv_res$covariate_stats, subtitle = scheme_name)
-      ggsave(file.path(out_dir, "12_covariable_stats.png"), p_cov, width = 10, height = 8, dpi = 150)
-      p_covvar <- plot_covariate_variance(cv_res$covariate_stats, subtitle = scheme_name)
-      ggsave(file.path(out_dir, "13_covariable_variance.png"), p_covvar, width = 10, height = 8, dpi = 150)
-      p_fod    <- plot_fod_distribution(cv_res$fod_dist, subtitle = scheme_name)
-      ggsave(file.path(out_dir, "14_fod_distribution.png"), p_fod, width = 9, height = 7, dpi = 150)
-      p_distr  <- plot_distributions_per_fold(cv_res$numeric_dist, subtitle = scheme_name)
-      ggsave(file.path(out_dir, "15_distributions_par_fold.png"), p_distr,
-             width = 12, height = max(6, 1.2 * length(scheme$folds)), dpi = 150)
+
+      if (has_meta) {
+        p_dist   <- plot_distances_per_fold(metrics_df, subtitle = scheme_name)
+        ggsave(file.path(out_dir, "11_distances_test_train.png"), p_dist, width = 9, height = 5, dpi = 150)
+        p_cov    <- plot_covariate_stats(covariate_stats_df, subtitle = scheme_name)
+        ggsave(file.path(out_dir, "12_covariable_stats.png"), p_cov, width = 10, height = 8, dpi = 150)
+        p_covvar <- plot_covariate_variance(covariate_stats_df, subtitle = scheme_name)
+        ggsave(file.path(out_dir, "13_covariable_variance.png"), p_covvar, width = 10, height = 8, dpi = 150)
+        p_fod    <- plot_fod_distribution(fod_dist_df, subtitle = scheme_name)
+        ggsave(file.path(out_dir, "14_fod_distribution.png"), p_fod, width = 9, height = 7, dpi = 150)
+        p_distr  <- plot_distributions_per_fold(numeric_dist_df, subtitle = scheme_name)
+        ggsave(file.path(out_dir, "15_distributions_par_fold.png"), p_distr,
+               width = 12, height = max(6, 1.2 * length(scheme$folds)), dpi = 150)
+      } else {
+        cat("  [!] tables de metadonnees absentes (run anterieur a leur persistance) -- ",
+            "plots 11-15 sautes pour", model, "-", scheme_name,
+            "-- relancer avec SKIP_EXISTING_TRAINING <- FALSE une fois pour les regenerer.\n")
+      }
 
       # -- collecte LEGERE pour la phase 2 (echelles partagees) --
       all_runs[[length(all_runs) + 1]] <- list(
         freq = freq, model = model, scheme = scheme_name, out_dir = out_dir,
         n_folds = length(scheme$folds),
-        metrics    = cv_res$metrics,
-        obs_pred   = cv_res$obs_pred,
-        importance = cv_res$importance,
-        lc_summary = lc$summary
+        metrics = metrics_df, obs_pred = obs_pred_df,
+        importance = importance_df, lc_summary = lc_summary_df
       )
     }
   }
 }
 
-cat(sprintf("\nPhase 1 terminee : %d configurations entrainees.\n", length(all_runs)))
+cat(sprintf("\nPhase 1 terminee : %d configurations traitees.\n", length(all_runs)))
 
 # ---------------------------------------------------------------------
 # PHASE 2 : calcul des echelles partagees, puis generation de tous les
-# plots "sensibles a l'echelle" avec ces bornes communes
+# plots "sensibles a l'echelle" avec ces bornes communes -- TOUJOURS
+# regeneres, qu'on ait reentraine ou juste recharge en Phase 1.
 # ---------------------------------------------------------------------
 cat("\n============================================================\n")
 cat("GENERATION DES PLOTS (PHASE 2) -- echelles partagees\n")

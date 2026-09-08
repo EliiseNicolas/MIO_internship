@@ -6,7 +6,9 @@
 # schemas bloques, avec/sans NA) et 14_run_rfsrc_reconstruction.R
 # (randomForestSRC, imputation complete) -- pas juste visuellement, mais
 # via : correlation entre cartes, RMSE entre paires de cartes (sur les
-# pixels communs), et cartes de difference pour quelques paires cles.
+# pixels communs), et cartes de difference pour TOUTES les paires
+# possibles (N*(N-1)/2 avec N couches -- peut representer plusieurs
+# dizaines/centaines de fichiers, ranges dans un sous-dossier all_pairs/).
 #
 # PREREQUIS : avoir lance 12_run_grid_prediction.R ET
 # 14_run_rfsrc_reconstruction.R (ce script lit leurs sorties .rds, ne
@@ -15,7 +17,7 @@
 # Sorties, sous outputs_pipeline/map_comparison/<freq>kHz/ :
 #   - correlation_matrix.csv, correlation_heatmap.png
 #   - pairwise_rmse.csv (RMSE + n pixels communs, TOUTES les paires)
-#   - diff_map_<pair>.png (cartes de difference, paires cles selectionnees)
+#   - all_pairs/diff_<layer1>_MOINS_<layer2>.png (TOUTES les combinaisons)
 
 source("R/00_config.R")
 source("R/01_data_prep.R")
@@ -115,61 +117,45 @@ for (freq in FREQS) {
   write.csv(rmse_table, file.path(out_dir, "pairwise_rmse.csv"), row.names = FALSE)
   cat("  -> correlation_matrix.csv, correlation_heatmap.png, pairwise_rmse.csv\n")
 
-  # ---- Cartes de difference pour quelques paires cles (illustratives) ----
-  # Echelle symetrique PARTAGEE entre les 4 cartes (calculee a partir de
-  # toutes les paires en meme temps, avant de tracer) -- pour qu'une
-  # meme intensite de rouge/bleu represente le meme ecart quelle que
-  # soit la paire affichee.
-  find_layer <- function(pattern) {
-    m <- grep(pattern, layer_cols, value = TRUE)
-    if (length(m) == 0) NA_character_ else m[1]
-  }
+  # ---- Cartes de difference pour TOUTES les combinaisons possibles ----
+  # Echelle symetrique PARTAGEE entre TOUTES les cartes de difference
+  # (calculee a partir de toutes les paires en meme temps, avant de
+  # tracer) -- pour qu'une meme intensite de rouge/bleu represente le
+  # meme ecart quelle que soit la paire affichee. ATTENTION AU VOLUME :
+  # avec N couches, ca fait N*(N-1)/2 cartes (ex. 16 couches -> 120
+  # cartes) -- rangees dans un sous-dossier all_pairs/ pour ne pas
+  # polluer le dossier principal.
+  diff_dir <- file.path(out_dir, "all_pairs")
+  dir.create(diff_dir, showWarnings = FALSE, recursive = TRUE)
 
-  key_pairs <- list(
-    list(a = find_layer("naive_RS_80_20_RF$"),              b = find_layer("naive_RS_80_20_XGB_avecNA$"),
-         label = "naive_RF_vs_naive_XGB",
-         title = "RF vs XGB (meme schema naive)"),
-    list(a = find_layer("naive_RS_80_20_RF$"),              b = find_layer("blocked_spatial_20x20km_RF$"),
-         label = "naive_RF_vs_blocked20km_RF",
-         title = "RF : naive vs blocage spatial 20x20km (changement de domaine)"),
-    list(a = find_layer("naive_RS_80_20_XGB_avecNA$"),      b = find_layer("naive_RS_80_20_XGB_sansNA$"),
-         label = "XGB_avecNA_vs_sansNA",
-         title = "XGB : gestion native du NA vs filtrage strict"),
-    list(a = find_layer("naive_RS_80_20_RF$"),              b = find_layer("rfsrc_reconstruction$"),
-         label = "RF_vs_rfsrc",
-         title = "RF (ranger, complete-case) vs randomForestSRC (imputation)")
-  )
+  all_pairs <- combn(layer_cols, 2, simplify = FALSE)
+  cat(sprintf("  %d paires possibles (%d couches) -> cartes de difference dans all_pairs/\n",
+              length(all_pairs), length(layer_cols)))
 
-  # -- Phase A : calcule tous les diffs valides d'abord --
-  diffs_computed <- list()
-  for (kp in key_pairs) {
-    if (is.na(kp$a) || is.na(kp$b)) {
-      cat("  [!] paire ignoree (couche manquante) :", kp$label, "\n")
-      next
-    }
-    diffs_computed[[kp$label]] <- list(
-      kp = kp,
-      diff_df = wide_df %>% transmute(lon, lat, diff = .data[[kp$a]] - .data[[kp$b]])
+  # -- Phase A : calcule tous les diffs d'abord (pour l'echelle commune) --
+  diffs_computed <- purrr::map(all_pairs, function(p) {
+    list(
+      a = p[1], b = p[2],
+      diff_df = wide_df %>% transmute(lon, lat, diff = .data[[p[1]]] - .data[[p[2]]])
     )
-  }
+  })
 
-  # -- echelle symetrique commune, a partir de TOUTES les paires --
   all_diff_vals <- unlist(lapply(diffs_computed, function(x) x$diff_df$diff))
   shared_diff_limit <- max(abs(all_diff_vals), na.rm = TRUE)
   shared_diff_limits <- c(-shared_diff_limit, shared_diff_limit)
 
   # -- Phase B : trace avec l'echelle commune --
   for (d in diffs_computed) {
-    kp <- d$kp
+    pair_label <- paste0(d$a, "_MOINS_", d$b)
     p_diff <- plot_map_difference(
       d$diff_df, diff_col = "diff",
-      title = paste0("Difference : ", kp$title),
-      subtitle = sprintf("%d kHz - %s MOINS %s", freq, kp$a, kp$b),
+      title = paste0("Difference : ", d$a, " moins ", d$b),
+      subtitle = sprintf("%d kHz - %s", freq, format(TARGET_DATE_SINGLE)),
       limits = shared_diff_limits
     )
-    ggsave(file.path(out_dir, paste0("diff_map_", kp$label, ".png")), p_diff, width = 8, height = 6, dpi = 150)
-    cat("  -> diff_map_", kp$label, ".png\n", sep = "")
+    ggsave(file.path(diff_dir, paste0("diff_", pair_label, ".png")), p_diff, width = 8, height = 6, dpi = 150)
   }
+  cat(sprintf("  -> %d cartes de difference enregistrees dans %s\n", length(diffs_computed), diff_dir))
 }
 
 cat("\nComparaison de cartes terminee. Resultats dans :", normalizePath(out_root), "\n")

@@ -29,7 +29,10 @@ R/
   16_run_cross_scheme_analysis.R SCRIPT 6 : importance naive vs bloqué, calibration, résidu vs latitude, fuite
   17_run_map_comparison.R        SCRIPT 7 : comparaison quantitative des cartes produites (diff, corrélation, RMSE)
   18_run_noise_robustness_test.R SCRIPT 8 : robustesse au bruit gaussien sur les covariables
+  10_basemap.R                   fond de carte (continents + Kerguelen) avec cache local
   19_run_variogram_analysis.R    SCRIPT 9 : variogrammes empiriques spatial/temporel des résidus détendancés
+  20_run_regularization_stress_test.R SCRIPT 10 : hyperparamètres actuels vs extrêmes (sur-régularisé ou plafond d'info ?)
+  21_run_monthly_composite.R     SCRIPT 11 : composite mensuel (moyenne + carte de pureté)
 ```
 
 À exécuter dans l'ordre : `10_run_tuning.R` -> `11_run_training.R` -> `12_/13_run_grid_prediction*.R`
@@ -552,3 +555,94 @@ des oublis) :
   c'est une moyenne spatiale, pas une valeur pixel, donc moins
   directement comparable à la même échelle que les cartes ; RF vs XGB
   reste comparable *au sein* de chaque figure (même axe, deux courbes).
+
+## Sur-régularisé ou plafond d'information ? `20_run_regularization_stress_test.R`
+
+Répond à la question "mes hyperparamètres sont-ils trop sévèrement
+régularisés ?" en comparant, pour chaque freq x modèle x schéma, un
+seul aller-retour : les hyperparamètres **actuels** (tunés par `10_`,
+aucun re-tuning) contre des hyperparamètres délibérément poussés au
+**maximum de flexibilité** (`cp=0/minsplit=2/maxdepth=30` pour CART,
+`mtry=max/min.node.size=1` pour RF, `max_depth=10/eta=0.3/
+min_child_weight=1` pour XGB).
+
+Deux métriques comparées : **R² train** (le modèle arrive-t-il à
+fitter ses propres données sans contrainte ?) et **RMSE test** (est-ce
+que cette flexibilité aide ou nuit ?). Un verdict automatique (colonne
+`verdict` dans `stress_test_results.csv`) tranche entre 3 cas :
+
+- **R² train ne bouge presque pas, même en mode extrême** -> ce n'est
+  PAS un problème d'hyperparamètres : le signal disponible dans les
+  covariables (ou le bruit du NASC lui-même) est le facteur limitant,
+  peu importe la flexibilité du modèle.
+- **R² train grimpe fort ET le RMSE test s'améliore** en mode extrême ->
+  **sous-régularisé** : le tuning actuel n'explore pas assez loin côté
+  flexible, il faut élargir la grille (`06_tuning.R::default_tuning_grid`).
+- **R² train grimpe fort MAIS le RMSE test se dégrade** en mode extrême
+  -> la régularisation actuelle est **justifiée** (overfit confirmé dès
+  qu'on relâche la contrainte).
+
+Seuils de décision (`DELTA_R2_TRAIN_THRESHOLD`, `DELTA_RMSE_TEST_THRESHOLD`)
+ajustables en haut du script si les résultats tombent systématiquement
+dans la zone "ambigu". Par défaut, testé sur naive + tous les schémas
+bloqués (`STRESS_TEST_SCHEMES`) -- réduis la liste pour un aller-retour
+plus rapide.
+
+## Corrections et ajouts sur les cartes de prédiction
+
+**Fond de carte (continents + Kerguelen).** `10_basemap.R::load_basemap_sf()`
+charge (une fois, avec cache dans `outputs_pipeline/basemap/`) une
+couche `sf` combinant les pays (Natural Earth, résolution moyenne) et
+les petites îles (couche dédiée `minor_islands`, nécessaire pour les
+Kerguelen -- absentes de la couche "pays" standard). Nécessite les
+packages `sf`, `rnaturalearth`, `rnaturalearthdata`
+(`install.packages(c("sf","rnaturalearth","rnaturalearthdata"))`) et un
+accès internet au tout premier appel seulement. Si absents/échec, les
+cartes de prédiction sont générées SANS fond de carte (warning
+explicite, pas d'erreur bloquante). Branché dans `plot_prediction_map()`
+(`05_plots.R`) et utilisé par `12_/13_/14_/21_`.
+
+**Date dans le titre.** Toutes les cartes de prédiction (`12_/13_/14_/21_`)
+affichent maintenant la date directement dans le titre (paramètre
+`date_label` de `plot_prediction_map()`), pas seulement en sous-titre.
+
+**Colorbar 120 kHz.** `PREDICTION_COLOR_LIMITS_OVERRIDE` dans
+`00_config.R` force la plage `[0, 3]` pour 120 kHz (l'échelle
+auto-calculée -- union de la plage NASC observée à l'entraînement et de
+la plage prédite -- n'était pas adaptée à cette fréquence). `NULL` pour
+38 kHz = comportement automatique inchangé. Ajoute/modifie une entrée
+dans cette liste si besoin pour une autre fréquence.
+
+**Ordre d'affichage train/test (`17_carte_train_test_buffer.png`).**
+`plot_spatial_train_test()` (`05_plots.R`) trie maintenant explicitement
+les points par statut (`Exclu par le buffer` → `Train conservé` →
+`Test` en dernier) avant de tracer, pour que les points de test
+(souvent peu nombreux et compacts) soient dessinés PAR-DESSUS le train
+au lieu d'être recouverts par lui.
+
+**Cartes de différence : toutes les combinaisons.** `17_run_map_comparison.R`
+génère maintenant une carte de différence pour **chaque paire possible**
+de couches (`combn(layer_cols, 2)`), pas juste 4 paires illustratives --
+rangées dans un sous-dossier `all_pairs/` par fréquence (volume
+potentiellement important : N*(N-1)/2 cartes pour N couches). L'échelle
+symétrique reste partagée entre toutes ces cartes.
+
+## Composite mensuel : `21_run_monthly_composite.R`
+
+Pour chaque freq x schéma (`MONTHLY_COMPOSITE_SCHEMES`, naive par
+défaut) x mois calendaire présent dans la grille multi-date : prédit
+avec XGB "avec NA" pour chaque jour du mois, puis agrège pixel par
+pixel :
+
+- **carte moyenne mensuelle** : moyenne des prédictions journalières
+  valides (un pixel n'est NA sur le composite que si TOUS les jours du
+  mois étaient NA pour ce pixel précis).
+- **carte de pureté** : fraction de jours du mois où le pixel avait une
+  prédiction valide (1 = tous les jours, 0 = aucun) -- indique la
+  confiance à accorder à chaque pixel du composite, pas juste sa valeur
+  (concept analogue à la "purity" en compositing satellite).
+
+`MONTHLY_COMPOSITE_MONTHS <- NULL` (défaut) traite tous les mois
+présents dans la grille ; renseigne un vecteur `c("2018-01", "2018-02")`
+pour restreindre. ATTENTION AU VOLUME : un mois de 30 jours = 30
+prédictions sur toute la grille par freq x schéma.
