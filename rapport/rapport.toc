@@ -1,76 +1,87 @@
 \babel@toc {french}{}\relax 
-\contentsline {chapter}{\numberline {1}Introduction}{3}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Généralités}{3}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Secteur Indien de l'Océan Austral}{6}{section.1.2}%
-\contentsline {subsection}{\numberline {1.2.1}Contexte physico-chimique de la région}{6}{subsection.1.2.1}%
-\contentsline {subsection}{\numberline {1.2.2}Contexte biologique}{7}{subsection.1.2.2}%
-\contentsline {subsection}{\numberline {1.2.3}Et dans un contexte de changement climatique ?}{7}{subsection.1.2.3}%
-\contentsline {section}{\numberline {1.3}Question scientifique}{8}{section.1.3}%
-\contentsline {section}{\numberline {1.4}il manque}{8}{section.1.4}%
-\contentsline {chapter}{\numberline {2}Matériel}{10}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Concentrations de pigments photosynthétiques (PIGMeANN)}{10}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Données hydrologiques de température et salinité (CMEMS)}{13}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Données hydrodynamiques : Finite Time Lyapunov Exponent}{13}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Données d'acoustique active (OBSAUSTRAL)}{15}{section.2.4}%
-\contentsline {chapter}{\numberline {3}Méthode}{17}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Pré-traitement des données}{17}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}Calcul du Nautical Area Scattering Coefficient (NASC) \blx@tocontentsinit {0}\cite {IRD_MATECHO_User_Manual}}{17}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}Calcul des Functional Oceanographic Domain (FOD)}{19}{subsection.3.1.2}%
-\contentsline {subsubsection}{\numberline {3.1.2.1}Présentation des Domaines Océanographiques Fonctionnels}{19}{subsubsection.3.1.2.1}%
-\contentsline {subsection}{\numberline {3.1.3}Colocalisation NASC/PIG/FTLE/FOD}{21}{subsection.3.1.3}%
-\contentsline {section}{\numberline {3.2}Décrire la structuration des communautés phytoplanctoniques de la région}{22}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Prédire le NASC en fonction de variables environnementals : arbres de régression}{23}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Description des modèles}{23}{subsection.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.1.1}Classification and Regression Trees (CART)}{23}{subsubsection.3.3.1.1}%
-\contentsline {subsubsection}{\numberline {3.3.1.2}Random Forest (RF)}{23}{subsubsection.3.3.1.2}%
-\contentsline {subsubsection}{\numberline {3.3.1.3}XGBoost}{24}{subsubsection.3.3.1.3}%
-\contentsline {subsection}{\numberline {3.3.2}Calcul de l'importance des variables}{25}{subsection.3.3.2}%
-\contentsline {subsubsection}{\numberline {3.3.2.1}CART}{25}{subsubsection.3.3.2.1}%
-\contentsline {subsubsection}{\numberline {3.3.2.2}Random Forest}{25}{subsubsection.3.3.2.2}%
-\contentsline {subsubsection}{\numberline {3.3.2.3}XGBoost}{25}{subsubsection.3.3.2.3}%
-\contentsline {subsection}{\numberline {3.3.3}Schéma de validation, Tuning, entraînement et prédiction}{26}{subsection.3.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.3.1}Proximité spatio-temporelle et dépendance spatiale des données}{26}{subsubsection.3.3.3.1}%
-\contentsline {subsubsection}{\numberline {3.3.3.2}Schémas de validation croisée}{26}{subsubsection.3.3.3.2}%
-\contentsline {subsubsection}{\numberline {3.3.3.3}Tuning}{27}{subsubsection.3.3.3.3}%
-\contentsline {subsubsection}{\numberline {3.3.3.4}Entraînement et prédiction}{27}{subsubsection.3.3.3.4}%
-\contentsline {chapter}{\numberline {4}Résultats}{29}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Distributions}{29}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}Concentrations de pigments photosynthétiques}{29}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}Finite-Time Lyapunov Exponant}{30}{subsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.1.3}NASC}{31}{subsection.4.1.3}%
-\contentsline {section}{\numberline {4.2}Communautés phytoplanctoniques de la région d'étude}{32}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Résultats des régressions}{36}{section.4.3}%
-\contentsline {chapter}{\numberline {5}Discussion}{37}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Influence des fréquences}{37}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Complétion des NAs et influence sur le NASC}{38}{section.5.2}%
-\contentsline {section}{\numberline {5.3}FOD : nombre de composante principale, données modèles, non prise en compte des données chimique (fer) et sea ice}{38}{section.5.3}%
-\contentsline {section}{\numberline {5.4}définition de communauté phyto à partir des bio-optical water types}{38}{section.5.4}%
-\contentsline {section}{\numberline {5.5}effet du temps sur les corrélations mésoéchelle/phyto/zoo/nti}{38}{section.5.5}%
-\contentsline {section}{\numberline {5.6}test statistiques : effet du nombre de données et dispersion sur la significativité, tendance vs climate change trend}{38}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Influence sur la prédiction : gradient latitudinal, overfit, déséquilibre de l'échantillonage}{38}{section.5.7}%
-\contentsline {section}{\numberline {5.8}Choix des variables prédictives, manque de variables}{39}{section.5.8}%
-\contentsline {section}{\numberline {5.9}Interprétation de l'importance des variables}{39}{section.5.9}%
-\contentsline {section}{\numberline {5.10}Evaluation des performances prédictives du modèle}{39}{section.5.10}%
-\contentsline {chapter}{\numberline {6}Conclusion}{40}{chapter.6}%
-\contentsline {chapter}{\numberline {7}Annexes}{41}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Stratification verticale et horizontale des océans}{41}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Réponse fréquentielle des organismes pélagiques}{42}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Valeurs manquantes sur le volume de rétropropagation acoustique $S_v$ en fonction de la profondeur et de la fréquence de l'échosondeur}{43}{section.7.3}%
-\contentsline {section}{\numberline {7.4}Calcul des FOD}{43}{section.7.4}%
-\contentsline {subsection}{\numberline {7.4.1}Estimation fonctionelle sur des bases de B-splines Estimation semi-paramétrique des profils de température et salinité}{43}{subsection.7.4.1}%
-\contentsline {subsubsection}{\numberline {7.4.1.1}Basis-splines de degré $m$ \blx@tocontentsinit {0}\cite {deBoor}}{43}{subsubsection.7.4.1.1}%
-\contentsline {subsubsection}{\numberline {7.4.1.2}Espace des splines et base de B-splines}{44}{subsubsection.7.4.1.2}%
-\contentsline {subsubsection}{\numberline {7.4.1.3}Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) \blx@tocontentsinit {0}\cite {wand2008}, \blx@tocontentsinit {0}\cite {eilers1996}}{45}{subsubsection.7.4.1.3}%
-\contentsline {subsection}{\numberline {7.4.2}Réduction de dimension par Analyse en Composante Principale}{46}{subsection.7.4.2}%
-\contentsline {subsubsection}{\numberline {7.4.2.1}Construction du vecteur de coefficients bivarié}{47}{subsubsection.7.4.2.1}%
-\contentsline {subsubsection}{\numberline {7.4.2.2}Centrage des données}{47}{subsubsection.7.4.2.2}%
-\contentsline {subsubsection}{\numberline {7.4.2.3}Calcul de la covariance empirique}{48}{subsubsection.7.4.2.3}%
-\contentsline {subsubsection}{\numberline {7.4.2.4}Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}{48}{subsubsection.7.4.2.4}%
-\contentsline {subsubsection}{\numberline {7.4.2.5} Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}{50}{subsubsection.7.4.2.5}%
-\contentsline {subsection}{\numberline {7.4.3}Gaussian Model Mixture Clustering}{51}{subsection.7.4.3}%
-\contentsline {section}{\numberline {7.5}Influence du nombre de composantes principales sur la reconstruction des profils de température et salinité}{52}{section.7.5}%
-\contentsline {section}{\numberline {7.6}Clustering des données pigmentaires}{53}{section.7.6}%
-\contentsline {section}{\numberline {7.7}Choix du modèle de validation croisée}{54}{section.7.7}%
-\contentsline {section}{\numberline {7.8}Résultats de tuning des modèles}{54}{section.7.8}%
-\contentsline {section}{\numberline {7.9}Distribution des variables environnementales et du NASC par FOD}{60}{section.7.9}%
-\contentsline {section}{\numberline {7.10}Distribution des concentrations pigmentaires par communauté phytoplanctonique}{60}{section.7.10}%
+\contentsline {chapter}{\numberline {1}Introduction}{4}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Généralités}{4}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Secteur Indien de l'Océan Austral}{7}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Contexte physico-chimique de la région}{7}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Contexte biologique}{8}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Et dans un contexte de changement climatique ?}{8}{subsection.1.2.3}%
+\contentsline {section}{\numberline {1.3}Question scientifique}{9}{section.1.3}%
+\contentsline {section}{\numberline {1.4}il manque}{9}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Matériel}{11}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Concentrations de pigments photosynthétiques (PIGMeANN)}{11}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Données hydrologiques de température et salinité (CMEMS)}{14}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Données hydrodynamiques : Finite Time Lyapunov Exponent}{14}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Données d'acoustique active (OBSAUSTRAL)}{16}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Méthode}{18}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Pré-traitement des données}{18}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Calcul du Nautical Area Scattering Coefficient (NASC) \blx@tocontentsinit {0}\cite {IRD_MATECHO_User_Manual}}{18}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Calcul des Functional Oceanographic Domain (FOD)}{20}{subsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.2.1}Présentation des Domaines Océanographiques Fonctionnels}{20}{subsubsection.3.1.2.1}%
+\contentsline {subsection}{\numberline {3.1.3}Colocalisation NASC/PIG/FTLE/FOD}{22}{subsection.3.1.3}%
+\contentsline {section}{\numberline {3.2}Décrire la structuration des communautés phytoplanctoniques de la région}{23}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Prédire le NASC en fonction de variables environnementals : arbres de régression}{24}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Description des modèles}{24}{subsection.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.1.1}Classification and Regression Trees (CART)}{24}{subsubsection.3.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.3.1.2}Random Forest (RF)}{24}{subsubsection.3.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.3.1.3}XGBoost}{25}{subsubsection.3.3.1.3}%
+\contentsline {subsection}{\numberline {3.3.2}Calcul de l'importance des variables}{26}{subsection.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.2.1}CART}{26}{subsubsection.3.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.3.2.2}Random Forest}{26}{subsubsection.3.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.3.2.3}XGBoost}{26}{subsubsection.3.3.2.3}%
+\contentsline {subsection}{\numberline {3.3.3}Schéma de validation, Tuning, entraînement et prédiction}{27}{subsection.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.3.1}Proximité spatio-temporelle et dépendance spatiale des données}{27}{subsubsection.3.3.3.1}%
+\contentsline {subsubsection}{\numberline {3.3.3.2}Schémas de validation croisée}{27}{subsubsection.3.3.3.2}%
+\contentsline {subsubsection}{\numberline {3.3.3.3}Tuning}{28}{subsubsection.3.3.3.3}%
+\contentsline {subsubsection}{\numberline {3.3.3.4}Entraînement et prédiction}{28}{subsubsection.3.3.3.4}%
+\contentsline {chapter}{\numberline {4}Résultats}{30}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Distributions des variables étudiées}{30}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Concentrations de pigments photosynthétiques}{30}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Finite-Time Lyapunov Exponant}{31}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}NASC}{32}{subsection.4.1.3}%
+\contentsline {section}{\numberline {4.2}Communautés phytoplanctoniques de la région d'étude}{33}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Structure prédictive du NASC à partir des variables environnementales (FOD, FTLE) et des contribution de pigments photosynthétiques}{37}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Relations structurelles entre le NASC, la contribution des pigments photosynthétiques, les domaines océanographiques fonctionnels et les FTLE}{37}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Cartographie de la distribution prédite du NASC}{37}{section.4.5}%
+\contentsline {chapter}{\numberline {5}Discussion}{38}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Distributions inter-anuelles des variables étudiées}{38}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}Distributions des contributions des pigments photo-synthétiques}{38}{subsection.5.1.1}%
+\contentsline {subsection}{\numberline {5.1.2}Distribution des Finite-Time Lyapunov Exponent}{39}{subsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.1.3}Distribution du NASC}{39}{subsection.5.1.3}%
+\contentsline {section}{\numberline {5.2}Performances prédictives}{39}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Influence des fréquences}{39}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Complétion des NAs et influence sur le NASC}{39}{section.5.4}%
+\contentsline {section}{\numberline {5.5}FOD : nombre de composante principale, données modèles, non prise en compte des données chimique (fer) et sea ice}{39}{section.5.5}%
+\contentsline {section}{\numberline {5.6}définition de communauté phyto à partir des bio-optical water types}{39}{section.5.6}%
+\contentsline {section}{\numberline {5.7}effet du temps sur les corrélations mésoéchelle/phyto/zoo/nti}{40}{section.5.7}%
+\contentsline {section}{\numberline {5.8}test statistiques : effet du nombre de données et dispersion sur la significativité, tendance vs climate change trend}{40}{section.5.8}%
+\contentsline {section}{\numberline {5.9}Influence sur la prédiction : gradient latitudinal, overfit, déséquilibre de l'échantillonage}{40}{section.5.9}%
+\contentsline {section}{\numberline {5.10}Choix des variables prédictives, manque de variables}{40}{section.5.10}%
+\contentsline {section}{\numberline {5.11}Interprétation de l'importance des variables}{41}{section.5.11}%
+\contentsline {section}{\numberline {5.12}Evaluation des performances prédictives du modèle}{41}{section.5.12}%
+\contentsline {chapter}{\numberline {6}Conclusion}{42}{chapter.6}%
+\contentsline {chapter}{\numberline {7}Annexes}{43}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Stratification verticale et horizontale des océans}{43}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Réponse fréquentielle des organismes pélagiques}{43}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Valeurs manquantes sur le volume de rétropropagation acoustique $S_v$ en fonction de la profondeur et de la fréquence de l'échosondeur}{44}{section.7.3}%
+\contentsline {section}{\numberline {7.4}Méthode de calcul des FOD}{44}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Estimation par projection sur des bases de B-splines des profils de température et salinité}{44}{subsection.7.4.1}%
+\contentsline {subsubsection}{\numberline {7.4.1.1}Basis-splines de degré $m$ \blx@tocontentsinit {0}\cite {deBoor}}{44}{subsubsection.7.4.1.1}%
+\contentsline {subsubsection}{\numberline {7.4.1.2}Espace des splines et base de B-splines}{45}{subsubsection.7.4.1.2}%
+\contentsline {subsubsection}{\numberline {7.4.1.3}Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) \blx@tocontentsinit {0}\cite {wand2008}, \blx@tocontentsinit {0}\cite {eilers1996}}{46}{subsubsection.7.4.1.3}%
+\contentsline {subsection}{\numberline {7.4.2}Réduction de dimension par Analyse en Composante Principale}{47}{subsection.7.4.2}%
+\contentsline {subsubsection}{\numberline {7.4.2.1}Construction du vecteur de coefficients bivarié}{48}{subsubsection.7.4.2.1}%
+\contentsline {subsubsection}{\numberline {7.4.2.2}Centrage des données}{48}{subsubsection.7.4.2.2}%
+\contentsline {subsubsection}{\numberline {7.4.2.3}Calcul de la covariance empirique}{49}{subsubsection.7.4.2.3}%
+\contentsline {subsubsection}{\numberline {7.4.2.4}Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}{49}{subsubsection.7.4.2.4}%
+\contentsline {subsubsection}{\numberline {7.4.2.5} Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}{51}{subsubsection.7.4.2.5}%
+\contentsline {subsection}{\numberline {7.4.3}Gaussian Model Mixture Clustering}{53}{subsection.7.4.3}%
+\contentsline {section}{\numberline {7.5}Clustering des données pigmentaires}{54}{section.7.5}%
+\contentsline {section}{\numberline {7.6}Choix du modèle de validation croisée}{54}{section.7.6}%
+\contentsline {section}{\numberline {7.7}Résultats de tuning des modèles}{54}{section.7.7}%
+\contentsline {section}{\numberline {7.8}Distribution des variables (NASC, FTLE et pigments)}{57}{section.7.8}%
+\contentsline {subsection}{\numberline {7.8.1}Nombre de données utilisées par année}{57}{subsection.7.8.1}%
+\contentsline {subsection}{\numberline {7.8.2}Distributions par FOD}{59}{subsection.7.8.2}%
+\contentsline {section}{\numberline {7.9}Structure des communautés phytoplanctoniques}{61}{section.7.9}%
+\contentsline {section}{\numberline {7.10}Structure prédictive du NASC avec les FOD, FTLE et contributions de pigments}{61}{section.7.10}%
+\contentsline {section}{\numberline {7.11}Liens structurels entre le NASC, FOD, FTLE et contributions de pigments}{61}{section.7.11}%
+\contentsline {section}{\numberline {7.12}Cartographie du NASC prédit}{61}{section.7.12}%

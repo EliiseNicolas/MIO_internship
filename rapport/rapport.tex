@@ -167,7 +167,7 @@ urlcolor=black
 		
 		{\Large \bfseries Comment la structure des communautés phytoplanctoniques influence t-elle la distribution du zooplancton et du micronecton ?\par}
 		\vspace{0.1cm}
-		{\Large  Une étude en été dans le secteur Indien de l'Océan Austral}\\
+		{\Large  Une étude en saison estivale dans le secteur Indien de l'Océan Austral}\\
 		\vspace{0.2cm}
 		{\Large  Rapport de stage\par}
 		
@@ -550,9 +550,9 @@ urlcolor=black
 	
 	\subsection{Calcul des Functional Oceanographic Domain (FOD)}
 	\subsubsection{Présentation des Domaines Océanographiques Fonctionnels}
-	Les Domaines Océanographiques Fonctionels (ou Functional Oceanographic Domain) sont des masses d'eau ayant des caractéristiques thermohalines similaires. La méthode d'identification des FOD a été développé par Fonvieille N. et Nerini D. \cite{fonvieille2024}. Les données thermohalines (des modèles de Copernicus dans notre cas) sont, dans un premier temps (1), estimées dans un espace fonctionnel par projection sur une base de B-spline. Dans un second temps (2), la dimension de la matrice des coefficients de pondération des B-splines est réduite par une Analyse par Composante Principale (ACP ou PCA en anglais). Dans un dernier temps (3), un clusterning (GMM) est appliqué à cette nouvelle matrice de coefficients de pondération des B-splines. Ces trois étapes seront développés dans les paragraphes suivants.
+	Les Domaines Océanographiques Fonctionels (ou Functional Oceanographic Domain) sont des masses d'eau ayant des caractéristiques thermohalines similaires. La méthode d'identification des FOD a été développé par Fonvieille N. et Nerini D. \cite{fonvieille2024}. Les données thermohalines (des modèles de Copernicus dans notre cas) sont, dans un premier temps (1), estimées dans un espace fonctionnel par projection sur une base de B-spline. Dans un second temps (2), la dimension de la matrice des coefficients de pondération des B-splines est réduite par une Analyse par Composante Principale (ACP ou PCA en anglais). Dans un dernier temps (3), un clusterning (GMM) est appliqué à $k$ composantes principales trouvé par la PCA. Ces trois étapes sont développées en Annexe \ref{annexe:methode_fod}.
 	
-	Sont obtenus 13 clusters distincts : 6 clusters de FOD et 7 clusters de dits de "transitions" \footnote{La classe "NA" correspond aux clusters manquants sur le plateau de Kerguelen. Les profils de température et salinité allant de 20 à 500m, sont retirés des calculs tout profils ayant des données manquantes entre ces deux valeurs. Les zones où la bathymétrie est inférieure à 500m sont donc exclues de ces calculs.} (voir figure \ref{fig:comparaisondofmap}). 
+	Dans notre étude, l'estimation fonctionelle par projection sur une base de B-splines a été effectué avec l'hyperparamètre de régularisation $\lambda = 0.25$ et pour $K=25$ B-splines. Sont convervées 6 composantes principales ($>0.99$ \% explained var., voir tableau \ref{tab:pca_variance}) pour le clustering. L'indice BIC nous permet de sélectionner $nclust = 6$ clusters. En ajoutant les classes de transitions, on obtient alors 13 clusters distincts (7 clusters de "transitions") \footnote{La classe "NA" correspond aux clusters manquants sur le plateau de Kerguelen. Les profils de température et salinité allant de 20 à 500m, sont retirés des calculs tout profils ayant des données manquantes entre ces deux valeurs. Les zones où la bathymétrie est inférieure à 500m sont donc exclues de ces calculs.} (voir figure \ref{fig:comparaisondofmap}). 
 	
 	\begin{figure}[H]
 		\centering
@@ -753,8 +753,9 @@ urlcolor=black
 	
 	\clearpage
 	\chapter{Résultats}
-	\section{Distributions}
+	\section{Distributions des variables étudiées}
 	\subsection{Concentrations de pigments photosynthétiques}
+	\label{res:distribs_pigs}
 	On s'intéresse ici aux distributions inter-annuelles des contributions de chaque pigment (et donc chaque PFD) sur la production primaire totale.
 	La Fucoxantine, pigment associé aux diatomée, diminue progressivement entre 2018 et 2022 de manière significative puis retrouve une contribution identique à celle de 2018 (voir figure \ref{fig:violininterannualratiospigmenttotpig}). La contribution du 19'-hexanoyloxyfucoxantine, associée aux haptophytes, est stable entre 2018 et 2022 et augmente légèrement, mais significativement en 2023. Le 19'butanoyloxyfucoxantine diminue faiblement entre 2018 et 2023. On n'observe pas de tendance claire et significative pour les autres pigments.
 	Concernant la Chlorophylle-a, sa concentration diminue significativement entre 2018 et 2021 puis se stabilise \ref{fig:violininterannualchlaa}.
@@ -773,9 +774,6 @@ urlcolor=black
 			\label{fig:violininterannualchlaa}
 		\end{figure}
 		
-		Sur les années 2018, 2021, 2022, 2023, en période estivale et dans la région étudiée, on n'observe donc pas de tendances claire et significative d'augmentation ou de diminution de la contribution d'un groupe phytoplanctonique. Ces observations vont dans le sens de celles émises par Adroli dans sa publication récente \cite{adroli2026} : le secteur indien semble moins impacté par des changements de structuration des communautés phytoplanctoniques que les autres bassins de l'océan austral.
-		
-		
 	\subsection{Finite-Time Lyapunov Exponant}
 		L'hydrodynamisme de la région, plus particulièrement la convergence/divergence des trajectoires de particules d'eau caractérisée par les FTLE diminue légèrement et de manière continue entre 2018 et 2023.
 		
@@ -788,6 +786,7 @@ urlcolor=black
 	
 	
 	\subsection{NASC}
+	\label{res : distrib_nasc}
 	Les biomasses de poissons pélagiques et d'euphausiacés sont caractérisées par acoutique active respectivement à 38 et 120 kHz. La biomasse de poissons pélagiques, sur les transects étudiés, augmente significativement entre 2018 et 2021 puis se stabilise  (figure \ref{fig:violininterannualnasc38khz}). La biomasse d'Euphausiacés est stable sur toute la période étudiée (figure \ref{fig:violininterannualnasc120khz})
 	
 	\begin{figure}[H]
@@ -840,8 +839,26 @@ urlcolor=black
 	
 	Aucune différence significative de biomasse de zooplancton/micronecton n'a été détectée entre les différentes communautés phytoplanctoniques pour chaque année (voir figure \ref{fig:violinnasc-38-khz-par-communaute-phytoplanctonique-par-annee}, \ref{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee}). 
 	
-	\section{Résultats des régressions}
+	\section{Structure prédictive du NASC à partir des variables environnementales (FOD, FTLE) et des contribution de pigments photosynthétiques}
+	- comparaison des performances totales entre modèles
+	- nasc obs vs prédit
+	- learning curves
+	- calibration
+	- carte des résidus
 	
+
+	
+	\section{Relations structurelles entre le NASC, la contribution des pigments photosynthétiques, les domaines océanographiques fonctionnels et les FTLE}
+	
+	- importance des variables
+	- importance comparaison
+	
+	\section{Cartographie de la distribution prédite du NASC}
+	- comparaison globale
+	- carte de prédiction 1 jour
+	- carte de prédiction 1 mois
+	- 
+		
 	\clearpage
 	\chapter{Discussion}
 	euphausiaces pcq consommateurs primaires et donc diminution du biais lié au temps de transfet d'energie suite a un bloom pp
@@ -859,8 +876,19 @@ urlcolor=black
 	
 	6) perspectives
 	
+	\section{Distributions inter-anuelles des variables étudiées}
+		\subsection{Distributions des contributions des pigments photo-synthétiques}
+			Les résultats présentés en sous-section \ref{res:distribs_pigs} ne montrent pas de tendances claire et significative d'augmentation ou de diminution de la contribution d'un groupe phytoplanctonique en particulier. Ces observations vont dans le sens de celles émises par Adroli dans sa publication récente \cite{adroli2026} : le secteur indien semble moins impacté par des changements de structuration des communautés phytoplanctoniques que les autres bassins de l'océan austral. Ces résultats sont cependant à mettre en perspectives avec le nombre de données effectivements utilisées pour calculer les tendances, variable d'une année à une autre (voir annexe \ref{annexe:n_data_distribs}). De plus, la couverture nuageuse importante de la région ne permet de recueillir en moyenne que 10 à 20\% de données par satellite, des biais d'échantillonages peuvent donc être présents. D'autre part, des changements de structuration des communautés phytoplanctoniques peuvent avoir lieu à plus fine échelle et ne pas être détectés par ces calculs de distributions. Des tendances interanuelles ont été effectuées par fod (voir annexe \ref{fig:annexe_violins_all}), aucune tendance forte n'a été détécté. Enfin, pour réellement évaluer des changements de structuration de communautés phytoplanctonique, un jeu de donnée réparti sur au moins 40 ans est nécessaire \ref{label}.
+			
+		\subsection{Distribution des Finite-Time Lyapunov Exponent}
+		\subsection{Distribution du NASC}
+			Les analyses de distribution du NASC entre les années 2018, 2021, 2022, et 2023, dans la région étudiée, ne montrent pas de changements structurels significatifs (voir sous-section \ref{res : distrib_nasc}). Le nombre de données variable d'une année à l'autre (voir annexe \ref{annexe:n_data_distribs}) et la faible couverture spatiale et temporelle d'échantillonnage (transects des campagnes océanographiques) rendent ces résultats potentiellement peu représentatif de la réalité biologique et sont donc à considérer avec précautions. 
+	
+	\section{Performances prédictives}
+	
 	\section{Influence des fréquences}
 	Les NTI sont des poissons pourvu ou non de vessies natatoire \footnote{organe permettant à l'organisme de contrôler sa flottaison}. (mettre dans la partie )
+	
 	
 	\section{Complétion des NAs et influence sur le NASC}
 	
@@ -902,11 +930,12 @@ urlcolor=black
 	
 	\clearpage
 	\chapter{Annexes}
+	% Introduction
 	\section{Stratification verticale et horizontale des océans}
 	\label{annexe:strat_vert}
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width=0.6\textwidth]{images/01_intro/strat_vertical_el_marine_ecology}
+		\includegraphics[width=0.4\textwidth]{images/01_intro/strat_vertical_el_marine_ecology}
 		\caption{Stratification verticale de l'eau selon la pénétration de la lumière et de la pression, stratification horizontale selon la distance au plateau continental \cite{dipper2022}.}
 		\label{fig:stratverticalelmarineecology}
 	\end{figure}
@@ -915,11 +944,13 @@ urlcolor=black
 	\label{annexe:rep_freq}
 		\begin{figure}[H]
 			\centering
-			\includegraphics[width=0.7\textwidth]{images/05_annexes/02_materiel/freq_response_organisms_benoit_bird}
+			\includegraphics[width=0.5\textwidth]{images/05_annexes/02_materiel/freq_response_organisms_benoit_bird}
 			\caption{Réponse fréquentielle des organismes pélagiques selon la fréquence de l'onde émise \cite{benoitbird2016ecological}}
 			\label{fig:freqresponse}
 		\end{figure}
 		
+	% Méthode
+	% Préprocessing
 	\section{Valeurs manquantes sur le volume de rétropropagation acoustique $S_v$ en fonction de la profondeur et de la fréquence de l'échosondeur}
 	\label{annexe:missing_values}
 		\begin{figure}[H]
@@ -943,376 +974,369 @@ urlcolor=black
 			\label{fig:diagnabydepthperesu}
 		\end{figure}
 	
-	\section{Calcul des FOD}
-	\subsection{Estimation fonctionelle sur des bases de B-splines Estimation semi-paramétrique des profils de température et salinité}
-	
-	\subsubsection{Basis-splines de degré $m$ \cite{deBoor}}
-	Les Basis-splines (B-splines) peuvent servir de base pour l'estimation par projection (estimation semi-paramétrique ou fonctionelle). Ce sont des fonctions à support local pouvant être définies par la récurrence de Cox-de-Boor \cite{deBoor} :
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.6\textwidth]{images/03_methodology/b_splines_eilers}
-		\caption{Illustration d'une B-spline isolée et de B-splines chevauchantes, de degré 1 (a) et de degré 2 (b) \cite{eilers1996}}
-		\label{fig:bsplines}
-	\end{figure}
-	
-	
-	Soit $\phi_{i,m}(x)$ la B-spline de degré $m$ dont le support est $supp(\phi_{i,m}(x)) = [\tau_i, \tau_{i+m+1}]$. Avec $\tau_i, \ldots, \tau_{i+m+1}$ les noeuds (équi-espacés ou non). On peut définir la B-spline $\phi_{i,m}(x)$ comme suis \cite{deBoor} : 
-	\begin{enumerate}
-		\item Initialisation d'une fonction porte par noeud (degré 0, ordre 1)
-		\begin{equation}
-			\phi_{i,0}(x) = \begin{cases}
-				1 & \text{si } \tau_i \leq x < \tau_{i+1} \\
-				0 & \text{sinon}
-			\end{cases}
-		\end{equation}
+	\section{Méthode de calcul des FOD}
+		\label{annexe:methode_fod}
+		\subsection{Estimation par projection sur des bases de B-splines des profils de température et salinité}
 		
-		\item Réccurence : combinaison convexe de B-splines de degré inférieur à deux noeuds consécutifs
-		\begin{equation}
-			\phi_{i, m}(x) = \omega_{i,m}(x)\, \phi_{i, m-1}(x) + \big(1 - \omega_{i+1,m}(x)\big)\, \phi_{i+1, m-1}(x)
-		\end{equation}
-		avec
-		\begin{equation}
-			\omega_{j,m}(x) := \frac{x - \tau_j}{\tau_{j+m}- \tau_j}, \forall j
-		\end{equation}
-		(le poids de chaque terme est normalisé par le support de la B-spline de degré $m-1$ qu'il pondère : $\text{supp}(\phi_{i,m-1}) = [\tau_i, \tau_{i+m}]$ et $\text{supp}(\phi_{i+1,m-1}) = [\tau_{i+1}, \tau_{i+1+m}]$).
-	\end{enumerate}
-	
-	
-	\subsubsection{Espace des splines et base de B-splines}
-	Soit $\tau = (\tau_1,\ldots,\tau_{2m+L+2})$ une suite de noeuds définie par
-	\begin{equation} \underbrace{a = \tau_1 = \tau_2 = \cdots = \tau_{m+1}}_{m+1 \text{ noeuds répétés en } a} < \underbrace{\tau_{m+2} < \cdots < \tau_{m+L+1}}_{L \text{ noeuds intérieurs}} < \underbrace{\tau_{m+L+2} = \cdots = \tau_{2m+L+2}=b}_{m+1 \text{ noeuds répétés en } b} \end{equation}
-	
-	On note $\mathbb{S}_{m,\tau}$ l'espace des fonctions splines de degré $m$ associées à cette suite de noeuds. Une spline $f\in\mathbb{S}_{m,\tau}$ est une fonction polynomiale par morceaux de degré au plus $m$, définie sur les intervalles délimités par les noeuds $\tau$, et satisfaisant les conditions de continuité imposées par les multiplicités des noeuds \footnote{\begin{itemize}
-			\item Continuité : $\phi_{i, m}(x) \in C^{m-1}$ aux noeuds. Pour une B-spline cubique ($m=3$), $\phi_{i, 3} \in \mathcal{C}^{2}$,
-			\item Support compact : $\text{supp}(\phi_{i,m}) = [\tau_i, \tau_{i+m+1}]$, 
-			donc $\langle \phi_{i,m}, \phi_{j,m} \rangle = 0$ si $|i-j| \geq m+1$.
-			\item Positivité : $\phi_{i,m}(x) > 0$ sur $(\tau_i, \tau_{i+m+1})$ 
-			et $\phi_{i,m}(x) = 0$ sinon.
-	\end{itemize}}.
-	
-	Les B-splines de degré $m$ associées à la suite de noeuds $\tau$, notées $\{\phi_{i,m}\}_{i=1}^{L+m+1}$	constituent une base de l'espace $\mathbb{S}_{m,\tau}$ ($\dim(\mathbb{S}_{m,\tau})=L+m+1$).
-	
-	Par conséquent, toute fonction spline $f\in\mathbb{S}_{m,\tau}$ peut s'écrire de manière unique comme une combinaison linéaire des B-splines :
-	\begin{equation}
-		\boxed{
-			f(x)=\sum_{i=1}^{L+m+1}\alpha_i\phi_{i,m}(x),
-			\qquad \alpha_i\in\mathbb{R}.
-		}
-	\end{equation}
-	
-	\subsubsection{Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) \cite{wand2008}, \cite{eilers1996}}
-	\label{par:moindres_carres}
-	
-	Appliquons maintenant ce cadre à l'estimation fonctionnelle des profils de température et de salinité. Soit $l$ un indice spatio-temporel (combinaison d'un instant, d'une longitude et d'une latitude) et $v \in {T,S}$ la variable considérée. Le profil brut $\mathbf{v}_l \in \mathbb{R}^{n_{depths}}$ correspond aux valeurs de $v$ issues du modèle Copernicus aux profondeurs discrètes $z_1,\ldots,z_{n_{depths}}$. On suppose que ces observations proviennent de l'évaluation d'une fonction sous-jacente $f_l$ aux profondeurs considérées :
-	\begin{equation}
-		v_l(z_k)=f_l(z_k)+\varepsilon_k,
-		\qquad k=1,\ldots,n_{depths},
-	\end{equation}
-	où $\varepsilon_k$ représente le terme d'erreur associé à l'observation du profil à la profondeur $z_k$.
-	
-	L'objectif est d'estimer $f_l$ sur l'intervalle de profondeur $[a,b]$, qui correspond ici à $[20,500]$ m. On cherche pour cela une approximation $\hat f_l \in \mathbb{S}_{m,\tau}$ sous la forme d'une combinaison linéaire des B-splines définies précédemment :
-	\begin{equation}
-		\hat f_l(z)
-		=
-		\sum_{i=1}^{K}
-		\alpha_{l,i}\,\phi_{i,m}(z),
-		\qquad K=L+m+1.
-	\end{equation}
-	où $L$ désigne le nombre de noeuds intérieurs et $K$ le nombre total de B-splines. Les coefficients $\boldsymbol{\alpha}_l = (\alpha_{l,1},\ldots,\alpha_{l,K})^\top$ déterminent ainsi entièrement la spline estimée pour le profil $l$. Pour un profil donné, les coefficients $\boldsymbol{\alpha}_l$ sont déterminés en minimisant l'erreur d'ajustement entre les observations et la spline. La fonction objectif des moindres carrés est
-	\begin{align}
-		S_l
-		&=
-		\sum_{k=1}^{n_{depths}}
-		\left(
-		v_l(z_k)-\hat f_l(z_k)
-		\right)^2
-		\\
-		&=
-		\sum_{k=1}^{n_{depths}}
-		\left(
-		v_l(z_k)
-		-
-		\sum_{i=1}^{K}
-		\alpha_{l,i}\phi_{i,m}(z_k)
-		\right)^2.
-	\end{align}
-	
-	Cependant, lorsque le nombre de noeuds est élevé, l'ajustement peut devenir excessivement flexible et conduire à un sur-ajustement (\textit{overfitting}). Afin de contrôler la complexité de la fonction estimée, on introduit une pénalisation de sa rugosité\footnote{mesure le degré d'irrégularité d'une fonction, est quantifié par l'intégrale du carré de sa dérivée seconde}. La matrice de pénalisation $\Omega$ est définie par
-	\begin{equation}
-		\Omega_{i,j}
-		=
-		\int_a^b
-		\phi_{i,m}''(z)\phi_{j,m}''(z)\,\mathrm{d}z,
-		\qquad
-		1\leq i,j\leq K.
-	\end{equation}
-	
-	Le critère pénalisé à minimiser pour le profil $l$ est alors
-	\begin{equation}
-		S_{l,\lambda}
-		=
-		\underbrace{
-			\sum_{k=1}^{n_{depths}}
-			\left(
-			v_l(z_k)
-			-
-			\sum_{i=1}^{K}
-			\alpha_{l,i}\phi_{i,m}(z_k)
-			\right)^2
-		}_{\text{erreur d'ajustement}}
-		+
-		\lambda
-		\underbrace{
-			\boldsymbol{\alpha}_l^\top
-			\Omega
-			\boldsymbol{\alpha}_l
-		}_{\text{pénalisation de la rugosité}}.
-	\end{equation}
-	où $\lambda\geq0$ est le paramètre de lissage contrôlant le compromis entre fidélité aux observations et régularité de la fonction estimée.
-	Dans notre cas, le nombre de splines $K$ et le paramètre de lissage $\lambda$ ont été choisi par validation croisée leave-one-out (CV-LOO). On trouve $\lambda = 0.25$ pour $K = 25$ splines
-	
-	\begin{figure}[h]
-		\centering
-		\includegraphics[width=0.5\textwidth]{images/03_methodology/profil_bspline_temp_sal_lon45.00_lat-60.00}
-		\caption[]{Estimation fonctionelle des profils de Température/Salinité ($\lambda = 0.25, K=25$) issu de Copernicus (E.U. Copernicus Marine Service Information (CMEMS). Global Ocean Physics Reanalysis. Marine Data Store (MDS). DOI: 10.48670/moi-00021) le 2023-01-26 aux coordonnées 450E,-60°N.}
-		\label{fig:profilbsplinetempsal}
-	\end{figure}
-	
-	\subsection{Réduction de dimension par Analyse en Composante Principale}
-	
-	Suite à l'estimation fonctionnelle réalisée à l'étape précédente, chaque profil $l$ est désormais représenté par un couple de fonctions de la profondeur, la température et la salinité, estimées sur la même base de B-splines $(\Phi_k)_{1\leq k \leq K}$ définie sur $[d_{min}, d_{max}]$ :
-	\[
-	T_l(z) = \sum_{k=1}^{K} \alpha_{l,k}^{T}\, \Phi_k(z), 
-	\qquad
-	S_l(z) = \sum_{k=1}^{K} \alpha_{l,k}^{S}\, \Phi_k(z),
-	\qquad z \in [d_{min}, d_{max}]
-	\]
-	On considère alors chaque profil comme une observation \textbf{bivariée} $X_l = (T_l, S_l) \in \big(L^2([d_{min}, d_{max}])\big)^2$, muni du produit scalaire
-	\[
-	\langle (f_1, g_1), (f_2, g_2) \rangle = \langle f_1, f_2 \rangle_{L^2} + \langle g_1, g_2 \rangle_{L^2}
-	\]
-	L'objectif de cette étape est de réduire conjointement la dimension des profils de température et de salinité, afin de capturer les modes de variabilité communs aux deux variables.
-	
-	Une approche pour réduire la dimension des données est l'analyse par composante principale (ACP ou PCA pour Principal Component Analysis). Puisque les données sont dans un espace fonctionnel $\mathbb{S}_{m,\tau}$, on parle alors d'Analyse par Composante Principale \textit{fonctionnelle} (ACPf ou FPCA). La logique est identique à celle d'une PCA classique mais les outils sont adaptés pour manipuler les fonctions. Ici, la fPCA est réalisée conjointement sur les deux variables, on parle de fPCA bivariée.
-	
-	\subsubsection{Construction du vecteur de coefficients bivarié}
-	Pour chaque profil $l$, on concatène les coefficients de B-spline de température et de salinité en un unique vecteur $\alpha_l \in \mathbb{R}^{2K}$ :
-	\[
-	\alpha_l = \begin{pmatrix} \alpha_l^{T} \\ \alpha_l^{S} \end{pmatrix}, 
-	\qquad \alpha_l^{T} = (\alpha_{l,1}^T, \ldots, \alpha_{l,K}^T)^\top, 
-	\quad \alpha_l^{S} = (\alpha_{l,1}^S, \ldots, \alpha_{l,K}^S)^\top
-	\]
-	En empilant les $N$ profils, on obtient la matrice $\alpha \in \mathbb{R}^{N \times 2K}$.
-	
-	\subsubsection{Centrage des données}
-	Soit $\overline{\alpha} \in \mathbb{R}^{2K}$ la moyenne empirique, sur l'ensemble des $N$ profils, des coefficients de chaque B-spline pour la partie température et pour la partie salinité :
-	\[
-	\overline{\alpha} = \frac{1}{N} \sum_{l=1}^{N} \alpha_l
-	\]
-	
-	On obtient ainsi les coefficients bivariés centrés $\tilde{\alpha} =  \alpha_{l} - \overline{\alpha}$, avec $\tilde{\alpha} \in \mathbb{R}^{N \times 2K}$. Pour $l \in N$ : 
-	$$
-	\tilde\alpha_l
-	=
-	\begin{pmatrix}
-		\tilde\alpha_l^T\\
-		\tilde\alpha_l^S
-	\end{pmatrix}
-	\in\mathbb{R}^{2K}
-	$$
-	
-	\subsubsection{Calcul de la covariance empirique}
-	
-	On définit la matrice bivariée de fonctions de base $\boldsymbol{\Phi}(z) \in \mathbb{R}^{2\times 2K}$ comme la concaténation de la base $\Phi$ utilisée pour chacune des deux composantes :
-	
-	$$
-	\boldsymbol{\Phi}(z)
-	=
-	\begin{pmatrix}
-		\Phi(z)^\top & 0\\
-		0 & \Phi(z)^\top
-	\end{pmatrix}
-	\in\mathbb{R}^{2\times 2K},
-	$$
-	
-	de sorte que le profil bivarié centré s'écrive $
-	\tilde X_l(z)
-	=
-	\boldsymbol{\Phi}(z)\tilde\alpha_l
-	=
-	\begin{pmatrix}
-		\tilde T_l(z)\\
-		\tilde S_l(z)
-	\end{pmatrix}.
-	$
-	
-	La covariance empirique entre deux profondeurs $s$ et $t$ est alors une matrice $2\times2$ donnée par
-	
-	$$
-	\hat V(s,t)
-	=
-	\frac{1}{N}
-	\sum_{l=1}^N
-	\tilde X_l(s)\tilde X_l(t)^\top.
-	$$
-	
-	En introduisant la matrice de covariance empirique des coefficients
-	
-	$$
-	C
-	=
-	\frac{1}{N}\tilde\alpha^\top\tilde\alpha
-	\in\mathbb{R}^{2K\times2K},
-	$$
-	
-	on obtient
-	
-	$$
-	\boxed{
-		\hat V(s,t)
-		=
-		\boldsymbol{\Phi}(s)\,
-		C\,
-		\boldsymbol{\Phi}(t)^\top.
-	}
-	$$
-	
-	Cette matrice contient à la fois les covariances intra-variables, correspondant aux blocs température--température et salinité--salinité, et les covariances croisées température--salinité.
-	
-	\subsubsection{Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}
-	
-	On effectue la décomposition spectrale de l'opérateur de covariance $\hat{V}$ :
-	\[
-	\int \hat{V}(s, t)\,\xi(t)\, dt = \rho\, \xi(s)
-	\]
-	avec la contrainte d'orthonormalité des fonctions propres bivariées : $\|\xi\|_{L^2} = 1$ et $\langle \xi_i, \xi_j\rangle = 0$ si $i \neq j$.
-	
-	On fait l'hypothèse que la fonction propre bivariée $\xi(t)$ se décompose dans la même base bivariée que nos profils :
-	\[
-	\xi(t) = \boldsymbol{\Phi}^\top(t)\, b, \qquad b \in \mathbb{R}^{2K}
-	\]
-	
-	On a alors :
-	\begin{align*}
-		\int \hat{V}(s, t)\,\xi(t)\,dt 
-		&= \int \frac{1}{N} \boldsymbol{\Phi}^\top(s)\tilde{\alpha}^\top \tilde{\alpha}\, \boldsymbol{\Phi}(t)\, \boldsymbol{\Phi}^\top(t)\, b\,dt \\
-		&= \frac{1}{N} \boldsymbol{\Phi}^\top(s)\tilde{\alpha}^\top \tilde{\alpha} 
-		\underbrace{\int \boldsymbol{\Phi}(t)\boldsymbol{\Phi}^\top(t)\,dt}_{=\, W} \, b \\
-		&= \frac{1}{N}\boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^\top \tilde{\alpha}\, W\, b
-	\end{align*}
-	où $W = \int \boldsymbol{\Phi}(t)\boldsymbol{\Phi}^\top(t)\,dt \in \mathbb{R}^{2K \times 2K}$ est la matrice de Gram de la base bivariée. Comme $\boldsymbol{\Phi}(t)$ répète deux fois la même base $\Phi(t)$, $W$ prend la forme bloc-diagonale
-	\[
-	W = \begin{pmatrix} W_0 & 0 \\ 0 & W_0 \end{pmatrix}, 
-	\qquad W_0 = \int \Phi(t)\Phi^\top(t)\,dt \in \mathbb{R}^{K \times K}
-	\]
-	les blocs hors-diagonale étant nuls car la partie température et la partie salinité de $\xi$ n'interagissent qu'au travers de la covariance des coefficients $\tilde\alpha^\top\tilde\alpha$, pas au travers de la base elle-même.
-	
-	On peut donc réécrire la décomposition spectrale comme suit :
-	\begin{align*}
-		& \int \hat{V}(s, t)\,\xi(t)\,dt = \rho\, \xi(s)\\
-		& \iff \frac{1}{N}\boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, \boldsymbol{\Phi}^\top(s)\, b\\
-		& \iff \frac{1}{N} \tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, b
-	\end{align*}
-	
-	La matrice $\tilde\alpha^\top\tilde\alpha$ est symétrique (c'est un produit de la forme $A^\top A$), mais le produit $\tilde\alpha^\top\tilde\alpha\, W$ ne l'est pas en général : le problème aux valeurs propres n'est donc pas directement résoluble par une décomposition spectrale standard. Pour contourner ce problème, on utilise le changement de variable $b = W^{-\frac{1}{2}} u$ :
-	\begin{align*}
-		& \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, b\\
-		& \iff \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W\, W^{-\frac 1 2}u = \rho\, W^{-\frac 1 2}u\\
-		& \iff \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W^{\frac{1}{2}} u = \rho\, W^{-\frac{1}{2}} u \\
-		& \iff \frac 1 N \underbrace{W^{\frac 1 2}\, \tilde{\alpha}^\top \tilde{\alpha}\, W^{\frac 1 2}}_{\text{symétrique}}\, u = \rho\, u
-	\end{align*}
-	La matrice $W^{1/2}\tilde\alpha^\top\tilde\alpha\, W^{1/2}$ est bien symétrique (elle est de la forme $M^\top M$ avec $M = \tilde\alpha W^{1/2}$), ce qui garantit des valeurs propres réelles $\rho$ et des vecteurs propres $u$ orthogonaux. Une fois $u$ obtenu, on retrouve $b = W^{-1/2} u$, puis la fonction propre bivariée $\xi(t) = \boldsymbol{\Phi}^\top(t)\, b$, dont les deux moitiés de $b$ (les $K$ premiers et les $K$ derniers coefficients) donnent respectivement la composante "température" $\xi^T$ et la composante "salinité" $\xi^S$ de la fonction propre.
-	
-	\subsubsection{ Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}
-	Une fois les fonctions propres bivariées $\xi_j = (\xi_j^T, \xi_j^S)$ et valeurs propres $\rho_j$ calculées, on peut calculer les projections $c_{l,j}$ des profils bivariés centrés $\tilde X_l = (\tilde T_l, \tilde S_l)$ sur l'espace propre. On note $c_{l,j}$ le score du profil $l$ sur la $j$-ème composante principale (commun à la température et à la salinité, puisque la composante principale est bivariée) :
-	\begin{align*}
-		c_{l, j} &= \langle \tilde X_l, \xi_j\rangle \\
-		&= \int \tilde\alpha_l^\top \boldsymbol{\Phi}(t)\, \boldsymbol{\Phi}^\top(t)\, b_j \, dt \\ 
-		&= \tilde \alpha_l^\top\, W\, b_j \;\in \mathbb{R}
-	\end{align*}
-	
-	On choisit ensuite $J \ll 2K$ composantes à partir de la variance expliquée cumulée. La variance expliquée cumulée des $J$ premières composantes principales est calculée comme suit :
-	\[
-	VE = \frac{\sum_{j=1}^{J}\rho_j}{\sum_{k=1}^{2K} \rho_k}	
-	\]
-	avec $\rho_k$ la valeur propre associée à la $k$-ième composante principale, les composantes étant triées par ordre \textbf{décroissant} de valeur propre ($\rho_1 \geq \rho_2 \geq \cdots$), de sorte que les $J$ premières composantes soient celles qui expliquent le plus de variance conjointe des profils de température et de salinité. On peut ainsi sélectionner par exemple les $J$ premières composantes principales qui expliquent 90\% de la variance.
-	
-	\vspace{1em}
-	
-	Finalement, on peut reconstruire conjointement les profils de température et de salinité du profil $l$ comme la combinaison linéaire des $J$ premières fonctions propres bivariées et des scores associés (les mêmes scores $c_{l,j}$ pilotant simultanément la reconstruction des deux variables) :
-	\[
-	T_l(t) = \overline{T}(t) + \sum_{j=1}^{J} c_{l,j}\, \xi_j^T(t), 
-	\qquad
-	S_l(t) = \overline{S}(t) + \sum_{j=1}^{J} c_{l,j}\, \xi_j^S(t)
-	\]
-	où $\overline{T}$ et $\overline{S}$ sont les profils moyens de température et de salinité, obtenus à partir des composantes correspondantes de $\overline\alpha$.
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width=0.5\textwidth]{images/03_methodology/profil_pca_temp_sal_lon45.00_lat-60.00_nharm6.00}
-		\caption{Réduction de la matrice de coefficients de pondération des B-splines par PCA et reconstruction des profiles de Température/Salinité issu de Copernicus (E.U. Copernicus Marine Service Information (CMEMS). Global Ocean Physics Reanalysis. Marine Data Store (MDS). DOI: 10.48670/moi-00021) le 2023-01-26 aux coordonnées 450E,-60°N. k=6 composantes principales sont conservées ($>$99\% de variance expliquée (voir Table \ref{tab:pca_variance}, Annexe \ref{annexe:methode_fod}))}
-		\label{fig:profilpcatempsallon45}
-	\end{figure}
-	
-	\subsection{Gaussian Model Mixture Clustering}
-	Afin de regrouper les profils de température et salinité similaires et identifier des Domaines Océanographiques Fonctionnels, on effectue un GMM clustering sur la matrice des coefficients réduite $c$ obtenue à l'étape précédente. Le fonctionnement de la méthode ne sera pas développée ici, se référer a \cite{bishop2006pattern} pour une explication. Le GMM clustering a été implémenté avec le package mclust \cite{scrucca2016mclust}, \cite{fraley2002mclust} disponible sous R. Le modèle le plus flexible (model="VVV") a été utilisé, permettant un ajustement des ellipsoïde non contraint en volume, orientation et forme, celà au prix d'une augmentation du nombre d'hyperparamètres. Avec les précédents travaux réalisés par Fonvieille N. et Molinet M. \cite{fonvieille2024}, \cite{molinetLinkingOceanographic}, la recherche d'une nombre de cluster a été restreinte entre 4 et 6 clusters, réduisant ainsi le coût computationnel. Les clusters ont été définis lorsque la probabilité d'appartenance à un cluster était suppérieur au seuil fixé à 0.75. Des classes de transitions ont été créées en fonction des deux clusters ayant une probabilité d'appartenance maximale. 
-
-	
-	\section{Influence du nombre de composantes principales sur la reconstruction des profils de température et salinité}
-	\label{annexe:methode_fod}
-	
-	\begin{table}[H]
-		\centering
-		\begin{tabular}{ccccc}
-			\toprule
-			PC & Eigenvalue & Prop. variance & Cumulative variance \\
-			\midrule
-			1  & 981.66665873 & 0.9810935 & 0.9810935 \\
-			2  & 12.52661452  & 0.0125193 & 0.9936128 \\
-			3  & 4.16020812   & 0.0041578 & 0.9977705 \\
-			4  & 0.92707153   & 0.0009265 & 0.9986971 \\
-			5  & 0.56820781   & 0.0005679 & 0.9992649 \\
-			6  & 0.41429271   & 0.0004141 & 0.9996790 \\
-			7  & 0.13458956   & 0.0001345 & 0.9998135 \\
-			8  & 0.05806269   & 0.0000580 & 0.9998715 \\
-			9  & 0.05427009   & 0.0000542 & 0.9999258 \\
-			10 & 0.02370249   & 0.0000237 & 0.9999495 \\
-			\bottomrule
-		\end{tabular}
-		\caption{Valeurs propres et variance expliquée par les composantes principales.}
-		\label{tab:pca_variance}
-	\end{table}
-	
-	\begin{figure}[H]
-		\centering
+			\subsubsection{Basis-splines de degré $m$ \cite{deBoor}}
+			Les Basis-splines (B-splines) peuvent servir de base pour l'estimation par projection (estimation semi-paramétrique ou fonctionelle). Ce sont des fonctions à support local pouvant être définies par la récurrence de Cox-de-Boor \cite{deBoor} :
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\textwidth]{images/03_methodology/b_splines_eilers}
+				\caption{Illustration d'une B-spline isolée et de B-splines chevauchantes, de degré 1 (a) et de degré 2 (b) \cite{eilers1996}}
+				\label{fig:bsplines}
+			\end{figure}
+			
+			
+			Soit $\phi_{i,m}(x)$ la B-spline de degré $m$ dont le support est $supp(\phi_{i,m}(x)) = [\tau_i, \tau_{i+m+1}]$. Avec $\tau_i, \ldots, \tau_{i+m+1}$ les noeuds (équi-espacés ou non). On peut définir la B-spline $\phi_{i,m}(x)$ comme suis \cite{deBoor} : 
+			\begin{enumerate}
+				\item Initialisation d'une fonction porte par noeud (degré 0, ordre 1)
+				\begin{equation}
+					\phi_{i,0}(x) = \begin{cases}
+						1 & \text{si } \tau_i \leq x < \tau_{i+1} \\
+						0 & \text{sinon}
+					\end{cases}
+				\end{equation}
+				
+				\item Réccurence : combinaison convexe de B-splines de degré inférieur à deux noeuds consécutifs
+				\begin{equation}
+					\phi_{i, m}(x) = \omega_{i,m}(x)\, \phi_{i, m-1}(x) + \big(1 - \omega_{i+1,m}(x)\big)\, \phi_{i+1, m-1}(x)
+				\end{equation}
+				avec
+				\begin{equation}
+					\omega_{j,m}(x) := \frac{x - \tau_j}{\tau_{j+m}- \tau_j}, \forall j
+				\end{equation}
+				(le poids de chaque terme est normalisé par le support de la B-spline de degré $m-1$ qu'il pondère : $\text{supp}(\phi_{i,m-1}) = [\tau_i, \tau_{i+m}]$ et $\text{supp}(\phi_{i+1,m-1}) = [\tau_{i+1}, \tau_{i+1+m}]$).
+			\end{enumerate}
 		
-		\begin{subfigure}{0.3\textwidth}
-			\centering
-			\includegraphics[width=\textwidth]{images/05_annexes/03_methode/profil_pca_temp_sal_lon45.00_lat-60.00_nharm2.00}
-			\caption{$k=2$}
-			\label{fig:profil_pca_k2}
-		\end{subfigure}
-		\hfill
-		\begin{subfigure}{0.3\textwidth}
-			\centering
-			\includegraphics[width=\textwidth]{images/05_annexes/03_methode/profil_pca_temp_sal_lon45.00_lat-60.00_nharm6.00}
-			\caption{$k=6$}
-			\label{fig:profil_pca_k6}
-		\end{subfigure}
-		\hfill
-		\begin{subfigure}{0.3\textwidth}
-			\centering
-			\includegraphics[width=\textwidth]{images/05_annexes/03_methode/profil_pca_temp_sal_lon45.00_lat-60.00_nharm10.00}
-			\caption{$k=10$}
-			\label{fig:profil_pca_k10}
-		\end{subfigure}
 		
-		\caption{Effet du nombre de composantes principales $k$ sur la qualité de reconstruction des profils de température et salinité. Un nombre de PC permettant d'obtenir une variance expliquée $>0.99$ ne permet pas nécessairement une reconstruction correcte des profils.}
-		\label{fig:profilpcatempsalcompare}
-	\end{figure}
-	
-	
+			\subsubsection{Espace des splines et base de B-splines}
+				Soit $\tau = (\tau_1,\ldots,\tau_{2m+L+2})$ une suite de noeuds définie par
+				\begin{equation} \underbrace{a = \tau_1 = \tau_2 = \cdots = \tau_{m+1}}_{m+1 \text{ noeuds répétés en } a} < \underbrace{\tau_{m+2} < \cdots < \tau_{m+L+1}}_{L \text{ noeuds intérieurs}} < \underbrace{\tau_{m+L+2} = \cdots = \tau_{2m+L+2}=b}_{m+1 \text{ noeuds répétés en } b} \end{equation}
+				
+				On note $\mathbb{S}_{m,\tau}$ l'espace des fonctions splines de degré $m$ associées à cette suite de noeuds. Une spline $f\in\mathbb{S}_{m,\tau}$ est une fonction polynomiale par morceaux de degré au plus $m$, définie sur les intervalles délimités par les noeuds $\tau$, et satisfaisant les conditions de continuité imposées par les multiplicités des noeuds \footnote{\begin{itemize}
+						\item Continuité : $\phi_{i, m}(x) \in C^{m-1}$ aux noeuds. Pour une B-spline cubique ($m=3$), $\phi_{i, 3} \in \mathcal{C}^{2}$,
+						\item Support compact : $\text{supp}(\phi_{i,m}) = [\tau_i, \tau_{i+m+1}]$, 
+						donc $\langle \phi_{i,m}, \phi_{j,m} \rangle = 0$ si $|i-j| \geq m+1$.
+						\item Positivité : $\phi_{i,m}(x) > 0$ sur $(\tau_i, \tau_{i+m+1})$ 
+						et $\phi_{i,m}(x) = 0$ sinon.
+				\end{itemize}}.
+				
+				Les B-splines de degré $m$ associées à la suite de noeuds $\tau$, notées $\{\phi_{i,m}\}_{i=1}^{L+m+1}$	constituent une base de l'espace $\mathbb{S}_{m,\tau}$ ($\dim(\mathbb{S}_{m,\tau})=L+m+1$).
+				
+				Par conséquent, toute fonction spline $f\in\mathbb{S}_{m,\tau}$ peut s'écrire de manière unique comme une combinaison linéaire des B-splines :
+				\begin{equation}
+					\boxed{
+						f(x)=\sum_{i=1}^{L+m+1}\alpha_i\phi_{i,m}(x),
+						\qquad \alpha_i\in\mathbb{R}.
+					}
+				\end{equation}
+				
+				\subsubsection{Estimation fonctionnelle par minimisation des moindres carrés pénalisée (O-Splines) \cite{wand2008}, \cite{eilers1996}}
+				\label{par:moindres_carres}
+				
+				Appliquons maintenant ce cadre à l'estimation fonctionnelle des profils de température et de salinité. Soit $l$ un indice spatio-temporel (combinaison d'un instant, d'une longitude et d'une latitude) et $v \in {T,S}$ la variable considérée. Le profil brut $\mathbf{v}_l \in \mathbb{R}^{n_{depths}}$ correspond aux valeurs de $v$ issues du modèle Copernicus aux profondeurs discrètes $z_1,\ldots,z_{n_{depths}}$. On suppose que ces observations proviennent de l'évaluation d'une fonction sous-jacente $f_l$ aux profondeurs considérées :
+				\begin{equation}
+					v_l(z_k)=f_l(z_k)+\varepsilon_k,
+					\qquad k=1,\ldots,n_{depths},
+				\end{equation}
+				où $\varepsilon_k$ représente le terme d'erreur associé à l'observation du profil à la profondeur $z_k$.
+				
+				L'objectif est d'estimer $f_l$ sur l'intervalle de profondeur $[a,b]$, qui correspond ici à $[20,500]$ m. On cherche pour cela une approximation $\hat f_l \in \mathbb{S}_{m,\tau}$ sous la forme d'une combinaison linéaire des B-splines définies précédemment :
+				\begin{equation}
+					\hat f_l(z)
+					=
+					\sum_{i=1}^{K}
+					\alpha_{l,i}\,\phi_{i,m}(z),
+					\qquad K=L+m+1.
+				\end{equation}
+				où $L$ désigne le nombre de noeuds intérieurs et $K$ le nombre total de B-splines. Les coefficients $\boldsymbol{\alpha}_l = (\alpha_{l,1},\ldots,\alpha_{l,K})^\top$ déterminent ainsi entièrement la spline estimée pour le profil $l$. Pour un profil donné, les coefficients $\boldsymbol{\alpha}_l$ sont déterminés en minimisant l'erreur d'ajustement entre les observations et la spline. La fonction objectif des moindres carrés est
+				\begin{align}
+					S_l
+					&=
+					\sum_{k=1}^{n_{depths}}
+					\left(
+					v_l(z_k)-\hat f_l(z_k)
+					\right)^2
+					\\
+					&=
+					\sum_{k=1}^{n_{depths}}
+					\left(
+					v_l(z_k)
+					-
+					\sum_{i=1}^{K}
+					\alpha_{l,i}\phi_{i,m}(z_k)
+					\right)^2.
+				\end{align}
+				
+				Cependant, lorsque le nombre de noeuds est élevé, l'ajustement peut devenir excessivement flexible et conduire à un sur-ajustement (\textit{overfitting}). Afin de contrôler la complexité de la fonction estimée, on introduit une pénalisation de sa rugosité\footnote{mesure le degré d'irrégularité d'une fonction, est quantifié par l'intégrale du carré de sa dérivée seconde}. La matrice de pénalisation $\Omega$ est définie par
+				\begin{equation}
+					\Omega_{i,j}
+					=
+					\int_a^b
+					\phi_{i,m}''(z)\phi_{j,m}''(z)\,\mathrm{d}z,
+					\qquad
+					1\leq i,j\leq K.
+				\end{equation}
+				
+				Le critère pénalisé à minimiser pour le profil $l$ est alors
+				\begin{equation}
+					S_{l,\lambda}
+					=
+					\underbrace{
+						\sum_{k=1}^{n_{depths}}
+						\left(
+						v_l(z_k)
+						-
+						\sum_{i=1}^{K}
+						\alpha_{l,i}\phi_{i,m}(z_k)
+						\right)^2
+					}_{\text{erreur d'ajustement}}
+					+
+					\lambda
+					\underbrace{
+						\boldsymbol{\alpha}_l^\top
+						\Omega
+						\boldsymbol{\alpha}_l
+					}_{\text{pénalisation de la rugosité}}.
+				\end{equation}
+				où $\lambda\geq0$ est le paramètre de lissage contrôlant le compromis entre fidélité aux observations et régularité de la fonction estimée.
+				Dans notre cas, le nombre de splines $K$ et le paramètre de lissage $\lambda$ ont été choisi par validation croisée leave-one-out (CV-LOO). On trouve $\lambda = 0.25$ pour $K = 25$ splines
+				
+				\begin{figure}[h]
+					\centering
+					\includegraphics[width=0.5\textwidth]{images/03_methodology/profil_bspline_temp_sal_lon45.00_lat-60.00}
+					\caption[]{Estimation fonctionelle des profils de Température/Salinité ($\lambda = 0.25, K=25$) issu de Copernicus (E.U. Copernicus Marine Service Information (CMEMS). Global Ocean Physics Reanalysis. Marine Data Store (MDS). DOI: 10.48670/moi-00021) le 2023-01-26 aux coordonnées 450E,-60°N.}
+					\label{fig:profilbsplinetempsal}
+				\end{figure}
+		
+		\subsection{Réduction de dimension par Analyse en Composante Principale}
+		
+			Suite à l'estimation fonctionnelle réalisée à l'étape précédente, chaque profil $l$ est désormais représenté par un couple de fonctions de la profondeur, la température et la salinité, estimées sur la même base de B-splines $(\Phi_k)_{1\leq k \leq K}$ définie sur $[d_{min}, d_{max}]$ :
+			\[
+			T_l(z) = \sum_{k=1}^{K} \alpha_{l,k}^{T}\, \Phi_k(z), 
+			\qquad
+			S_l(z) = \sum_{k=1}^{K} \alpha_{l,k}^{S}\, \Phi_k(z),
+			\qquad z \in [d_{min}, d_{max}]
+			\]
+			On considère alors chaque profil comme une observation \textbf{bivariée} $X_l = (T_l, S_l) \in \big(L^2([d_{min}, d_{max}])\big)^2$, muni du produit scalaire
+			\[
+			\langle (f_1, g_1), (f_2, g_2) \rangle = \langle f_1, f_2 \rangle_{L^2} + \langle g_1, g_2 \rangle_{L^2}
+			\]
+			L'objectif de cette étape est de réduire conjointement la dimension des profils de température et de salinité, afin de capturer les modes de variabilité communs aux deux variables.
+			
+			Une approche pour réduire la dimension des données est l'analyse par composante principale (ACP ou PCA pour Principal Component Analysis). Puisque les données sont dans un espace fonctionnel $\mathbb{S}_{m,\tau}$, on parle alors d'Analyse par Composante Principale \textit{fonctionnelle} (ACPf ou FPCA). La logique est identique à celle d'une PCA classique mais les outils sont adaptés pour manipuler les fonctions. Ici, la fPCA est réalisée conjointement sur les deux variables, on parle de fPCA bivariée.
+			
+			\subsubsection{Construction du vecteur de coefficients bivarié}
+				Pour chaque profil $l$, on concatène les coefficients de B-spline de température et de salinité en un unique vecteur $\alpha_l \in \mathbb{R}^{2K}$ :
+				\[
+				\alpha_l = \begin{pmatrix} \alpha_l^{T} \\ \alpha_l^{S} \end{pmatrix}, 
+				\qquad \alpha_l^{T} = (\alpha_{l,1}^T, \ldots, \alpha_{l,K}^T)^\top, 
+				\quad \alpha_l^{S} = (\alpha_{l,1}^S, \ldots, \alpha_{l,K}^S)^\top
+				\]
+				En empilant les $N$ profils, on obtient la matrice $\alpha \in \mathbb{R}^{N \times 2K}$.
+		
+			\subsubsection{Centrage des données}
+				Soit $\overline{\alpha} \in \mathbb{R}^{2K}$ la moyenne empirique, sur l'ensemble des $N$ profils, des coefficients de chaque B-spline pour la partie température et pour la partie salinité :
+				\[
+				\overline{\alpha} = \frac{1}{N} \sum_{l=1}^{N} \alpha_l
+				\]
+				
+				On obtient ainsi les coefficients bivariés centrés $\tilde{\alpha} =  \alpha_{l} - \overline{\alpha}$, avec $\tilde{\alpha} \in \mathbb{R}^{N \times 2K}$. Pour $l \in N$ : 
+				$$
+				\tilde\alpha_l
+				=
+				\begin{pmatrix}
+					\tilde\alpha_l^T\\
+					\tilde\alpha_l^S
+				\end{pmatrix}
+				\in\mathbb{R}^{2K}
+				$$
+		
+			\subsubsection{Calcul de la covariance empirique}
+		
+				On définit la matrice bivariée de fonctions de base $\boldsymbol{\Phi}(z) \in \mathbb{R}^{2\times 2K}$ comme la concaténation de la base $\Phi$ utilisée pour chacune des deux composantes :
+				
+				$$
+				\boldsymbol{\Phi}(z)
+				=
+				\begin{pmatrix}
+					\Phi(z)^\top & 0\\
+					0 & \Phi(z)^\top
+				\end{pmatrix}
+				\in\mathbb{R}^{2\times 2K},
+				$$
+				
+				de sorte que le profil bivarié centré s'écrive $
+				\tilde X_l(z)
+				=
+				\boldsymbol{\Phi}(z)\tilde\alpha_l
+				=
+				\begin{pmatrix}
+					\tilde T_l(z)\\
+					\tilde S_l(z)
+				\end{pmatrix}.
+				$
+				
+				La covariance empirique entre deux profondeurs $s$ et $t$ est alors une matrice $2\times2$ donnée par
+				
+				$$
+				\hat V(s,t)
+				=
+				\frac{1}{N}
+				\sum_{l=1}^N
+				\tilde X_l(s)\tilde X_l(t)^\top.
+				$$
+				
+				En introduisant la matrice de covariance empirique des coefficients
+				
+				$$
+				C
+				=
+				\frac{1}{N}\tilde\alpha^\top\tilde\alpha
+				\in\mathbb{R}^{2K\times2K},
+				$$
+				
+				on obtient
+				
+				$$
+				\boxed{
+					\hat V(s,t)
+					=
+					\boldsymbol{\Phi}(s)\,
+					C\,
+					\boldsymbol{\Phi}(t)^\top.
+				}
+				$$
+				
+				Cette matrice contient à la fois les covariances intra-variables, correspondant aux blocs température--température et salinité--salinité, et les covariances croisées température--salinité.
+		
+			\subsubsection{Décomposition en valeurs propres et vecteurs propres de la matrice de covariance}
+		
+				On effectue la décomposition spectrale de l'opérateur de covariance $\hat{V}$ :
+				\[
+				\int \hat{V}(s, t)\,\xi(t)\, dt = \rho\, \xi(s)
+				\]
+				avec la contrainte d'orthonormalité des fonctions propres bivariées : $\|\xi\|_{L^2} = 1$ et $\langle \xi_i, \xi_j\rangle = 0$ si $i \neq j$.
+				
+				On fait l'hypothèse que la fonction propre bivariée $\xi(t)$ se décompose dans la même base bivariée que nos profils :
+				\[
+				\xi(t) = \boldsymbol{\Phi}^\top(t)\, b, \qquad b \in \mathbb{R}^{2K}
+				\]
+				
+				On a alors :
+				\begin{align*}
+					\int \hat{V}(s, t)\,\xi(t)\,dt 
+					&= \int \frac{1}{N} \boldsymbol{\Phi}^\top(s)\tilde{\alpha}^\top \tilde{\alpha}\, \boldsymbol{\Phi}(t)\, \boldsymbol{\Phi}^\top(t)\, b\,dt \\
+					&= \frac{1}{N} \boldsymbol{\Phi}^\top(s)\tilde{\alpha}^\top \tilde{\alpha} 
+					\underbrace{\int \boldsymbol{\Phi}(t)\boldsymbol{\Phi}^\top(t)\,dt}_{=\, W} \, b \\
+					&= \frac{1}{N}\boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^\top \tilde{\alpha}\, W\, b
+				\end{align*}
+				où $W = \int \boldsymbol{\Phi}(t)\boldsymbol{\Phi}^\top(t)\,dt \in \mathbb{R}^{2K \times 2K}$ est la matrice de Gram de la base bivariée. Comme $\boldsymbol{\Phi}(t)$ répète deux fois la même base $\Phi(t)$, $W$ prend la forme bloc-diagonale
+				\[
+				W = \begin{pmatrix} W_0 & 0 \\ 0 & W_0 \end{pmatrix}, 
+				\qquad W_0 = \int \Phi(t)\Phi^\top(t)\,dt \in \mathbb{R}^{K \times K}
+				\]
+				les blocs hors-diagonale étant nuls car la partie température et la partie salinité de $\xi$ n'interagissent qu'au travers de la covariance des coefficients $\tilde\alpha^\top\tilde\alpha$, pas au travers de la base elle-même.
+				
+				On peut donc réécrire la décomposition spectrale comme suit :
+				\begin{align*}
+					& \int \hat{V}(s, t)\,\xi(t)\,dt = \rho\, \xi(s)\\
+					& \iff \frac{1}{N}\boldsymbol{\Phi}^\top(s)\,\tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, \boldsymbol{\Phi}^\top(s)\, b\\
+					& \iff \frac{1}{N} \tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, b
+				\end{align*}
+				
+				La matrice $\tilde\alpha^\top\tilde\alpha$ est symétrique (c'est un produit de la forme $A^\top A$), mais le produit $\tilde\alpha^\top\tilde\alpha\, W$ ne l'est pas en général : le problème aux valeurs propres n'est donc pas directement résoluble par une décomposition spectrale standard. Pour contourner ce problème, on utilise le changement de variable $b = W^{-\frac{1}{2}} u$ :
+				\begin{align*}
+					& \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W\, b = \rho\, b\\
+					& \iff \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W\, W^{-\frac 1 2}u = \rho\, W^{-\frac 1 2}u\\
+					& \iff \frac 1 N \tilde{\alpha}^\top \tilde{\alpha}\, W^{\frac{1}{2}} u = \rho\, W^{-\frac{1}{2}} u \\
+					& \iff \frac 1 N \underbrace{W^{\frac 1 2}\, \tilde{\alpha}^\top \tilde{\alpha}\, W^{\frac 1 2}}_{\text{symétrique}}\, u = \rho\, u
+				\end{align*}
+				La matrice $W^{1/2}\tilde\alpha^\top\tilde\alpha\, W^{1/2}$ est bien symétrique (elle est de la forme $M^\top M$ avec $M = \tilde\alpha W^{1/2}$), ce qui garantit des valeurs propres réelles $\rho$ et des vecteurs propres $u$ orthogonaux. Une fois $u$ obtenu, on retrouve $b = W^{-1/2} u$, puis la fonction propre bivariée $\xi(t) = \boldsymbol{\Phi}^\top(t)\, b$, dont les deux moitiés de $b$ (les $K$ premiers et les $K$ derniers coefficients) donnent respectivement la composante "température" $\xi^T$ et la composante "salinité" $\xi^S$ de la fonction propre.
+		
+			\subsubsection{ Calcul des scores (projections), reconstruction dans l'espace propre et variance expliquée}
+				Une fois les fonctions propres bivariées $\xi_j = (\xi_j^T, \xi_j^S)$ et valeurs propres $\rho_j$ calculées, on peut calculer les projections $c_{l,j}$ des profils bivariés centrés $\tilde X_l = (\tilde T_l, \tilde S_l)$ sur l'espace propre. On note $c_{l,j}$ le score du profil $l$ sur la $j$-ème composante principale (commun à la température et à la salinité, puisque la composante principale est bivariée) :
+				\begin{align*}
+					c_{l, j} &= \langle \tilde X_l, \xi_j\rangle \\
+					&= \int \tilde\alpha_l^\top \boldsymbol{\Phi}(t)\, \boldsymbol{\Phi}^\top(t)\, b_j \, dt \\ 
+					&= \tilde \alpha_l^\top\, W\, b_j \;\in \mathbb{R}
+				\end{align*}
+				
+				On choisit ensuite $J \ll 2K$ composantes à partir de la variance expliquée cumulée. La variance expliquée cumulée des $J$ premières composantes principales est calculée comme suit :
+				\[
+				VE = \frac{\sum_{j=1}^{J}\rho_j}{\sum_{k=1}^{2K} \rho_k}	
+				\]
+				avec $\rho_k$ la valeur propre associée à la $k$-ième composante principale, les composantes étant triées par ordre \textbf{décroissant} de valeur propre ($\rho_1 \geq \rho_2 \geq \cdots$), de sorte que les $J$ premières composantes soient celles qui expliquent le plus de variance conjointe des profils de température et de salinité. On peut ainsi sélectionner par exemple les $J$ premières composantes principales qui expliquent $>99$\% de la variance. Dans notre cas nous avons choisis de conservées $J=6$ composantes principales qui expliquent $>99$\% explained var et permettent d'encoder assez correctement la variabilité des profils (il y a un compromis entre qualité de l'approximation et coût computationnel, ce pourquoi nous nous sommes limités à 6 PC, et non 10, malgré la qualité supérieure de reconstruction), voir figure \ref{fig:profilpcatempsalcompare}.
+				
+				\begin{table}[H]
+					\centering
+					\begin{tabular}{ccccc}
+						\toprule
+						PC & Eigenvalue & Prop. variance & Cumulative variance \\
+						\midrule
+						1  & 981.66665873 & 0.9810935 & 0.9810935 \\
+						2  & 12.52661452  & 0.0125193 & 0.9936128 \\
+						3  & 4.16020812   & 0.0041578 & 0.9977705 \\
+						4  & 0.92707153   & 0.0009265 & 0.9986971 \\
+						5  & 0.56820781   & 0.0005679 & 0.9992649 \\
+						6  & 0.41429271   & 0.0004141 & 0.9996790 \\
+						7  & 0.13458956   & 0.0001345 & 0.9998135 \\
+						8  & 0.05806269   & 0.0000580 & 0.9998715 \\
+						9  & 0.05427009   & 0.0000542 & 0.9999258 \\
+						10 & 0.02370249   & 0.0000237 & 0.9999495 \\
+						\bottomrule
+					\end{tabular}
+					\caption{Valeurs propres et variance expliquée par les composantes principales.}
+					\label{tab:pca_variance}
+				\end{table}
+				
+				\vspace{1em}
+				
+				Finalement, on peut reconstruire conjointement les profils de température et de salinité du profil $l$ comme la combinaison linéaire des $J$ premières fonctions propres bivariées et des scores associés (les mêmes scores $c_{l,j}$ pilotant simultanément la reconstruction des deux variables) :
+				\[
+				T_l(t) = \overline{T}(t) + \sum_{j=1}^{J} c_{l,j}\, \xi_j^T(t), 
+				\qquad
+				S_l(t) = \overline{S}(t) + \sum_{j=1}^{J} c_{l,j}\, \xi_j^S(t)
+				\]
+				où $\overline{T}$ et $\overline{S}$ sont les profils moyens de température et de salinité, obtenus à partir des composantes correspondantes de $\overline\alpha$.
+				
+				\begin{figure}[H]
+					\centering
+					
+					\begin{subfigure}{0.3\textwidth}
+						\centering
+						\includegraphics[width=\textwidth]{images/05_annexes/03_methode/profil_pca_temp_sal_lon45.00_lat-60.00_nharm2.00}
+						\caption{$k=2$}
+						\label{fig:profil_pca_k2}
+					\end{subfigure}
+					\hfill
+					\begin{subfigure}{0.3\textwidth}
+						\centering
+						\includegraphics[width=\textwidth]{images/05_annexes/03_methode/profil_pca_temp_sal_lon45.00_lat-60.00_nharm6.00}
+						\caption{$k=6$}
+						\label{fig:profil_pca_k6}
+					\end{subfigure}
+					\hfill
+					\begin{subfigure}{0.3\textwidth}
+						\centering
+						\includegraphics[width=\textwidth]{images/05_annexes/03_methode/profil_pca_temp_sal_lon45.00_lat-60.00_nharm10.00}
+						\caption{$k=10$}
+						\label{fig:profil_pca_k10}
+					\end{subfigure}
+					
+					\caption{Effet du nombre de composantes principales $k$ sur la qualité de reconstruction des profils de température et salinité par sélection de $k$ PC puis projection sur des bases de B-splines. Un nombre de PC permettant d'obtenir une variance expliquée $>0.99$\% ne permet pas nécessairement une reconstruction correcte des profils.}
+					\label{fig:profilpcatempsalcompare}
+				\end{figure}
+		
+		
+		\subsection{Gaussian Model Mixture Clustering}
+		Afin de regrouper les profils de température et salinité similaires et identifier des Domaines Océanographiques Fonctionnels, on effectue un GMM clustering sur la matrice des coefficients réduite $c$ obtenue à l'étape précédente. Le fonctionnement de la méthode ne sera pas développée ici, se référer a \cite{bishop2006pattern} pour une explication. Le GMM clustering a été implémenté avec le package mclust \cite{scrucca2016mclust}, \cite{fraley2002mclust} disponible sous R. Le modèle le plus flexible (model="VVV") a été utilisé, permettant un ajustement des ellipsoïde non contraint en volume, orientation et forme, celà au prix d'une augmentation du nombre d'hyperparamètres. Avec les précédents travaux réalisés par Fonvieille N. et Molinet M. \cite{fonvieille2024}, \cite{molinetLinkingOceanographic}, la recherche d'une nombre de cluster a été restreinte entre 4 et 6 clusters, réduisant ainsi le coût computationnel. Les clusters ont été définis lorsque la probabilité d'appartenance à un cluster était suppérieur au seuil fixé à 0.75. Des classes de transitions ont été créées en fonction des deux clusters ayant une probabilité d'appartenance maximale. 
+		
+		
+		
 	\section{Clustering des données pigmentaires}
-	\label{annexe : cluster_pig}
+		\label{annexe : cluster_pig}
 		\begin{figure}[H]
 			\centering
 			\includegraphics[width=0.8\textwidth]{images/05_annexes/04_resultats/comu_phyto_cluster_pigs/explained_var}
@@ -1325,40 +1349,70 @@ urlcolor=black
 			\caption{Méthode du coude (Elbow method) : inertie intra-classe (somme des carrés intra-cluster) en fonction du nombre de cluster.}
 			\label{fig:elbowmethodkmeans}
 		\end{figure}
-		
+			
 	\section{Choix du modèle de validation croisée}
-	\label{annexe:choix_valid_croisee_autocorr}
-	\begin{figure}
-		\centering
-		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_chla}
-		\caption{Diagnostique d'autocorrelation spatio-temporelle de la chlorophylle-a sur l'ensemble de la ROI et des années d'étude (2018, 2021, 2022, 2023, janvier-mars)}
-		\label{fig:diagautocorrelationspatiotempchla}
-	\end{figure}
-	\begin{figure}
-		\centering
-		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_lat_lon_tous_pigments}
-		\caption{Diagnostique d'autocorrelation spatio-temporelle de l'ensemble des pigments photosynthétiques, sur toute la ROI et sur toutes les années d'étude (2018, 2021, 2022, 2023, janvier-mars)}
-		\label{fig:diagautocorrelationlatlontouspigments}
-	\end{figure}
-	\begin{figure}
-		\centering
-		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_Sv_18kHz_day}
-		\caption{Diagnostique d'autocorrelation spatio-temporelle du NASC (38kHz, jour) sur l'ensemble des transects (2018, 2021, 2022, 2023, janvier-mars)}
-		\label{fig:diagautocorrelationspatiotempsv18khzday}
-	\end{figure}
-	\begin{figure}
-		\centering
-		\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_Sv_120kHz_day}
-		\caption{Diagnostique d'autocorrelation spatio-temporelle du NASC (120kHz, jour) sur l'ensemble des transects (2018, 2021, 2022, 2023, janvier-mars)}
-		\label{fig:diagautocorrelationspatiotempsv120khzday}
-	\end{figure}
+		\label{annexe:choix_valid_croisee_autocorr}
+		\begin{figure}
+			\centering
+			\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_chla}
+			\caption{Diagnostique d'autocorrelation spatio-temporelle de la chlorophylle-a sur l'ensemble de la ROI et des années d'étude (2018, 2021, 2022, 2023, janvier-mars)}
+			\label{fig:diagautocorrelationspatiotempchla}
+		\end{figure}
+		\begin{figure}
+			\centering
+			\includegraphics[width=\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_lat_lon_tous_pigments}
+			\caption{Diagnostique d'autocorrelation spatio-temporelle de l'ensemble des pigments photosynthétiques, sur toute la ROI et sur toutes les années d'étude (2018, 2021, 2022, 2023, janvier-mars)}
+			\label{fig:diagautocorrelationlatlontouspigments}
+		\end{figure}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.8\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_Sv_18kHz_day}
+			\caption{Diagnostique d'autocorrelation spatio-temporelle du NASC (38kHz, jour) sur l'ensemble des transects (2018, 2021, 2022, 2023, janvier-mars)}
+			\label{fig:diagautocorrelationspatiotempsv18khzday}
+		\end{figure}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.8\linewidth]{images/05_annexes/02_materiel/autocorrelation_spatio_temp/diag_autocorrelation_spatio_temp_Sv_120kHz_day}
+			\caption{Diagnostique d'autocorrelation spatio-temporelle du NASC (120kHz, jour) sur l'ensemble des transects (2018, 2021, 2022, 2023, janvier-mars)}
+			\label{fig:diagautocorrelationspatiotempsv120khzday}
+		\end{figure}
 	
 	\section{Résultats de tuning des modèles}
-	\label{annexe:tuning_res}
-	faire un tableau et mettre les graphiques de tuning générés
+		\label{annexe:tuning_res}
+		faire un tableau et mettre les graphiques de tuning générés
 	
-	\section{Distribution des variables environnementales et du NASC par FOD}
-		\begin{figure}[p]
+	
+	% Résultats
+	\section{Distribution des variables (NASC, FTLE et pigments)}
+		\subsection{Nombre de données utilisées par année}
+			\label{annexe:n_data_distribs}
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\textwidth]{images/05_annexes/04_resultats/01_distrib_ftle_nasc_ratio_chla/n_days_to_compute_distribs_ftle_nasc_pigs/ndays_interannual_ratios_pigment_totpig}
+				\caption{Nombre de données effectives pour le calcul des distributions de la contribution de chaque pigment photosynthétique (2018, 2021, 2022, 2023) en période estivale sur la région étudiée du SO ([45, 90]°E, [30, 60]°S).}
+				\label{fig:ndaysinterannualratiospigmenttotpig}
+			\end{figure}
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\textwidth]{images/05_annexes/04_resultats/01_distrib_ftle_nasc_ratio_chla/n_days_to_compute_distribs_ftle_nasc_pigs/ndays_interannual_FTLE}
+				\caption{Nombre de données effectives pour le calcul des Finite Time Lyapunov Exponent (FTLE) (2018, 2021, 2022, 2023) en période estivale sur la région étudiée du SO ([45, 90]°E, [30, 60]°S).}
+				\label{fig:ndaysinterannualftle}
+			\end{figure}
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\textwidth]{images/05_annexes/04_resultats/01_distrib_ftle_nasc_ratio_chla/n_days_to_compute_distribs_ftle_nasc_pigs/ndays_interannual_NASC__38_kHz_}
+				\caption{Nombre de données effectives pour le calcul des distributions de NASC (38kHz) (2018, 2021, 2022, 2023) en période estivale sur la région étudiée du SO ([45, 90]°E, [30, 60]°S).}
+				\label{fig:ndaysinterannualnasc38khz}
+			\end{figure}
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=0.6\textwidth]{images/05_annexes/04_resultats/01_distrib_ftle_nasc_ratio_chla/n_days_to_compute_distribs_ftle_nasc_pigs/ndays_interannual_NASC__120_kHz_}
+				\caption{Nombre de données effectives pour le calcul des distributions de NASC (120 kHz) (2018, 2021, 2022, 2023) en période estivale sur la région étudiée du SO ([45, 90]°E, [30, 60]°S).}
+				\label{fig:ndaysinterannualnasc120khz}
+			\end{figure}
+			
+		\subsection{Distributions par FOD}
+		\begin{figure}[H]
 			\centering
 			
 			% --- Rangée 1 ---
@@ -1402,7 +1456,7 @@ urlcolor=black
 			\label{fig:annexe_violins_all}
 		\end{figure}
 		
-		\begin{figure}[p]
+		\begin{figure}[H]
 			\ContinuedFloat
 			\centering
 			
@@ -1442,14 +1496,29 @@ urlcolor=black
 			\caption[Distributions inter-annuelles au sein des clusters FOD]{Distributions inter-annuelles (suite) : variables pigmentaires, FTLE et acoustiques au sein des clusters FOD.}
 		\end{figure}
 		
-	\section{Distribution des concentrations pigmentaires par communauté phytoplanctonique}
-	\label{annexe:distrib_commu_phyto}
+	\section{Structure des communautés phytoplanctoniques}
+		\label{annexe:distrib_commu_phyto}
 		\begin{figure}[H]
 			\centering
 			\includegraphics[width=\textwidth]{images/05_annexes/04_resultats/comu_phyto_cluster_pigs/distrib_pigments_in_communautes_kmeans_k6_PFT_stats}
 			\caption{Distribution des contribution de pigments par communauté phytoplanctonique.}
 			\label{fig:distribpigmentsincommunauteskmeansk6pftstats}
 		\end{figure}
+		
+	\section{Structure prédictive du NASC avec les FOD, FTLE et contributions de pigments}
+		- obs vs. preds hist
+		- RMSE/R² par fold
+		- distance par fold
+		- carte du fold 
+		- noise robustness
+		
+	\section{Liens structurels entre le NASC, FOD, FTLE et contributions de pigments}
+		- residuals vs latitude
+		
+	\section{Cartographie du NASC prédit}
+		- correlation entre les plots
+		- carte de différences
+		- Une date de prédiction multidate
 		
 	\clearpage
 	\chapter*{Liste d'abbréviations}
