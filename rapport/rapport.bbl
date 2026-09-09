@@ -913,62 +913,6 @@
       \verb 10.1146/annurev-marine-122414-034001
       \endverb
     \endentry
-    \entry{haris2021sounding}{article}{}{}
-      \name{author}{6}{}{%
-        {{hash=a831534cd183fbec9bff552b4fc23843}{%
-           family={Haris},
-           familyi={H\bibinitperiod},
-           given={K.},
-           giveni={K\bibinitperiod}}}%
-        {{hash=48e1f8f87328e6205beff13704dce780}{%
-           family={Kloser},
-           familyi={K\bibinitperiod},
-           given={Rudy\bibnamedelima J.},
-           giveni={R\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
-        {{hash=0c5c1b14f468f4065f026a6a5bf927af}{%
-           family={Ryan},
-           familyi={R\bibinitperiod},
-           given={Tim\bibnamedelima E.},
-           giveni={T\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
-        {{hash=c477ea517699855625d747e4a401e8a7}{%
-           family={Downie},
-           familyi={D\bibinitperiod},
-           given={Ryan\bibnamedelima A.},
-           giveni={R\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
-        {{hash=22309626df35752b03aefb3ed2277810}{%
-           family={Keith},
-           familyi={K\bibinitperiod},
-           given={Gordon},
-           giveni={G\bibinitperiod}}}%
-        {{hash=b9c96731ccfa55299b27e0f1c22d31d4}{%
-           family={Nau},
-           familyi={N\bibinitperiod},
-           given={Amy\bibnamedelima W.},
-           giveni={A\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
-      }
-      \strng{namehash}{a0e8b94d13abde1452b546283af683bb}
-      \strng{fullhash}{ab4f6134dc5e39332fa3c7b28dedbf49}
-      \strng{fullhashraw}{ab4f6134dc5e39332fa3c7b28dedbf49}
-      \strng{bibnamehash}{a0e8b94d13abde1452b546283af683bb}
-      \strng{authorbibnamehash}{a0e8b94d13abde1452b546283af683bb}
-      \strng{authornamehash}{a0e8b94d13abde1452b546283af683bb}
-      \strng{authorfullhash}{ab4f6134dc5e39332fa3c7b28dedbf49}
-      \strng{authorfullhashraw}{ab4f6134dc5e39332fa3c7b28dedbf49}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{Scientific Data}
-      \field{number}{1}
-      \field{title}{Sounding out life in the deep using acoustic data from ships of opportunity}
-      \field{volume}{8}
-      \field{year}{2021}
-      \field{pages}{23}
-      \range{pages}{1}
-      \verb{doi}
-      \verb 10.1038/s41597-020-00785-8
-      \endverb
-    \endentry
     \entry{flotteoceanographique_campagnes}{online}{}{}
       \name{author}{1}{}{%
         {{hash=d097f768f4c893e5f04ee1805772ca23}{%
@@ -1232,8 +1176,8 @@
       \strng{authornamehash}{2e1cc7169446509d88adae5793dd04cf}
       \strng{authorfullhash}{2e1cc7169446509d88adae5793dd04cf}
       \strng{authorfullhashraw}{2e1cc7169446509d88adae5793dd04cf}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of Statistical Software}
@@ -1275,8 +1219,8 @@
       \strng{authornamehash}{05c04a23c8bf2587f67a030a2bcb6ae6}
       \strng{authorfullhash}{1c3cd31b60cddb6e84934ad74ab861a7}
       \strng{authorfullhashraw}{1c3cd31b60cddb6e84934ad74ab861a7}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{BMC Bioinformatics}
@@ -1556,6 +1500,327 @@
       \verb 10.1126/science.1118052
       \endverb
     \endentry
+    \entry{lellouche2021copernicus}{article}{}{}
+      \name{author}{17}{}{%
+        {{hash=9562e6742f78527ef6b7e7fa03220153}{%
+           family={Lellouche},
+           familyi={L\bibinitperiod},
+           given={Jean-Michel},
+           giveni={J\bibinithyphendelim M\bibinitperiod}}}%
+        {{hash=58702bd897f065ca60b242d630004936}{%
+           family={Greiner},
+           familyi={G\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod}}}%
+        {{hash=f02dd31f95685452b830dfd392490982}{%
+           family={Bourdallé-Badie},
+           familyi={B\bibinithyphendelim B\bibinitperiod},
+           given={Romain},
+           giveni={R\bibinitperiod}}}%
+        {{hash=17aba1effad76b467b335c1de38e7197}{%
+           family={Garric},
+           familyi={G\bibinitperiod},
+           given={Gilles},
+           giveni={G\bibinitperiod}}}%
+        {{hash=ce114d35a0a8346e1efa94884f62f2bb}{%
+           family={Melet},
+           familyi={M\bibinitperiod},
+           given={Angélique},
+           giveni={A\bibinitperiod}}}%
+        {{hash=e0ca0cbcaa6355188de246709fd1f808}{%
+           family={Drévillon},
+           familyi={D\bibinitperiod},
+           given={Marie},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5eb79443dbc3cc10687be085b252035d}{%
+           family={Bricaud},
+           familyi={B\bibinitperiod},
+           given={Clément},
+           giveni={C\bibinitperiod}}}%
+        {{hash=e16b812c2336b43aab26e05b280dc119}{%
+           family={Hamon},
+           familyi={H\bibinitperiod},
+           given={Mathieu},
+           giveni={M\bibinitperiod}}}%
+        {{hash=ab2c0ce28c3a5e6a93dc537c59c24ab6}{%
+           family={Le\bibnamedelima Galloudec},
+           familyi={L\bibinitperiod\bibinitdelim G\bibinitperiod},
+           given={Olivier},
+           giveni={O\bibinitperiod}}}%
+        {{hash=28aa263fa9c0115b8cacdaaa60312914}{%
+           family={Regnier},
+           familyi={R\bibinitperiod},
+           given={Charly},
+           giveni={C\bibinitperiod}}}%
+        {{hash=1f781baadbaba0493cd25300a8c712ad}{%
+           family={Candela},
+           familyi={C\bibinitperiod},
+           given={Tony},
+           giveni={T\bibinitperiod}}}%
+        {{hash=5a632778a6b9a8653f29aafb1b6aee69}{%
+           family={Testut},
+           familyi={T\bibinitperiod},
+           given={Charles-Emmanuel},
+           giveni={C\bibinithyphendelim E\bibinitperiod}}}%
+        {{hash=7c661f5201decc8cd44881e297213ec5}{%
+           family={Gasparin},
+           familyi={G\bibinitperiod},
+           given={Florent},
+           giveni={F\bibinitperiod}}}%
+        {{hash=4db8e8629f9fd22171b9d66f48711bbf}{%
+           family={Ruggiero},
+           familyi={R\bibinitperiod},
+           given={Giovanni},
+           giveni={G\bibinitperiod}}}%
+        {{hash=8ac400f07114c7985d2194cfc1a65b8d}{%
+           family={Benkiran},
+           familyi={B\bibinitperiod},
+           given={Mounir},
+           giveni={M\bibinitperiod}}}%
+        {{hash=ec8f52124a2736a7bbb692d1bd7d201e}{%
+           family={Drillet},
+           familyi={D\bibinitperiod},
+           given={Yann},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=a115452bcbd051f787d560a729fc9163}{%
+           family={Le\bibnamedelima Traon},
+           familyi={L\bibinitperiod\bibinitdelim T\bibinitperiod},
+           given={Pierre-Yves},
+           giveni={P\bibinithyphendelim Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{3ea4c51027e1831ad6360b6eb6cd7ae5}
+      \strng{fullhash}{32a82f23f391b184b13d1919d554a461}
+      \strng{fullhashraw}{32a82f23f391b184b13d1919d554a461}
+      \strng{bibnamehash}{3ea4c51027e1831ad6360b6eb6cd7ae5}
+      \strng{authorbibnamehash}{3ea4c51027e1831ad6360b6eb6cd7ae5}
+      \strng{authornamehash}{3ea4c51027e1831ad6360b6eb6cd7ae5}
+      \strng{authorfullhash}{32a82f23f391b184b13d1919d554a461}
+      \strng{authorfullhashraw}{32a82f23f391b184b13d1919d554a461}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Frontiers in Earth Science}
+      \field{title}{The {Copernicus} Global 1/12{°} Oceanic and Sea Ice {GLORYS12} Reanalysis}
+      \field{volume}{9}
+      \field{year}{2021}
+      \field{pages}{698876}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/feart.2021.698876
+      \endverb
+      \verb{urlraw}
+      \verb https://www.frontiersin.org/journals/earth-science/articles/10.3389/feart.2021.698876
+      \endverb
+      \verb{url}
+      \verb https://www.frontiersin.org/journals/earth-science/articles/10.3389/feart.2021.698876
+      \endverb
+    \endentry
+    \entry{nicholson2025satellite}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=85050657ee92e79a4b8fed02287db43d}{%
+           family={Nicholson},
+           familyi={N\bibinitperiod},
+           given={S.-A.},
+           giveni={S\bibinithyphendelim A\bibinitperiod}}}%
+        {{hash=68e224fe1482e8bd8cc6f03a8362ed54}{%
+           family={Ryan-Keogh},
+           familyi={R\bibinithyphendelim K\bibinitperiod},
+           given={T.\bibnamedelimi J.},
+           giveni={T\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=8184f00c12c7f3b4f64e6ce4880411c6}{%
+           family={Thomalla},
+           familyi={T\bibinitperiod},
+           given={S.\bibnamedelimi J.},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=8fdfe6f233c240d6d7bbd9e0624af53d}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={N.},
+           giveni={N\bibinitperiod}}}%
+        {{hash=7ff5dbb680b97e6c8471f8b86aa0218d}{%
+           family={Smith},
+           familyi={S\bibinitperiod},
+           given={M.\bibnamedelimi E.},
+           giveni={M\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{0f4a26095ab3a82c37b963dcc4e48922}
+      \strng{fullhash}{2cc6614193fa4df22931d5e67138d3bf}
+      \strng{fullhashraw}{2cc6614193fa4df22931d5e67138d3bf}
+      \strng{bibnamehash}{0f4a26095ab3a82c37b963dcc4e48922}
+      \strng{authorbibnamehash}{0f4a26095ab3a82c37b963dcc4e48922}
+      \strng{authornamehash}{0f4a26095ab3a82c37b963dcc4e48922}
+      \strng{authorfullhash}{2cc6614193fa4df22931d5e67138d3bf}
+      \strng{authorfullhashraw}{2cc6614193fa4df22931d5e67138d3bf}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Earth System Science Data}
+      \field{title}{Satellite-derived global-ocean phytoplankton phenology indices}
+      \field{volume}{17}
+      \field{year}{2025}
+      \field{pages}{1959\bibrangedash 1975}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.5194/essd-17-1959-2025
+      \endverb
+      \verb{urlraw}
+      \verb https://essd.copernicus.org/articles/17/1959/2025/
+      \endverb
+      \verb{url}
+      \verb https://essd.copernicus.org/articles/17/1959/2025/
+      \endverb
+    \endentry
+    \entry{kauko2021phenology}{article}{}{}
+      \name{author}{14}{}{%
+        {{hash=eb87ccc6344e99793794aaf391a09241}{%
+           family={Kauko},
+           familyi={K\bibinitperiod},
+           given={Hanna\bibnamedelima M.},
+           giveni={H\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=b53ac5416bba29af1e08ebfed27a66eb}{%
+           family={Hattermann},
+           familyi={H\bibinitperiod},
+           given={Tore},
+           giveni={T\bibinitperiod}}}%
+        {{hash=6a5aad4ab6e2766f567bb17ec4a131e7}{%
+           family={Ryan-Keogh},
+           familyi={R\bibinithyphendelim K\bibinitperiod},
+           given={Thomas},
+           giveni={T\bibinitperiod}}}%
+        {{hash=18420fb7794b7905ca247e561e16b38d}{%
+           family={Singh},
+           familyi={S\bibinitperiod},
+           given={Asmita},
+           giveni={A\bibinitperiod}}}%
+        {{hash=4ff09239485644977d29d6a75cae38a7}{%
+           family={Steur},
+           familyi={S\bibinitperiod},
+           given={Laura},
+           giveni={L\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
+        {{hash=70d4831d4140bc27efc610ae6b8759ca}{%
+           family={Fransson},
+           familyi={F\bibinitperiod},
+           given={Agneta},
+           giveni={A\bibinitperiod}}}%
+        {{hash=9a6273cb1d867233a1912a6778ca8570}{%
+           family={Chierici},
+           familyi={C\bibinitperiod},
+           given={Melissa},
+           giveni={M\bibinitperiod}}}%
+        {{hash=8169eb04ed9a75141f56d336eea16dc4}{%
+           family={Falkenhaug},
+           familyi={F\bibinitperiod},
+           given={Tone},
+           giveni={T\bibinitperiod}}}%
+        {{hash=6e3ab6fe6c7b0cfcd7e5353ff878fd54}{%
+           family={Hallfredsson},
+           familyi={H\bibinitperiod},
+           given={Elvar\bibnamedelima H.},
+           giveni={E\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=ac0fba759f87e32a18af9b3937ccf303}{%
+           family={Bratbak},
+           familyi={B\bibinitperiod},
+           given={Gunnar},
+           giveni={G\bibinitperiod}}}%
+        {{hash=5a6bf1ef807395b7f75a0587998ec765}{%
+           family={Tsagaraki},
+           familyi={T\bibinitperiod},
+           given={Tatiana},
+           giveni={T\bibinitperiod}}}%
+        {{hash=fe5f9f5e51137482997e8111971c7fc8}{%
+           family={Berge},
+           familyi={B\bibinitperiod},
+           given={Terje},
+           giveni={T\bibinitperiod}}}%
+        {{hash=2dcad7e6247d3cdd55976d042880dc73}{%
+           family={Zhou},
+           familyi={Z\bibinitperiod},
+           given={Qin},
+           giveni={Q\bibinitperiod}}}%
+        {{hash=ffabea1accbb12753c617a261bdf1b7a}{%
+           family={Moreau},
+           familyi={M\bibinitperiod},
+           given={Sebastien},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{1c6bca4f1d2cc67231026b1d3416631a}
+      \strng{fullhash}{083cdd99e19fef1ba7217ee90a3efff9}
+      \strng{fullhashraw}{083cdd99e19fef1ba7217ee90a3efff9}
+      \strng{bibnamehash}{1c6bca4f1d2cc67231026b1d3416631a}
+      \strng{authorbibnamehash}{1c6bca4f1d2cc67231026b1d3416631a}
+      \strng{authornamehash}{1c6bca4f1d2cc67231026b1d3416631a}
+      \strng{authorfullhash}{083cdd99e19fef1ba7217ee90a3efff9}
+      \strng{authorfullhashraw}{083cdd99e19fef1ba7217ee90a3efff9}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Frontiers in Marine Science}
+      \field{title}{Phenology and Environmental Control of Phytoplankton Blooms in the Kong H{å}kon VII Hav in the Southern Ocean}
+      \field{volume}{8}
+      \field{year}{2021}
+      \field{pages}{623856}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fmars.2021.623856
+      \endverb
+      \verb{urlraw}
+      \verb https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.623856/full
+      \endverb
+      \verb{url}
+      \verb https://www.frontiersin.org/journals/marine-science/articles/10.3389/fmars.2021.623856/full
+      \endverb
+    \endentry
+    \entry{lampe2026differences}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=27b211c1f325f7faee55573b8377395d}{%
+           family={Lampe},
+           familyi={L\bibinitperiod},
+           given={Vanessa},
+           giveni={V\bibinitperiod}}}%
+        {{hash=49eceb4e9e04040ca677894a52827ee2}{%
+           family={Oschlies},
+           familyi={O\bibinitperiod},
+           given={Andreas},
+           giveni={A\bibinitperiod}}}%
+        {{hash=8ec1e336c838b70dfd60b053efa690d6}{%
+           family={Schartau},
+           familyi={S\bibinitperiod},
+           given={Markus},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{fullhash}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{fullhashraw}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{bibnamehash}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{authorbibnamehash}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{authornamehash}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{authorfullhash}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \strng{authorfullhashraw}{8f71e401a9ff39de96528c8aa5f39d1a}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Deep Sea Research Part II: Topical Studies in Oceanography}
+      \field{title}{Differences in bloom phenology and seasonal chlorophyll-a variability in the {Fram Strait's} hydrographic subregions resolved by a machine learning approach}
+      \field{volume}{226}
+      \field{year}{2026}
+      \field{pages}{105603}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.dsr2.2026.105603
+      \endverb
+      \verb{urlraw}
+      \verb https://www.sciencedirect.com/science/article/pii/S0967064526000147
+      \endverb
+      \verb{url}
+      \verb https://www.sciencedirect.com/science/article/pii/S0967064526000147
+      \endverb
+    \endentry
     \entry{deBoor}{inbook}{}{}
       \name{author}{1}{}{%
         {{hash=11c4e53ad7afb115a36f6c81c99701de}{%
@@ -1612,8 +1877,8 @@
       \strng{authornamehash}{7337942441b81dbd3ded7b2776e18ca8}
       \strng{authorfullhash}{7337942441b81dbd3ded7b2776e18ca8}
       \strng{authorfullhashraw}{7337942441b81dbd3ded7b2776e18ca8}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Statistical Science}

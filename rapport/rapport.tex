@@ -157,11 +157,33 @@ urlcolor=black
 	
 	\begin{titlepage}
 		\centering
-		\vspace{0.5em}
+		
+		% ============================================================
+		% BANDEAU DE LOGOS
+		% ============================================================
+		\noindent
+		\begin{minipage}[c]{0.24\textwidth}
+			\centering
+			\includegraphics[width=\textwidth]{images/logos/UniversiteParisCite_logo_horizontal_couleur_CMJN}
+		\end{minipage}%
+		\begin{minipage}[c]{0.24\textwidth}
+			\centering
+			\includegraphics[width=0.8\textwidth]{images/logos/Logo_MIO-eng}
+		\end{minipage}%
+		\begin{minipage}[c]{0.24\textwidth}
+			\centering
+			\includegraphics[width=0.8\textwidth]{images/logos/logo_CEBC_PJG_24-300x164}
+		\end{minipage}%
+		\begin{minipage}[c]{0.24\textwidth}
+			\centering
+			\includegraphics[width=0.8\textwidth]{images/logos/logo_locean_1}
+		\end{minipage}
+		
+		\vspace{1.5cm}
 		
 		{\scshape\LARGE Université Paris Cité \par}
 		\vspace{0.4cm}
-		{\large Département de mathématiques et d'informatique}
+		{\large Master 2 Mathématiques et Informatique Appliquées à la Science des Données}
 		
 		\vspace{1cm}  
 		
@@ -170,12 +192,6 @@ urlcolor=black
 		{\Large  Une étude en saison estivale dans le secteur Indien de l'Océan Austral}\\
 		\vspace{0.2cm}
 		{\Large  Rapport de stage\par}
-		
-		\vspace{1cm}
-		
-		\begin{abstract}
-			
-		\end{abstract}
 		
 		\vspace{1cm}
 		
@@ -190,15 +206,23 @@ urlcolor=black
 		\vspace{0.6cm}
 		
 		{\large \textbf{Professeure référente}}\\[0.2cm]
-		{\large FISHER Aurélie}
-		
-		
+		{\large Aurélie FISHER}
 		
 		\vspace{0.8cm} 
 		
-		{\large \date{} \par}
+		{\large \date{Septembre 2026} \par}
 	\end{titlepage}
 	
+	%------------------------------------
+	\clearpage
+	\begin{abstract}
+		
+		
+		\vspace{0.5cm}
+		\noindent\textbf{Mots-clés :} phytoplancton, zooplancton, micronecton, Océan Austral, phénologie, acoustique active
+	\end{abstract}
+	
+	%------------------------------------
 	%------------------------------------
 	\clearpage
 	\tableofcontents
@@ -206,6 +230,29 @@ urlcolor=black
 	%------------------------------------
 	\clearpage
 	\chapter{Introduction}
+	
+	Le changement climatique induit des changements rapides de l'Océan Austral. Cela a des conséquences pour ses écosystèmes. Les communautés phytoplanctoniques supportent ces écosystèmes en constituant l'élément de base du réseau trophique (production primaire). Le zooplancton et micronecton consomme le phytoplancton
+	
+	
+	Dans l'océan Austral, elles sont dominées par du phytoplancton de grande taille (diatomées), 
+	
+	jouent un rôle central dans la régulation e phytoplancton
+	Le phytoplancton supporte les écosystèmes de l'Océan Austral. Il est consommé par le zooplancton et le micronekton qui, ensemble, forment les Niveaux Trophiques Intermédiaires (NTI). Ces organismes sont centraux dans la structuration des écosystèmes pélagiques \footnote{text}: ils exercent un contrôle sur la biomasse et la distribution des prédateurs supérieurs à travers des transferts énergétiques. Ils jouent un rôle importants également dans le cycle du carbone où leur taille et composition influencent l'import de Carbone des surfaces vers les profondeurs (Pompe Biologique du Carbone). Dans l'océan Austral, les communautés phytoplanctoniques sont dominées par du phytoplancton de grande taille (diatomées), 
+	
+	Malgré cela, les NTI sont encore mal décrits car difficiles à étudier. L'acoustique active est une méthode permettant d'échantilloner de manière non-intrusive ces organismes. 
+	
+	C'est encore plus le cas dans l'Océan Austral qui, de par son importante superficie, est très peu échantilloné. 
+	
+	centraux dans la structuration des écosystèmes, sont encore méconnus car complexes à étudier. L'Océan Austral, de par sa sa superficie importante est L'acoustique active est une méthode permettant 
+	
+	Les écoystèmes sont structurés selon des relation trophiques (alimentaires). Les niveaux trophiques intermédiaires du milieu pélagique \footnote{text} correspond à ensemble d'organismes allant de 0.2mm à 20cm
+	 
+	\section{Changements global et restructuration des communautés phytoplanctonique}
+	
+	\section{}
+	
+	
+	
 	\section{Généralités}
 	\label{section:generalites}
 	L'\textbf{océan} couvre 70\% de la surface terrestre. La répartition des terres émergés n'est pas équivalente selon les deux hémisphères: l'hémisphère Sud est composé à 80.9\% de mer, contre 60.7\% pour l'hémisphère Nord. Dans l'hémisphère Sud, dans le bassin Antarctique, les océans Atlantique, Pacifique et Indien se connectent. Une seul masse d'eau liquide se déplace alors dans les différents bassins. L'océan est un \textbf{milieu continu}. 
@@ -506,6 +553,7 @@ urlcolor=black
 	\chapter{Méthode}
 	\section{Pré-traitement des données}
 	\subsection{Calcul du Nautical Area Scattering Coefficient (NASC) \cite{IRD_MATECHO_User_Manual}}
+	\label{section:compute_nasc}
 	L'\textbf{Intensité de l'echo (IE) }correspond au signal reçu par le transducteur lorsqu'une onde est émise dans la colonne d'eau puis réfléchis par un objet.
 	\begin{equation}
 		IE = IS - 2TL + DI + TS
@@ -834,7 +882,8 @@ urlcolor=black
 		\label{fig:mappuritycommunauteskmeansk6pft}
 	\end{figure}
 	
-	 La figure \ref{fig:mappuritycommunauteskmeansk6pft} représente la distribution spatiale des clusters de contribution des pigments phytoplanctoniques. La communauté 4 est présente au Nord de la région. La communauté 6 est présente principalement aux alentours de Kerguelen. La communauté 2 est présente à la latitude de 35°S, aux alentours du front subtropical. La communauté 3 est présente plus au Sud et à l'Est, à partir de 60°E et 50°S environ. La communauté 1 est présente entre 40 et 45°S. La communauté 5 est présente dans plusieurs régions : en dessous du front subtropical ($\approx$ 35°S) et à partir de 45°S, plutôt à l'Ouest de la région.
+	 La figure \ref{fig:mappuritycommunauteskmeansk6pft} représente la distribution spatiale des clusters de contribution des pigments phytoplanctoniques. On observe une structuration des communautés selon un gradient latitudinal. Certaines communautés semblent avoir une affinité pour des masses d'eau particulières : la commauté 4, présente au Nord de la région aurait plus d'affinité avec les FOD 6. La communauté 2 est présente à la latitude de 35°S, aux alentours du front subtropical (FOD T4-5, T4-6). La communauté 6 est présente principalement aux alentours de Kerguelen (Shelf Zone, non décrite par les FOD, zone riche en fer présentants de forts blooms phytoplanctoniques, non caractérisé par les FOD). La communauté 1, présente entre 40 et 45°S, serait majoritairment affiliée au FOD 3. La communauté 3, aurait d'avantage d'affinité pour les eaux du FOD 1. La communauté 5 est présente dans plusieurs régions : en dessous du front subtropical ($\approx$ 35°S) et à partir de 45°S, plutôt à l'Ouest de la région. 
+	 
 	 
 		\begin{figure}[H]
 		\centering
@@ -853,10 +902,19 @@ urlcolor=black
 	Les figures  \ref{fig:violinnasc-38-khz-par-communaute-phytoplanctonique-par-annee} et \ref{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee} présentent les distributions de NASC au sein de chaque communauté phytoplanctonique. Aucune différence significative de NASC n'est détectable entre les différentes communautés phytoplanctoniques pour chaque année.
 	
 	\section{Structure prédictive du NASC à partir des variables environnementales (FOD, FTLE) et des contribution de pigments photosynthétiques}
+	\label{res:perf_pred}
 	- comparaison des performances totales entre modèles
+	
+	Concernant les performances prédictives par modèle (CART, RF ou XGBoost), le modèle ayant les meilleures performances est le Random Forest, avec une RMSE de xxx (contre xxx pour XGB et xxxx pour CART). C'est donc celui que l'on retiendra pour la suite des analyses.
+	
 	- nasc obs vs prédit
+	Les performances de prédictions sont supérieures pour la fréquence d'émission de 38 kHz que 120 kHz. Pour chacune de ces fréquences, la qualité de prédiction varie en fonction du modèle de validation effectuée : elles sont optimales dans le schéma de validation croisée par Monte-Carlo (MC-CV) (38 kHz : RMSE = , $R^{2} = $, 120 kHz : RMSE = , $R^{2} = $) puis se dégradent progressivement à mesure que la résolution de la grille de blockage augmente dans la validation par blocage spatio-temporel (BST). Pour la résolution 1500 km x 1000 km, la RMSE à 120 kHz vaut ( xx pour 38 kHz), pour 200 x 200 km, elle vaut xxx ( xx pour 38 kHz), pour 20 x 20 km elle vaut xxx ( xx pour 38 kHz) et pour la résolution journalière elle vaut xxxx ( xx pour 38 kHz).
+	
 	- learning curves
+	La learning curve du Random forest à 38kHz et 120 kHz pour tout type de modèle de validation croisée plafonne. Celà témoigne du nombre insuffisant de variable prédictive pour caractériser le modèle. 
+	
 	- calibration
+	
 	- carte des résidus
 	
 
@@ -874,74 +932,114 @@ urlcolor=black
 		
 	\clearpage
 	\chapter{Discussion}
-	euphausiaces pcq consommateurs primaires et donc diminution du biais lié au temps de transfet d'energie suite a un bloom pp
-	
-	0) description des distributions/régionalisation statistiques de significativité 
-	1) importance des vars => coherent avec litterature sur la structuration physique et chaines trophiques de la roi
-	2) performances prédictives dans un contexte de sous echantillonage de cette zone de l'ocean + ds necessité d'informer le monitoring des nti sous chgmts phyto (pk le modele est utile, au vu de ces perfs)
-	3) limites des modèles (bruit gaussien/overfit/biais d'echantillonage, effet latitude etc)
-	4) incertitudes
-	des données : acoustique active(DVM, echantillonage partiel en profondeur, fréquence, bullage, changements de densité, burit electronique, comblage des NAs)
-	phyto (algo de ziad, couverture nuageuse et données manquantes, biais d'echantillonage aussi dcp, nommage commu phyto/pigs)
-	fod +ftle = données modèles : biais (décalage spatial potentiels + lissage des données)
-	
-	5) Approche locale statique vs approche spatio-temporelle dynamique (avec advection) : effet de lag entre bloom et nti connus dans evt mouvant
-	
-	6) perspectives
 	
 	\section{Distributions inter-anuelles des variables étudiées}
 		\subsection{Distributions des contributions des pigments photo-synthétiques}
-			Les résultats présentés en sous-section \ref{res:distribs_pigs} ne montrent pas de tendances claire et significative d'augmentation ou de diminution de la contribution d'un groupe phytoplanctonique en particulier. Ces observations vont dans le sens de celles émises par Adroli dans sa publication récente \cite{adroli2026} : le secteur indien semble moins impacté par des changements de structuration des communautés phytoplanctoniques que les autres bassins de l'océan austral. Ces résultats sont cependant à mettre en perspectives avec le nombre de données effectivements utilisées pour calculer les tendances, variable d'une année à une autre (voir annexe \ref{annexe:n_data_distribs}). De plus, la couverture nuageuse importante de la région ne permet de recueillir en moyenne que 10 à 20\% de données par satellite, des biais d'échantillonages peuvent donc être présents. D'autre part, des changements de structuration des communautés phytoplanctoniques peuvent avoir lieu à plus fine échelle et ne pas être détectés par ces calculs de distributions. Des tendances interanuelles ont été effectuées par fod (voir annexe \ref{fig:annexe_violins_all}), aucune tendance forte n'a été détécté. Enfin, pour réellement évaluer des changements de structuration de communautés phytoplanctonique, un jeu de donnée réparti sur au moins 40 ans est nécessaire \ref{label}.
+			Les résultats présentés en sous-section \ref{res:distribs_pigs} ne montrent pas de tendances claire et significative d'augmentation ou de diminution de la contribution d'un groupe phytoplanctonique en particulier. Ces observations vont dans le sens de celles émises par Adroli dans sa publication récente \cite{adroli2026} : le secteur indien semble moins impacté par des changements de structuration des communautés phytoplanctoniques que les autres bassins de l'océan austral. Ces résultats sont cependant à mettre en perspectives avec le nombre de données effectivements utilisées pour calculer les tendances, variable d'une année à une autre (voir annexe \ref{annexe:n_data_distribs}). De plus, la couverture nuageuse importante de la région ne permet de recueillir en moyenne que 10 à 20\% de données par satellite, des biais d'échantillonages peuvent donc être présents. D'autre part, des changements de structuration des communautés phytoplanctoniques peuvent avoir lieu à plus fine échelle et ne pas être détectés par ces calculs de distributions. Des tendances interanuelles ont été effectuées par fod (voir annexe \ref{fig:annexe_violins_all}), aucune tendance forte n'a été détécté. Enfin, pour réellement évaluer des changements de structuration de communautés phytoplanctonique, un jeu de donnée réparti sur au moins 40 ans est nécessaire \cite{thomalla2023Widespread}.
 			
-		\subsection{Distribution des Finite-Time Lyapunov Exponent}
 		\subsection{Distribution du NASC}
 			Les analyses de distribution du NASC entre les années 2018, 2021, 2022, et 2023, dans la région étudiée, ne montrent pas de changements structurels significatifs (voir sous-section \ref{res : distrib_nasc}). Le nombre de données variable d'une année à l'autre (voir annexe \ref{annexe:n_data_distribs}) et la faible couverture spatiale et temporelle d'échantillonnage (transects des campagnes océanographiques) rendent ces résultats potentiellement peu représentatif de la réalité biologique et sont donc à considérer avec précautions. 
 	
 	\section{Structure des communautés phytoplanctoniques}
-	L'équivalence directe entre les ratios de concentration de pigments photo-synthétiques et les types/classe de taille du phytoplancton est hypothétique et ne constitue pas un fait scientifique. Des mesures \textit{in-situ} par HPLC et Cytométrie en flux sont nécessaires afin de qualifier exactement la composition taxonomique des communautés phytoplanctoniques.
-	La figure \ref{fig:mappuritycommunauteskmeansk6pft} présente une structuration des communautés selon un gradient latitudinal. Certaines communautés semblent avoir une affinité pour des masses d'eau particulières : la commauté 4 aurait plus d'affinité avec les FOD 6. La communauté 6 est présente principalement aux alentours de Kerguelen (Shelf Zone, non décrite par les FOD, zone riche en fer présentants de forts blooms phytoplanctoniques).  La communauté, présente entre 40 et 45°S, serait majoritairment affiliée au FOD 3). La communauté 3, aurait d'avantage d'affinité pour les eaux du FOD 1. Des tests statistiques sont nécessaire afin de confirmer ces observations. 
-	D'autre part, la communauté 4, dominée par les pigments dvChla et Zeaxanthine, est présent uniquement au Nord de la région, ce qui est cohérent avec les travaux récents qui montrent l'absence de Prochlorococcus (Cyanobactérie) à des latitudes très faibles \cite{Pan2020}, \cite{Johnson2006}.
+		L'équivalence directe entre les ratios de concentration de pigments photo-synthétiques et les types/classe de taille du phytoplancton est hypothétique et ne constitue pas un fait scientifique. Des mesures \textit{in-situ} par HPLC et Cytométrie en flux sont nécessaires afin de qualifier exactement la composition taxonomique des communautés phytoplanctoniques.
+		D'autre part, la communauté 4, dominée par les pigments dvChla et Zeaxanthine, est présent uniquement au Nord de la région, ce qui est cohérent avec les travaux récents qui montrent l'absence de Prochlorococcus (Cyanobactérie) à des latitudes très faibles \cite{Pan2020}, \cite{Johnson2006}.
+		Concernant la structuration latitudinale des communautés, des tests statistiques sont nécessaire afin de confirmer ces observations. 
 	
-	\section{Performances prédictives}
+	\section{Structure prédictive du NASC}
+		Dans un contexte de sous-échantillonage de l'Océan Austral, il est particulièrement important de développer des modèles prédictifs afin d'informer les conséquences des changements de structuration des communautés phytoplanctoniques induite par le changement climatique sur les niveaux trophique intermédiaires. Pour ce faire, les données d'acoustique active à 120 kHz sont particulièrement informatives : cette fréquence permet de cibler la détection des Euphausiacés, les consommateurs primaires les plus rependus de la région. Etudier les consommateurs primaires permet d'évaluer les conséquences de cette restructuration sur les NTI tout en limitant le biais lié au temps de transfert d’énergie. 
+		
+		Les résultats de prédiction des différents modèles, présentées dans la section \ref{res:perf_pred} informent l'existence de lien structurels entre la biomasse de zooplancton détéctée à 38 et 120 kHz et les paramètres physiques de température, salinité, courants et biologique de phytoplancton. La figure \ref{fig:learning_curve} montre néanmoins un plafond, indiquant qu'un nombre de données supplémentaire n'apporte pas d'avantage d'information au modèle. Cela signifie que le modèle est d'avantage bloqué par un manque de variable explicative que par un manque de données. Une analyse supplémentaire des figure \ref{fig:rmse_par_fold} et \ref{variance_des__données}, disponible en annexe \ref{annexe:} va dans le sens de cette hypothèse : si l'on regarde par exemple le fold, xxx, ses performances de prédictions sont faibles et biaisée. On ne remarque cependant pas de variance particulièrement élevée entre les variables numériques du test/train. Cette métrique élevée n'est donc pas due à une extrapolation excessive. Les covariables utilisées ne suffisent pas pour expliquer réellement la variance réelle des données et des conditions physique/biologique de l'environnement.
+		
+		
+		
+		\subsection{Monte-Carlo Cros Validation}
+		Le schéma de schéma de validation croisée Monte-Carlo présente un risque de fuite de données de l'ensemble d'entraînement vers l'ensemble de validation. Ce faisant, les performances de prédictions peuvent être excessivement optimistes. 
+		
+		\subsection{Cross-Validation par blocage spatio-temporel}
+			\subsubsection{Résolution 1500 km x 1000 km}
+			\subsubsection{Résolution 200 km x 200 km}
+			\subsubsection{Résolution 20 km x 20 km}
+			\subsubsection{Résolution journalière}
+		
+		\subsection{Incertitudes supplémentaires}
+		 - Le tuning des hyperparamètres a été réalisé en amont sur l'ensemble du jeu de données, puis les hyperparamètres optimaux ont été appliqués à l'entraînement de chacun des K folds. Cette approche, plus économe en temps de calcul qu'un tuning imbriqué (nested cross-validation), induit un léger optimisme dans les métriques de performance rapportées, les folds de test ayant potentiellement contribué à la sélection des hyperparamètres. L'écart attendu reste toutefois limité, les hyperparamètres capturant des tendances générales plutôt que des particularités locales des données."
+		
+		- gradient latitudinal = hypothèse de stationnarité de 1eret second ordre pas respecté, plots pour analyser cet effet
+		
+		- effet du déséquilibre de l'échantillonage sur les cartes de prédictions
+		
+		- Choix des variables prédictives, manque de variables
+	\section{Relation du NASC avec les variables environnementales et phytoplanctoniques}
+		importance des vars => coherent avec litterature sur la structuration physique et chaines trophiques de la roi
+		
+		importance des variables : 	comment XGB et RF et CART n'ont pas les mêmes algos et comment ça veit en fait dire des choses différentes, méfiance sur l'interprétation, bien se renseigner (lire les articles)
+		
 	
-	\section{Influence des fréquences}
-	Les NTI sont des poissons pourvu ou non de vessies natatoire \footnote{organe permettant à l'organisme de contrôler sa flottaison}. (mettre dans la partie )
-	
-	
-	\section{Complétion des NAs et influence sur le NASC}
-	
-	\section{FOD : nombre de composante principale, données modèles, non prise en compte des données chimique (fer) et sea ice}
-	
-	\section{définition de communauté phyto à partir des bio-optical water types}
-	however an increase ein chl-a i snot necessarily associated with an increase in biomass, particularly in the iron light co-limited SO where phytoplankton can adjust their cellular chl-a to carbon ratios in response to environemental stresses \cite{thomalla2023Widespread} (pas la ref n°1)
-	beaucoup de valeurs manquantes a cause de couverture nuageuse
+	\section{Incertitudes liées à la nature des données}
+		Les données utilisées pour ce modèles contiennent elles-même des incertitudes pouvant affecter les résultats. 
+		
+		\subsection{Données d'acoustique active}
+			Les données d'acoustique actives n'échantillonnent qu'une petite partie de l'espace étudiée : sur le plan horizontal (longitude, latitude), les transects ne collectent des données qu'aux endroits qu'ils sillonnent et offrent une couverture spatiale faible. Sur le plan vertical, la profondeur d'échantillonnage est limitée par la fréquence d'émission. Ce dernier point est particulièrement limitant pour notre étude : à 120 kHz, les données sont échantillonnées jusqu'à 300m et, en journée, la faune est majoritairement présente à des profondeurs supérieures à cause de la migration nycthémérale. Une grande partie du signal biologique est donc absente.
+			D'autre part, les données d'acoustique actives sont bruitées : le phénomène de \textit{bullage} modifie les données à des profondeurs superficielles; des changements de propriétés physique de l'eau (par exemple des changements de densité) peuvent introduire de faux signaux; l'instrumentation électronique voisinant l'échosondeur peut parasiter les données, \textit{etc.}
+			Par ailleurs, une incertitude non négligeable concerne la métrique de NASC (qui est une intégration sur un ensemble de profondeur du coefficient du volume de rétropropagation). En effet, d'une part, le NASC étant calculée sur un ensemble de profondeur variables selon fréquence d'échantillonage, les valeurs obtenues entre deux fréquences différentes ne sont pas comparables. D'autre part, les profils de rétro-propagation acoustique présentent des valeurs manquantes pouvant affecter directement la valeur de NASC obtenue. La méthode que nous avons mis en place pour diminuer cet effet (voir section \ref{section:compute_nasc}) peut être considérablement améliorée. Dans notre étude, le jeu de donnée présentant le plus de valeur manquante correspond à la campagne océanographique de 2021. Ces données-ci sont les plus susceptibles d'être affectées par ce protocole (voir Annexe \ref{annexe:missing_values}).
+			Enfin, les organismes étudiés par acoustique active présentent des caractéristiques diverses de réflectivité des ondes émises par l'écho-sondeur. Leur composition, orientation dans la colonne d'eau ou bien même la composition en lipides de leurs poche lipidique, variant de manière saisonnière, peuvent affecter le signal reçu \cite{benoitbird2016ecological}. Un phénomène largement documenté est l'amplification de la diffusion des ondes de 38 kHz chez les organismes pourvus de vessies natatoire \footnote{organe permettant à l'organisme de contrôler sa flottaison}. Ce phénomène induit une sur-évaluation de la biomasse des organismes au Nord (où sont présent ces organismes) lorsque cette fréquence est utilisée.
+		
+		\subsection{Données phytoplanctoniques}
+			Les données phytoplanctoniques issus de l'algorithme PIGMeANN sont des prédictions issues d'un algorithme de deep learning et présentent de ce fait des incertitudes intrinsèques. D'autre part, la couverture nuageuse importante de la région permet au satellite d'échantillonner l'océan seulement 10 à 20\% du temps. Ce phénomène limite fortement le nombre de données disponible et restreint nos modèles d'apprentissage à certaines dates et espaces (à laquelles il n'y a pas de nuages), ce qui peut induire un certain biais. 
+			Par ailleurs, l'équivalence entre concentration de pigments et biomasse phytoplanctonique est aussi controversée : les cellules phytoplanctoniques peuvent ajuster leur chlorophylle-a aux ratios de Carbone en réponse au stress environnemental \cite{thomalla2023Widespread}. 
+
+		\subsection{Données modèles : FOD et FTLE}
+			Les Domaines Océanographiques Fonctionnels (FOD) et les Finite-Time Lyapunov Exponent (FTLE) sont calculés à partir des champs de température, salinité et courants issus de la réanalyse GLORYS12 de Copernicus Marine Service. Cette réanalyse assimile conjointement des données altimétriques, de température de surface satellite, de concentration en glace de mer, ainsi que des profils in situ de température et salinité. Cependant la qualité de cette assimilation dépend directement de la densité d'observations in situ disponibles \cite{lellouche2021copernicus} : dans l'Océan Austral, la couverture en profils Argo et autres plateformes in situ reste nettement plus faible que dans les autres régions. Les champs de température, salinité et courants dans notre zone d'étude sont donc potentiellement moins contraints par l'observation et davantage dépendants de la dynamique propre du modèle NEMO sous-jacent. Ces biais, bien que faibles à l'échelle globale, peuvent se traduire par des décalages dans la délimitation spatiale des domaines fonctionnels identifiés, en particulier dans les zones frontales où de faibles variations de température ou salinité suffisent à modifier la classification. Enfin, la réanalyse fournit des champs quotidiens, ce qui limite la capacité du modèle à capturer la variabilité sub-journalière susceptible d'affecter transitoirement la structuration des masses d'eau et la dynamique de mélange de la région étudiée.
+		
+	\subsection{Améliorations ponctuelles du modèle}
 	complétion possible des données avec des méthodes de deep learning 
+	amélioration des procédures de complétion des na
+	enlever la structure latitudinale (méthode david)
 	
-	\section{effet du temps sur les corrélations mésoéchelle/phyto/zoo/nti}
+	\section{Perspectives}
+		\subsection{Approche locale statique vs approche spatio-temporelle dynamique}
+		L'approche méthodologique mise en place dans cette étude co-localise l'activité phytoplanctonique, de méso-échelle et des niveaux trophiques intermédiaires à des mêmes instants et mêmes localisation géographiques. Or, il existe une temporalité (phénologie) entre l'activité de mésoéchelle, l'activité phytoplanctonique et l'activité des niveaux trophiques intermédiaires \cite{nicholson2025satellite}, \cite{kauko2021phenology}, \cite{lampe2026differences}. 
+		Une des améliorations principale du modéle développé dans notre étude est la prise en compte de cette phénologie. On pourrait par exemple colocaliser le NASC, la mésoéchelle et l'activité phytolanctonique en respectant la phénologie informée par la littérature.
+		
+		
 	
-	- : commu phyto/nasc : effet du time gap entre les distributions des deux pouvant masquer les corrélations. On sait qu'un bloom de phyto donne + de biomasse des NTI supérieurs, mais + tard
 	
-	- ftle/phyto/nasc du modèle : critiques 
 	
-	\section{test statistiques : effet du nombre de données et dispersion sur la significativité, tendance vs climate change trend}
 	
-	30-40 years of PP data are necessary to distinguish a climate trend change (pas la ref n°1) \cite{thomalla2023Widespread}
 	
-	\section{Influence sur la prédiction : gradient latitudinal, overfit, déséquilibre de l'échantillonage}
-	gradient latitudinal = hypothèse de stationnarité de 1eret second ordre pas respecté, plots pour analyser cet effet
-	overfit du RS et capacité de transfer learning (spatial nested cv) : plots
-	effet du déséquilibre de l'échantillonage sur les cartes de prédictions
-	Le tuning des hyperparamètres a été réalisé en amont sur l'ensemble du jeu de données, puis les hyperparamètres optimaux ont été appliqués à l'entraînement de chacun des K folds. Cette approche, plus économe en temps de calcul qu'un tuning imbriqué (nested cross-validation), induit un léger optimisme dans les métriques de performance rapportées, les folds de test ayant potentiellement contribué à la sélection des hyperparamètres. L'écart attendu reste toutefois limité, les hyperparamètres capturant des tendances générales plutôt que des particularités locales des données."
 	
-	\section{Choix des variables prédictives, manque de variables}
-	variance, distance geo par fold et capacité prédictives -> hypothèse de manque de variable prédictive
 	
-	\section{Interprétation de l'importance des variables}
-	comment XGB et RF et CART n'ont pas les mêmes algos et comment ça veit en fait dire des choses différentes, méfiance sur l'interprétation, bien se renseigner (lire les articles)
 	
-	\section{Evaluation des performances prédictives du modèle}
-	résistance aux valeurs manquantes
-	résistance au bruit d'échantillonage
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	\clearpage
 	\chapter{Conclusion}
