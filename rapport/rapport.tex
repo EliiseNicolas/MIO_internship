@@ -477,17 +477,30 @@ urlcolor=black
 	
 	\begin{figure}[H]
 		\centering
-		\includegraphics[width=\textwidth]{images/02_materiel/OBSAUSTRAL_acoustic_data_schema}
-		\caption{Schéma explicatif illustrant l’acquisition de données d’acoustique active par des navires, permettant de caractériser la distribution des organismes dans la colonne d’eau à partir des signaux acoustiques enregistrés et représentés sous forme d’échogramme \cite{haris2021sounding}.}
-		\label{fig:obsaustralacousticdataschema}
+		\includegraphics[width=\textwidth]{images/02_materiel/transects_par_annee_2}
+		\caption{Carte des transects effectués par le Marion Dufresnes II lors des campagnes océanographiques OBSAUSTRAL/THEMISTO 2018, 2021, 2022 et 2023.}
+		\label{fig:transectsparannee2}
 	\end{figure}
 	
 	La réfléctance des ondes acoustiques sur un objet dépend également de la fréquence émise. D'autre part, différents organismes ont des réponses fréquentielles différentes (voir Annexe \ref{annexe:rep_freq}, figure \ref{fig:freqresponse}). La méthode d'acoustique active ayant été développée par les pêcheries, la fréquence d'échosondeur de référence est 38kHz (fréquence à laquelle sont les poissons résonnent). 
 	
 	\vspace{1cm}
 	
-	Pour notre étude, nous avons utilisé des données d'acoustiques actives collectées en transect \footnote{Le bateau se déplace et collecte en même temps des données, ()par opposition aux données "stations" collectées lorsque le bateau est en arrêt). Celà a un coût en terme de résolution des spectrogramme et d'interprétabilité mais permet d'obtenir une plus grande couverture spatiale.} lors des campagnes océanographiques OBSAUSTRAL/THEMISTO \cite{flotteoceanographique_campagnes} lors des étés 2018, 2021, 2022, 2023.  Deux fréquences d'émissions ont été choisies pour notre étude : 38kHz (afin de comparer nos résultats avec la littérature) et 120kHz qui correspond à la fréquence à laquelle les Euphausiacés (krill) et Copépodes sont le plus détectable (voir Annexe \ref{annexe:rep_freq}, figure \ref{fig:freqresponse}). En effet, ces organismes sont en forte abondance et constituent des éléments importants du réseau trophiques de la région d'étude.
+	Pour notre étude, nous avons utilisé des données d'acoustiques actives collectées en transect \footnote{Le bateau se déplace et collecte en même temps des données, ()par opposition aux données "stations" collectées lorsque le bateau est en arrêt). Celà a un coût en terme de résolution des spectrogramme et d'interprétabilité mais permet d'obtenir une plus grande couverture spatiale.} lors des campagnes océanographiques OBSAUSTRAL/THEMISTO \cite{flotteoceanographique_campagnes} lors des étés 2018, 2021, 2022, 2023 (voir figure \ref{fig:transectsparannee2}).  Deux fréquences d'émissions ont été choisies pour notre étude : 38kHz (afin de comparer nos résultats avec la littérature) et 120kHz qui correspond à la fréquence à laquelle les Euphausiacés (krill) et Copépodes sont le plus détectable (voir Annexe \ref{annexe:rep_freq}, figure \ref{fig:freqresponse}). En effet, ces organismes sont en forte abondance et constituent des éléments importants du réseau trophiques de la région d'étude.
 	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{images/02_materiel/echogramme_38kHz_2023-01-28}
+		\caption{Exemple d'échogramme avec une fréquence d'émission de 38 kHz, obtenu le 2023-01-28 entre 18h et 00h}
+		\label{fig:echogramme38khz2023-01-28}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=\textwidth]{images/02_materiel/echogramme_120kHz_2023-01-28}
+		\caption{Exemple d'échogramme avec une fréquence d'émission de 120 kHz, obtenu le 2023-01-28 entre 18h et 00h}
+		\label{fig:echogramme120khz2023-01-28}
+	\end{figure}
 	
 	\clearpage
 	\chapter{Méthode}
@@ -805,7 +818,7 @@ urlcolor=black
 	
 	
 	\section{Communautés phytoplanctoniques de la région d'étude}
-	A partir de la méthode décrite \label{section:pig}, 6 communautés phytoplanctoniques ont été mises en évidence (figure \ref{fig:distributionpigmentscommunauteskmeansk6pftstats}). La communauté 4 est dominée par la contribution de la Zéaxanthine et de la Divinyl Chlorophylle-a, caractéristique des procaryotes picoplanctoniques et des cyanobactéries (voir tableau \ref{tab:pigments}). Les communautés 1, 3, 5 et 6 sont dominées par la contribution de la 19' hexanoyloxyfucoxantine et de la fucoxantine, typiquement associées à des diatomées et des haptophytes, organismes connus pour être en compétition dans cette région \cite{sari2025influence}.
+	A partir de la méthode décrite en section \ref{section:pigs}, 6 communautés phytoplanctoniques ont été mises en évidence (figure \ref{fig:distributionpigmentscommunauteskmeansk6pftstats}). La communauté 4 est dominée par la contribution de la Zéaxanthine et de la Divinyl Chlorophylle-a, caractéristique des procaryotes picoplanctoniques et des cyanobactéries (voir tableau \ref{tab:pigments}). Les communautés 1, 3, 5 et 6 sont dominées par la contribution de la 19' hexanoyloxyfucoxantine et de la fucoxantine, typiquement associées à des diatomées et des haptophytes, organismes connus pour être en compétition dans cette région \cite{sari2025influence}.
 	Elles diffèrent cependant entre elles (voir figure \ref{fig:distribpigmentsincommunauteskmeansk6pftstats}, Annexe \ref{annexe:distrib_commu_phyto}) par (1) leur intensité de biomasse totale (concentration de chlorophylle-a totale (chla\_total)), les communautés 1, 3, 6 sont associées a de fortes biomasses; (2) leur concentratione en 19' butanoyloxyfucoxantine, élevée dans la communauté 1 et 3; (3) La concentration en Alloxanthine, supérieure dans la communauté 6.
 	\begin{figure}[H]
 		\centering
@@ -821,9 +834,9 @@ urlcolor=black
 		\label{fig:mappuritycommunauteskmeansk6pft}
 	\end{figure}
 	
-	Les communautés semblent structurées selon la latitude (voir \ref{fig:mappuritycommunauteskmeansk6pft}) et correspondre à certaines masses d'eau identifiées par les FOD : la communauté 4 est présente au Nord de la région, ce qui est cohérent avec les travaux récents qui montrent l'absence de Prochlorococcus (Cyanobactérie) à des latitudes très faibles \cite{Pan2020}, \cite{Johnson2006}. La communauté 6 est présente principalement aux alentours de Kerguelen (Shelf Zone, non décrite par les FOD, zone riche en fer présentants de forts blooms phytoplanctoniques). La communauté 2 est présente à la latitude de 35°S, aux alentours du front subtropical. La communauté 3 est présente plus au Sud et à l'Est, à partir de 60°E et 50°S environ (correspondant au FOD 1). La communauté 1 est présente entre 40 et 45°S (correspondant au FOD 3). La communauté 5 est présente dans plusieurs régions : en dessous du front subtropical ($\approx$ 35°S) et à partir de 45°S, plutôt à l'Ouest de la région.
-	
-	\begin{figure}[H]
+	 La figure \ref{fig:mappuritycommunauteskmeansk6pft} représente la distribution spatiale des clusters de contribution des pigments phytoplanctoniques. La communauté 4 est présente au Nord de la région. La communauté 6 est présente principalement aux alentours de Kerguelen. La communauté 2 est présente à la latitude de 35°S, aux alentours du front subtropical. La communauté 3 est présente plus au Sud et à l'Est, à partir de 60°E et 50°S environ. La communauté 1 est présente entre 40 et 45°S. La communauté 5 est présente dans plusieurs régions : en dessous du front subtropical ($\approx$ 35°S) et à partir de 45°S, plutôt à l'Ouest de la région.
+	 
+		\begin{figure}[H]
 		\centering
 		\includegraphics[width=\textwidth]{"images/04_resultats/03_commu_phyto_cluster_pigs/violin_NASC (38 kHz) par communaute phytoplanctonique par annee"}
 		\caption{Distribution du NASC (38 kHz) par année (2018, 2021, 2022, 2023) et par communauté phytoplanctonique.}
@@ -837,7 +850,7 @@ urlcolor=black
 		\label{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee}
 	\end{figure}
 	
-	Aucune différence significative de biomasse de zooplancton/micronecton n'a été détectée entre les différentes communautés phytoplanctoniques pour chaque année (voir figure \ref{fig:violinnasc-38-khz-par-communaute-phytoplanctonique-par-annee}, \ref{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee}). 
+	Les figures  \ref{fig:violinnasc-38-khz-par-communaute-phytoplanctonique-par-annee} et \ref{fig:violinnasc-120-khz-par-communaute-phytoplanctonique-par-annee} présentent les distributions de NASC au sein de chaque communauté phytoplanctonique. Aucune différence significative de NASC n'est détectable entre les différentes communautés phytoplanctoniques pour chaque année.
 	
 	\section{Structure prédictive du NASC à partir des variables environnementales (FOD, FTLE) et des contribution de pigments photosynthétiques}
 	- comparaison des performances totales entre modèles
@@ -883,6 +896,11 @@ urlcolor=black
 		\subsection{Distribution des Finite-Time Lyapunov Exponent}
 		\subsection{Distribution du NASC}
 			Les analyses de distribution du NASC entre les années 2018, 2021, 2022, et 2023, dans la région étudiée, ne montrent pas de changements structurels significatifs (voir sous-section \ref{res : distrib_nasc}). Le nombre de données variable d'une année à l'autre (voir annexe \ref{annexe:n_data_distribs}) et la faible couverture spatiale et temporelle d'échantillonnage (transects des campagnes océanographiques) rendent ces résultats potentiellement peu représentatif de la réalité biologique et sont donc à considérer avec précautions. 
+	
+	\section{Structure des communautés phytoplanctoniques}
+	L'équivalence directe entre les ratios de concentration de pigments photo-synthétiques et les types/classe de taille du phytoplancton est hypothétique et ne constitue pas un fait scientifique. Des mesures \textit{in-situ} par HPLC et Cytométrie en flux sont nécessaires afin de qualifier exactement la composition taxonomique des communautés phytoplanctoniques.
+	La figure \ref{fig:mappuritycommunauteskmeansk6pft} présente une structuration des communautés selon un gradient latitudinal. Certaines communautés semblent avoir une affinité pour des masses d'eau particulières : la commauté 4 aurait plus d'affinité avec les FOD 6. La communauté 6 est présente principalement aux alentours de Kerguelen (Shelf Zone, non décrite par les FOD, zone riche en fer présentants de forts blooms phytoplanctoniques).  La communauté, présente entre 40 et 45°S, serait majoritairment affiliée au FOD 3). La communauté 3, aurait d'avantage d'affinité pour les eaux du FOD 1. Des tests statistiques sont nécessaire afin de confirmer ces observations. 
+	D'autre part, la communauté 4, dominée par les pigments dvChla et Zeaxanthine, est présent uniquement au Nord de la région, ce qui est cohérent avec les travaux récents qui montrent l'absence de Prochlorococcus (Cyanobactérie) à des latitudes très faibles \cite{Pan2020}, \cite{Johnson2006}.
 	
 	\section{Performances prédictives}
 	
