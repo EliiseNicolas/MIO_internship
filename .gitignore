@@ -12,3 +12,4 @@
 
 # Données prétraitées volumineuses
 data_preprocessed/concat_temp_sal/*.rds
+src/arbres_regression_clean/outputs_pipeline/
