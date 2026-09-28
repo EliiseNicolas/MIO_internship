@@ -844,6 +844,596 @@
       \verb 10.1006/jmsc.2001.1158
       \endverb
     \endentry
+    \entry{edwards2000nature}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=e1d0ea49d09714349a678a722b5ffa22}{%
+           family={Edwards},
+           familyi={E\bibinitperiod},
+           given={Jeffrey\bibnamedelima R.},
+           giveni={J\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=f4b8793e18ee301010da467aac52d7f5}{%
+           family={Bagozzi},
+           familyi={B\bibinitperiod},
+           given={Richard\bibnamedelima P.},
+           giveni={R\bibinitperiod\bibinitdelim P\bibinitperiod}}}%
+      }
+      \strng{namehash}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{fullhash}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{fullhashraw}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{bibnamehash}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{authorbibnamehash}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{authornamehash}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{authorfullhash}{3b12d7b87180e527ba2a5def65b52e9b}
+      \strng{authorfullhashraw}{3b12d7b87180e527ba2a5def65b52e9b}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Psychological Methods}
+      \field{number}{2}
+      \field{title}{On the Nature and Direction of Relationships Between Constructs and Measures}
+      \field{volume}{5}
+      \field{year}{2000}
+      \field{pages}{155\bibrangedash 174}
+      \range{pages}{20}
+      \verb{doi}
+      \verb 10.1037/1082-989X.5.2.155
+      \endverb
+    \endentry
+    \entry{shmueli2010explain}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=e5932cf12165e5dd654a70a1b84c0c17}{%
+           family={Shmueli},
+           familyi={S\bibinitperiod},
+           given={Galit},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{fullhash}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{fullhashraw}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{bibnamehash}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{authorbibnamehash}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{authornamehash}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{authorfullhash}{e5932cf12165e5dd654a70a1b84c0c17}
+      \strng{authorfullhashraw}{e5932cf12165e5dd654a70a1b84c0c17}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Statistical Science}
+      \field{number}{3}
+      \field{title}{To Explain or to Predict?}
+      \field{volume}{25}
+      \field{year}{2010}
+      \field{pages}{289\bibrangedash 310}
+      \range{pages}{22}
+      \verb{doi}
+      \verb 10.1214/10-STS330
+      \endverb
+    \endentry
+    \entry{Bandara2021}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=f4100658d4161e7ec564c5dae7d2b1ed}{%
+           family={Bandara},
+           familyi={B\bibinitperiod},
+           given={Kanchana},
+           giveni={K\bibinitperiod}}}%
+        {{hash=d558132e47275e13929e46f9547186d4}{%
+           family={Varpe},
+           familyi={V\bibinitperiod},
+           given={{Ø}ystein},
+           giveni={Ø\bibinitperiod}}}%
+        {{hash=cee7a91836c4f96d35c5de653c4e3d33}{%
+           family={Wijewardene},
+           familyi={W\bibinitperiod},
+           given={Lakshan},
+           giveni={L\bibinitperiod}}}%
+        {{hash=0b88c8dddbb59a2fa9cfd87c21423173}{%
+           family={Tverberg},
+           familyi={T\bibinitperiod},
+           given={Vigdis},
+           giveni={V\bibinitperiod}}}%
+        {{hash=cc41c86f588f9fb242492c5b8b394510}{%
+           family={Eiane},
+           familyi={E\bibinitperiod},
+           given={Ketil},
+           giveni={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{81abc39f0a1832860a2d9fa347199493}
+      \strng{fullhash}{0760f06fa0bb79401ee5cce43c566b9f}
+      \strng{fullhashraw}{0760f06fa0bb79401ee5cce43c566b9f}
+      \strng{bibnamehash}{81abc39f0a1832860a2d9fa347199493}
+      \strng{authorbibnamehash}{81abc39f0a1832860a2d9fa347199493}
+      \strng{authornamehash}{81abc39f0a1832860a2d9fa347199493}
+      \strng{authorfullhash}{0760f06fa0bb79401ee5cce43c566b9f}
+      \strng{authorfullhashraw}{0760f06fa0bb79401ee5cce43c566b9f}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biological Reviews}
+      \field{number}{4}
+      \field{title}{Two hundred years of zooplankton vertical migration research}
+      \field{volume}{96}
+      \field{year}{2021}
+      \field{pages}{1547\bibrangedash 1589}
+      \range{pages}{43}
+      \verb{doi}
+      \verb 10.1111/brv.12715
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1111/brv.12715
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1111/brv.12715
+      \endverb
+    \endentry
+    \entry{flotteoceanographique_campagnes}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=d097f768f4c893e5f04ee1805772ca23}{%
+           family={{Flotte océanographique française}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{fullhash}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{fullhashraw}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{bibnamehash}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{authorbibnamehash}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{authornamehash}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{authorfullhash}{d097f768f4c893e5f04ee1805772ca23}
+      \strng{authorfullhashraw}{d097f768f4c893e5f04ee1805772ca23}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Campagnes océanographiques}
+      \field{urlday}{6}
+      \field{urlmonth}{9}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://campagnes.flotteoceanographique.fr/campaign
+      \endverb
+      \verb{url}
+      \verb https://campagnes.flotteoceanographique.fr/campaign
+      \endverb
+    \endentry
+    \entry{Alvain2005}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=dce4ebc9fe566f2e11d03e1be40dbfe8}{%
+           family={Alvain},
+           familyi={A\bibinitperiod},
+           given={Séverine},
+           giveni={S\bibinitperiod}}}%
+        {{hash=06d86590df0cd4ee4f6496affb9251d8}{%
+           family={Moulin},
+           familyi={M\bibinitperiod},
+           given={Cyril},
+           giveni={C\bibinitperiod}}}%
+        {{hash=dd080de05d103b3568acaa42b96360c6}{%
+           family={Dandonneau},
+           familyi={D\bibinitperiod},
+           given={Yves},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=bd883bd20672dedb93531cbf2772b131}{%
+           family={Bréon},
+           familyi={B\bibinitperiod},
+           given={François-Marie},
+           giveni={F\bibinithyphendelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{c4a6c114a3a83eda6cade0fc6f8934de}
+      \strng{fullhash}{b2a5157147f98581efc444a9b36ebacd}
+      \strng{fullhashraw}{b2a5157147f98581efc444a9b36ebacd}
+      \strng{bibnamehash}{c4a6c114a3a83eda6cade0fc6f8934de}
+      \strng{authorbibnamehash}{c4a6c114a3a83eda6cade0fc6f8934de}
+      \strng{authornamehash}{c4a6c114a3a83eda6cade0fc6f8934de}
+      \strng{authorfullhash}{b2a5157147f98581efc444a9b36ebacd}
+      \strng{authorfullhashraw}{b2a5157147f98581efc444a9b36ebacd}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Deep-Sea Research Part I: Oceanographic Research Papers}
+      \field{number}{11}
+      \field{title}{Remote sensing of phytoplankton groups in case 1 waters from global {S}ea{WiFS} imagery}
+      \field{volume}{52}
+      \field{year}{2005}
+      \field{pages}{1989\bibrangedash 2004}
+      \range{pages}{16}
+      \verb{doi}
+      \verb 10.1016/j.dsr.2005.06.015
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1016/j.dsr.2005.06.015
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1016/j.dsr.2005.06.015
+      \endverb
+    \endentry
+    \entry{Li2023DLPPCE}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=0ec7567d9ffdd419dfc69116077749be}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Xiaolong},
+           giveni={X\bibinitperiod}}}%
+        {{hash=446e84a6f09f26fc6cf5730853e551ba}{%
+           family={Yang},
+           familyi={Y\bibinitperiod},
+           given={Yi},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=ab0dc93057e72825eb131487cbaff341}{%
+           family={Ishizaka},
+           familyi={I\bibinitperiod},
+           given={Joji},
+           giveni={J\bibinitperiod}}}%
+        {{hash=74f3803962128dd4bb5b501ab7457e15}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Xiaofeng},
+           giveni={X\bibinitperiod}}}%
+      }
+      \strng{namehash}{eafed5bf1c131b578589c7b16befcea7}
+      \strng{fullhash}{de21e517ec5d5ce140c59cf489977a46}
+      \strng{fullhashraw}{de21e517ec5d5ce140c59cf489977a46}
+      \strng{bibnamehash}{eafed5bf1c131b578589c7b16befcea7}
+      \strng{authorbibnamehash}{eafed5bf1c131b578589c7b16befcea7}
+      \strng{authornamehash}{eafed5bf1c131b578589c7b16befcea7}
+      \strng{authorfullhash}{de21e517ec5d5ce140c59cf489977a46}
+      \strng{authorfullhashraw}{de21e517ec5d5ce140c59cf489977a46}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Remote Sensing of Environment}
+      \field{title}{Global estimation of phytoplankton pigment concentrations from satellite data using a deep-learning-based model}
+      \field{volume}{294}
+      \field{year}{2023}
+      \field{pages}{113628}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.rse.2023.113628
+      \endverb
+    \endentry
+    \entry{Waga2026CSD}{article}{}{}
+      \name{author}{11}{}{%
+        {{hash=7df242b526f60094d9dd5b96d161a647}{%
+           family={Waga},
+           familyi={W\bibinitperiod},
+           given={Hisatomo},
+           giveni={H\bibinitperiod}}}%
+        {{hash=ae83aebd4ca48aee8c13555da5a4fc79}{%
+           family={Fujiwara},
+           familyi={F\bibinitperiod},
+           given={Amane},
+           giveni={A\bibinitperiod}}}%
+        {{hash=2610eca08e1596ac723854294dd0a1f1}{%
+           family={Moses},
+           familyi={M\bibinitperiod},
+           given={Wesley\bibnamedelima J.},
+           giveni={W\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=e6e36fa5d50eee0531332ce0d671f2d6}{%
+           family={Ackleson},
+           familyi={A\bibinitperiod},
+           given={Steven\bibnamedelima G.},
+           giveni={S\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=f991b601661a1df6493a2569c4067876}{%
+           family={Koestner},
+           familyi={K\bibinitperiod},
+           given={Daniel},
+           giveni={D\bibinitperiod}}}%
+        {{hash=7def5f685d48e03dcd683e8a5d981f15}{%
+           family={Tzortziou},
+           familyi={T\bibinitperiod},
+           given={Maria},
+           giveni={M\bibinitperiod}}}%
+        {{hash=8fbb4f17305d95d316b367c3cfe79ea6}{%
+           family={Turner},
+           familyi={T\bibinitperiod},
+           given={Kyle},
+           giveni={K\bibinitperiod}}}%
+        {{hash=ac9eb5666e7fd6b516a3ba894048b429}{%
+           family={Menendez},
+           familyi={M\bibinitperiod},
+           given={Alana},
+           giveni={A\bibinitperiod}}}%
+        {{hash=3967b00fcfa1a911653a6fd331f70e63}{%
+           family={Hirawake},
+           familyi={H\bibinitperiod},
+           given={Toru},
+           giveni={T\bibinitperiod}}}%
+        {{hash=d61d60cb50f026c4edd9d327a464a0c7}{%
+           family={Suzuki},
+           familyi={S\bibinitperiod},
+           given={Koji},
+           giveni={K\bibinitperiod}}}%
+        {{hash=c4215cbfb154cefc22c6f262ebd89d04}{%
+           family={Saitoh},
+           familyi={S\bibinitperiod},
+           given={Sei-Ichi},
+           giveni={S\bibinithyphendelim I\bibinitperiod}}}%
+      }
+      \strng{namehash}{e94f4a0e7976af36fb70e318edd9db97}
+      \strng{fullhash}{cbfc0b4d983b6c9249eb30b77c791ea0}
+      \strng{fullhashraw}{cbfc0b4d983b6c9249eb30b77c791ea0}
+      \strng{bibnamehash}{e94f4a0e7976af36fb70e318edd9db97}
+      \strng{authorbibnamehash}{e94f4a0e7976af36fb70e318edd9db97}
+      \strng{authornamehash}{e94f4a0e7976af36fb70e318edd9db97}
+      \strng{authorfullhash}{cbfc0b4d983b6c9249eb30b77c791ea0}
+      \strng{authorfullhashraw}{cbfc0b4d983b6c9249eb30b77c791ea0}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biogeosciences}
+      \field{number}{3}
+      \field{title}{Machine learning for estimating phytoplankton size structure from satellite ocean color imagery in optically complex {P}acific {A}rctic waters}
+      \field{volume}{23}
+      \field{year}{2026}
+      \field{pages}{1043\bibrangedash 1064}
+      \range{pages}{22}
+      \verb{doi}
+      \verb 10.5194/bg-23-1043-2026
+      \endverb
+    \endentry
+    \entry{Lasbleiz2014}{article}{}{}
+      \name{author}{7}{}{%
+        {{hash=16d16ce3ac5627d002474b82a3212a48}{%
+           family={Lasbleiz},
+           familyi={L\bibinitperiod},
+           given={Marion},
+           giveni={M\bibinitperiod}}}%
+        {{hash=fde89f6351620d14fd90fe08180e8bb6}{%
+           family={Leblanc},
+           familyi={L\bibinitperiod},
+           given={Karine},
+           giveni={K\bibinitperiod}}}%
+        {{hash=5197d8759e5ec110eed0455f6614ccaf}{%
+           family={Blain},
+           familyi={B\bibinitperiod},
+           given={Stéphane},
+           giveni={S\bibinitperiod}}}%
+        {{hash=67a48c037c273a57c096dacb5fd50ec1}{%
+           family={Ras},
+           familyi={R\bibinitperiod},
+           given={Josephine},
+           giveni={J\bibinitperiod}}}%
+        {{hash=39205fedc2566fec6be40104c869d861}{%
+           family={Cornet-Barthaux},
+           familyi={C\bibinithyphendelim B\bibinitperiod},
+           given={Véronique},
+           giveni={V\bibinitperiod}}}%
+        {{hash=41ed32297ba321a0dfa57a54f58b41bf}{%
+           family={Hélias\bibnamedelima Nunige},
+           familyi={H\bibinitperiod\bibinitdelim N\bibinitperiod},
+           given={Sandra},
+           giveni={S\bibinitperiod}}}%
+        {{hash=cff1282b8e13cd3b3c8b895ec2ce925d}{%
+           family={Quéguiner},
+           familyi={Q\bibinitperiod},
+           given={Bernard},
+           giveni={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{3ce1aa51cd92d077845253892a81ae4f}
+      \strng{fullhash}{a8642882bfe2e75ae06e086f90ec7093}
+      \strng{fullhashraw}{a8642882bfe2e75ae06e086f90ec7093}
+      \strng{bibnamehash}{3ce1aa51cd92d077845253892a81ae4f}
+      \strng{authorbibnamehash}{3ce1aa51cd92d077845253892a81ae4f}
+      \strng{authornamehash}{3ce1aa51cd92d077845253892a81ae4f}
+      \strng{authorfullhash}{a8642882bfe2e75ae06e086f90ec7093}
+      \strng{authorfullhashraw}{a8642882bfe2e75ae06e086f90ec7093}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biogeosciences}
+      \field{title}{Pigments, elemental composition ({C}, {N}, {P}, and {S}i), and stoichiometry of particulate matter in the naturally iron fertilized region of {K}erguelen in the {S}outhern {O}cean}
+      \field{volume}{11}
+      \field{year}{2014}
+      \field{pages}{5931\bibrangedash 5955}
+      \range{pages}{25}
+      \verb{doi}
+      \verb 10.5194/bg-11-5931-2014
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.5194/bg-11-5931-2014
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.5194/bg-11-5931-2014
+      \endverb
+    \endentry
+    \entry{sari2026regional}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=0c4e56761cc75d73019d62802bf2725d}{%
+           family={Sari\bibnamedelimb El\bibnamedelima Dine},
+           familyi={S\bibinitperiod\bibinitdelim E\bibinitperiod\bibinitdelim D\bibinitperiod},
+           given={Ziad},
+           giveni={Z\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Nantes, France}%
+      }
+      \list{organization}{1}{%
+        {ODATIS}%
+      }
+      \strng{namehash}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{fullhash}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{fullhashraw}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{bibnamehash}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{authorbibnamehash}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{authornamehash}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{authorfullhash}{0c4e56761cc75d73019d62802bf2725d}
+      \strng{authorfullhashraw}{0c4e56761cc75d73019d62802bf2725d}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Presentation at the Atelier \#7 CES Couleur de l'Océan}
+      \field{month}{3}
+      \field{note}{Presentation given on 17 March 2026}
+      \field{title}{Regional Algorithm for Estimating Southern Ocean Phytoplankton Pigments: Multi-spectral Machine Learning Approach}
+      \field{year}{2026}
+    \endentry
+    \entry{Georges2014}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=897df25b8dccf6632852b8504019b825}{%
+           family={Georges},
+           familyi={G\bibinitperiod},
+           given={C.},
+           giveni={C\bibinitperiod}}}%
+        {{hash=9e86d1f7e33fd28c79bfdb76268b8e42}{%
+           family={Monchy},
+           familyi={M\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=40ff4896cd8ae49e338b3e25c04b7ea7}{%
+           family={Genitsaris},
+           familyi={G\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=893caa60f05ad05fc6fc53cc2f48fb33}{%
+           family={Christaki},
+           familyi={C\bibinitperiod},
+           given={U.},
+           giveni={U\bibinitperiod}}}%
+      }
+      \strng{namehash}{20564720e86729f3fc776592f7c8a1fe}
+      \strng{fullhash}{b8de95ddbd20ff083fd796acc74b3b30}
+      \strng{fullhashraw}{b8de95ddbd20ff083fd796acc74b3b30}
+      \strng{bibnamehash}{20564720e86729f3fc776592f7c8a1fe}
+      \strng{authorbibnamehash}{20564720e86729f3fc776592f7c8a1fe}
+      \strng{authornamehash}{20564720e86729f3fc776592f7c8a1fe}
+      \strng{authorfullhash}{b8de95ddbd20ff083fd796acc74b3b30}
+      \strng{authorfullhashraw}{b8de95ddbd20ff083fd796acc74b3b30}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Biogeosciences}
+      \field{title}{Protist community composition during early phytoplankton blooms in the naturally iron-fertilized {K}erguelen area ({S}outhern {O}cean)}
+      \field{volume}{11}
+      \field{year}{2014}
+      \field{pages}{5847\bibrangedash 5863}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.5194/bg-11-5847-2014
+      \endverb
+    \endentry
+    \entry{copernicus2026services}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=97f8cc46214aa8c384f9e423e549a855}{%
+           family={{Copernicus Marine Service}},
+           familyi={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{fullhash}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{fullhashraw}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{bibnamehash}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{authorbibnamehash}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{authornamehash}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{authorfullhash}{97f8cc46214aa8c384f9e423e549a855}
+      \strng{authorfullhashraw}{97f8cc46214aa8c384f9e423e549a855}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Copernicus Marine Help Center}
+      \field{note}{Accessed September 6, 2026}
+      \field{title}{What are the services and content provided by the {Copernicus Marine Service}?}
+      \field{year}{2026}
+      \verb{urlraw}
+      \verb https://help.marine.copernicus.eu/en/articles/5046713-what-are-the-services-and-content-provided-by-the-copernicus-marine-service
+      \endverb
+      \verb{url}
+      \verb https://help.marine.copernicus.eu/en/articles/5046713-what-are-the-services-and-content-provided-by-the-copernicus-marine-service
+      \endverb
+    \endentry
+    \entry{shadden2005definition}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=d5817166a9f9122ad50f24c39d4f0e0b}{%
+           family={Shadden},
+           familyi={S\bibinitperiod},
+           given={Shawn\bibnamedelima C.},
+           giveni={S\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=bd68837c7327f54a56e11c11f20a51f8}{%
+           family={Lekien},
+           familyi={L\bibinitperiod},
+           given={Francois},
+           giveni={F\bibinitperiod}}}%
+        {{hash=ec03988d2dd9d918b4d7f236b192cc6a}{%
+           family={Marsden},
+           familyi={M\bibinitperiod},
+           given={Jerrold\bibnamedelima E.},
+           giveni={J\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{fullhash}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{fullhashraw}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{bibnamehash}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{authorbibnamehash}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{authornamehash}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{authorfullhash}{d529c033c60717ac8c6855bd8ea968cb}
+      \strng{authorfullhashraw}{d529c033c60717ac8c6855bd8ea968cb}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Physica D: Nonlinear Phenomena}
+      \field{number}{3--4}
+      \field{title}{Definition and properties of {Lagrangian} coherent structures from finite-time {Lyapunov} exponents in two-dimensional aperiodic flows}
+      \field{volume}{212}
+      \field{year}{2005}
+      \field{pages}{271\bibrangedash 304}
+      \range{pages}{34}
+      \verb{doi}
+      \verb 10.1016/j.physd.2005.10.007
+      \endverb
+    \endentry
+    \entry{dovidio2004mixing}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=a4d5663669144e4d4c62d57fc271fdbc}{%
+           family={d'Ovidio},
+           familyi={d\bibinitperiod},
+           given={Francesco},
+           giveni={F\bibinitperiod}}}%
+        {{hash=d7e42fb76a632ca9388e2e0c84c07d4e}{%
+           family={Fernández},
+           familyi={F\bibinitperiod},
+           given={Vicente},
+           giveni={V\bibinitperiod}}}%
+        {{hash=26480bfd847aa34ba89599147b92ac9a}{%
+           family={Hernández-García},
+           familyi={H\bibinithyphendelim G\bibinitperiod},
+           given={Emilio},
+           giveni={E\bibinitperiod}}}%
+        {{hash=d335987adc23332ab63911fd505fabd7}{%
+           family={López},
+           familyi={L\bibinitperiod},
+           given={Cristóbal},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{cc505abb518e77831627ea3592c64919}
+      \strng{fullhash}{4cd20201ff69a47fa416c51bffafb21c}
+      \strng{fullhashraw}{4cd20201ff69a47fa416c51bffafb21c}
+      \strng{bibnamehash}{cc505abb518e77831627ea3592c64919}
+      \strng{authorbibnamehash}{cc505abb518e77831627ea3592c64919}
+      \strng{authornamehash}{cc505abb518e77831627ea3592c64919}
+      \strng{authorfullhash}{4cd20201ff69a47fa416c51bffafb21c}
+      \strng{authorfullhashraw}{4cd20201ff69a47fa416c51bffafb21c}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Geophysical Research Letters}
+      \field{title}{Mixing structures in the {Mediterranean Sea} from finite-size {Lyapunov} exponents}
+      \field{volume}{31}
+      \field{year}{2004}
+      \field{pages}{L17203}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1029/2004GL020328
+      \endverb
+    \endentry
   \enddatalist
 \endrefsection
 \endinput
