@@ -1,0 +1,850 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{reynolds2006ecology}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=cc6d256fbd24afd490179c205c0f298e}{%
+           family={Reynolds},
+           familyi={R\bibinitperiod},
+           given={Colin\bibnamedelima S.},
+           giveni={C\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Cambridge}%
+      }
+      \list{publisher}{1}{%
+        {Cambridge University Press}%
+      }
+      \strng{namehash}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{fullhash}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{fullhashraw}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{bibnamehash}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{authorbibnamehash}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{authornamehash}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{authorfullhash}{cc6d256fbd24afd490179c205c0f298e}
+      \strng{authorfullhashraw}{cc6d256fbd24afd490179c205c0f298e}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-0-521-84413-0}
+      \field{series}{Ecology, Biodiversity and Conservation}
+      \field{title}{The Ecology of Phytoplankton}
+      \field{year}{2006}
+      \verb{doi}
+      \verb 10.1017/CBO9780511542145
+      \endverb
+    \endentry
+    \entry{sallee2018}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=764f3e8f9404b972a6917eada8be8372}{%
+           family={Sallée},
+           familyi={S\bibinitperiod},
+           given={Jean-Baptiste},
+           giveni={J\bibinithyphendelim B\bibinitperiod}}}%
+      }
+      \strng{namehash}{764f3e8f9404b972a6917eada8be8372}
+      \strng{fullhash}{764f3e8f9404b972a6917eada8be8372}
+      \strng{fullhashraw}{764f3e8f9404b972a6917eada8be8372}
+      \strng{bibnamehash}{764f3e8f9404b972a6917eada8be8372}
+      \strng{authorbibnamehash}{764f3e8f9404b972a6917eada8be8372}
+      \strng{authornamehash}{764f3e8f9404b972a6917eada8be8372}
+      \strng{authorfullhash}{764f3e8f9404b972a6917eada8be8372}
+      \strng{authorfullhashraw}{764f3e8f9404b972a6917eada8be8372}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Oceanography}
+      \field{month}{6}
+      \field{number}{2}
+      \field{title}{Southern Ocean Warming}
+      \field{volume}{31}
+      \field{year}{2018}
+      \field{pages}{52\bibrangedash 62}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.5670/oceanog.2018.215
+      \endverb
+    \endentry
+    \entry{abram2025Antarctic}{article}{}{}
+      \name{author}{21}{}{%
+        {{hash=0914ef377cc25ff433f32204eed4512a}{%
+           family={Abram},
+           familyi={A\bibinitperiod},
+           given={Nerilie\bibnamedelima J.},
+           giveni={N\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=68f1ecaea4bb208482dab4c5efd5c9dc}{%
+           family={Purich},
+           familyi={P\bibinitperiod},
+           given={Ariaan},
+           giveni={A\bibinitperiod}}}%
+        {{hash=7ba7b5702878350a32fab5c0853dc264}{%
+           family={England},
+           familyi={E\bibinitperiod},
+           given={Matthew\bibnamedelima H.},
+           giveni={M\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+        {{hash=efc349bcf8af38f3fe2e42732f8c8b52}{%
+           family={McCormack},
+           familyi={M\bibinitperiod},
+           given={Felicity\bibnamedelima S.},
+           giveni={F\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=076d041d7885e5ae743c2ade7d73f648}{%
+           family={Strugnell},
+           familyi={S\bibinitperiod},
+           given={Jan\bibnamedelima M.},
+           giveni={J\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=2ced69893580253bfea114a1273933d3}{%
+           family={Bergstrom},
+           familyi={B\bibinitperiod},
+           given={Dana\bibnamedelima M.},
+           giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=421e7ca5e772318dc78ce0c8692cb046}{%
+           family={Vance},
+           familyi={V\bibinitperiod},
+           given={Tessa\bibnamedelima R.},
+           giveni={T\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=9190dd313098d0710d64beb71d2598d7}{%
+           family={St{å}l},
+           familyi={S\bibinitperiod},
+           given={Tobias},
+           giveni={T\bibinitperiod}}}%
+        {{hash=f3bcc426eeea5cb2f47aec2b01c9e48a}{%
+           family={Wienecke},
+           familyi={W\bibinitperiod},
+           given={Barbara},
+           giveni={B\bibinitperiod}}}%
+        {{hash=2c120a86b83aa0a5b08e1dffd95d26d7}{%
+           family={Heil},
+           familyi={H\bibinitperiod},
+           given={Petra},
+           giveni={P\bibinitperiod}}}%
+        {{hash=90724d333b632a27bd0c0e98b5e28c00}{%
+           family={Doddridge},
+           familyi={D\bibinitperiod},
+           given={Edward\bibnamedelima W.},
+           giveni={E\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=764f3e8f9404b972a6917eada8be8372}{%
+           family={Sallée},
+           familyi={S\bibinitperiod},
+           given={Jean-Baptiste},
+           giveni={J\bibinithyphendelim B\bibinitperiod}}}%
+        {{hash=1e66f6fe4408ac96568a8b9b5e939d39}{%
+           family={Williams},
+           familyi={W\bibinitperiod},
+           given={Thomas\bibnamedelima J.},
+           giveni={T\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=22c5e87985e21bcd63d57793fdd4074c}{%
+           family={Reading},
+           familyi={R\bibinitperiod},
+           given={Anya\bibnamedelima M.},
+           giveni={A\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=838ba08d28c546a7ff8f4d99a19d9419}{%
+           family={Mackintosh},
+           familyi={M\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod}}}%
+        {{hash=afcc54e83b9bafca57e857d1727d1b8a}{%
+           family={Reese},
+           familyi={R\bibinitperiod},
+           given={Ronja},
+           giveni={R\bibinitperiod}}}%
+        {{hash=5bee62472dc1688958c96795078c591e}{%
+           family={Winkelmann},
+           familyi={W\bibinitperiod},
+           given={Ricarda},
+           giveni={R\bibinitperiod}}}%
+        {{hash=3e39c01788b9d634a6c728003e19469d}{%
+           family={Klose},
+           familyi={K\bibinitperiod},
+           given={Ann\bibnamedelima Kristin},
+           giveni={A\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=6d1b88b3ade31cae22173726c1a52570}{%
+           family={Boyd},
+           familyi={B\bibinitperiod},
+           given={Philip\bibnamedelima W.},
+           giveni={P\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=07b9bd261b2dd57e93d1c363a9dde5c2}{%
+           family={Chown},
+           familyi={C\bibinitperiod},
+           given={Steven\bibnamedelima L.},
+           giveni={S\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=42b32e87a9a22ff9b7ada3b55c81400a}{%
+           family={Robinson},
+           familyi={R\bibinitperiod},
+           given={Sharon\bibnamedelima A.},
+           giveni={S\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+      }
+      \strng{namehash}{bae72b378845630580cabf036ff9200d}
+      \strng{fullhash}{79f338ea52da8838c6aa39092f3906ae}
+      \strng{fullhashraw}{79f338ea52da8838c6aa39092f3906ae}
+      \strng{bibnamehash}{bae72b378845630580cabf036ff9200d}
+      \strng{authorbibnamehash}{bae72b378845630580cabf036ff9200d}
+      \strng{authornamehash}{bae72b378845630580cabf036ff9200d}
+      \strng{authorfullhash}{79f338ea52da8838c6aa39092f3906ae}
+      \strng{authorfullhashraw}{79f338ea52da8838c6aa39092f3906ae}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nature}
+      \field{number}{8077}
+      \field{title}{Emerging evidence of abrupt changes in the Antarctic environment}
+      \field{volume}{644}
+      \field{year}{2025}
+      \field{pages}{621\bibrangedash 633}
+      \range{pages}{13}
+      \verb{doi}
+      \verb 10.1038/s41586-025-09349-5
+      \endverb
+    \endentry
+    \entry{deppeler2017southern}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=91d2d1662c4bcfa007d5666d32366abb}{%
+           family={Deppeler},
+           familyi={D\bibinitperiod},
+           given={Stacy\bibnamedelima L.},
+           giveni={S\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=a16a899fe6a3bb5504b67a6a8e42983b}{%
+           family={Davidson},
+           familyi={D\bibinitperiod},
+           given={Andrew\bibnamedelima T.},
+           giveni={A\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \strng{namehash}{4c024407cd6920b6959d91cd66080478}
+      \strng{fullhash}{4c024407cd6920b6959d91cd66080478}
+      \strng{fullhashraw}{4c024407cd6920b6959d91cd66080478}
+      \strng{bibnamehash}{4c024407cd6920b6959d91cd66080478}
+      \strng{authorbibnamehash}{4c024407cd6920b6959d91cd66080478}
+      \strng{authornamehash}{4c024407cd6920b6959d91cd66080478}
+      \strng{authorfullhash}{4c024407cd6920b6959d91cd66080478}
+      \strng{authorfullhashraw}{4c024407cd6920b6959d91cd66080478}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Frontiers in Marine Science}
+      \field{title}{{Southern Ocean} Phytoplankton in a Changing Climate}
+      \field{volume}{4}
+      \field{year}{2017}
+      \field{pages}{40}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fmars.2017.00040
+      \endverb
+    \endentry
+    \entry{thomalla2023Widespread}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=e433e140e4d9f7a9094c93bbfd526b36}{%
+           family={Thomalla},
+           familyi={T\bibinitperiod},
+           given={Sandy\bibnamedelima J.},
+           giveni={S\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=19824a7d7a629535893488406ef0ae24}{%
+           family={Nicholson},
+           familyi={N\bibinitperiod},
+           given={Sarah-Anne},
+           giveni={S\bibinithyphendelim A\bibinitperiod}}}%
+        {{hash=1bf659b6ba16fb3f20512a1ab57818a3}{%
+           family={Ryan-Keogh},
+           familyi={R\bibinithyphendelim K\bibinitperiod},
+           given={Thomas\bibnamedelima J.},
+           giveni={T\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=b2374c8e87940a6109d0b042dd9c1ec2}{%
+           family={Smith},
+           familyi={S\bibinitperiod},
+           given={Marié\bibnamedelima E.},
+           giveni={M\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+      }
+      \strng{namehash}{65440d086edd5ba736623888a0cfeb31}
+      \strng{fullhash}{068c6bb6c7c17758f6f2172913f87c09}
+      \strng{fullhashraw}{068c6bb6c7c17758f6f2172913f87c09}
+      \strng{bibnamehash}{65440d086edd5ba736623888a0cfeb31}
+      \strng{authorbibnamehash}{65440d086edd5ba736623888a0cfeb31}
+      \strng{authornamehash}{65440d086edd5ba736623888a0cfeb31}
+      \strng{authorfullhash}{068c6bb6c7c17758f6f2172913f87c09}
+      \strng{authorfullhashraw}{068c6bb6c7c17758f6f2172913f87c09}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nature Climate Change}
+      \field{number}{9}
+      \field{title}{Widespread changes in Southern Ocean phytoplankton blooms linked to climate drivers}
+      \field{volume}{13}
+      \field{year}{2023}
+      \field{pages}{975\bibrangedash 984}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.1038/s41558-023-01768-4
+      \endverb
+    \endentry
+    \entry{boyce2017environmental}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=b1565f5499e079a6612dd9796aba8d3e}{%
+           family={Boyce},
+           familyi={B\bibinitperiod},
+           given={Daniel\bibnamedelima G.},
+           giveni={D\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=e939fc7bdfce567fead0b2b104e251dd}{%
+           family={Petrie},
+           familyi={P\bibinitperiod},
+           given={Brian},
+           giveni={B\bibinitperiod}}}%
+        {{hash=a5d755791d950b7db23040a193ebf876}{%
+           family={Frank},
+           familyi={F\bibinitperiod},
+           given={Kenneth\bibnamedelima T.},
+           giveni={K\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=d20926afa43feca8de94d916be6425fd}{%
+           family={Worm},
+           familyi={W\bibinitperiod},
+           given={Boris},
+           giveni={B\bibinitperiod}}}%
+        {{hash=0d618c586c84d4bef5c2154a475e69a7}{%
+           family={Leggett},
+           familyi={L\bibinitperiod},
+           given={William\bibnamedelima C.},
+           giveni={W\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+      }
+      \strng{namehash}{bc086b5a4502f37cf2faaa24536994aa}
+      \strng{fullhash}{ee7f196651666ceba5a06b439d943d35}
+      \strng{fullhashraw}{ee7f196651666ceba5a06b439d943d35}
+      \strng{bibnamehash}{bc086b5a4502f37cf2faaa24536994aa}
+      \strng{authorbibnamehash}{bc086b5a4502f37cf2faaa24536994aa}
+      \strng{authornamehash}{bc086b5a4502f37cf2faaa24536994aa}
+      \strng{authorfullhash}{ee7f196651666ceba5a06b439d943d35}
+      \strng{authorfullhashraw}{ee7f196651666ceba5a06b439d943d35}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nature Ecology \& Evolution}
+      \field{number}{10}
+      \field{title}{Environmental structuring of marine plankton phenology}
+      \field{volume}{1}
+      \field{year}{2017}
+      \field{pages}{1484\bibrangedash 1494}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1038/s41559-017-0287-3
+      \endverb
+    \endentry
+    \entry{hayward2024Antarctic}{article}{}{}
+      \name{author}{7}{}{%
+        {{hash=fb8bef137cee14d580ccd9577d9f72bd}{%
+           family={Hayward},
+           familyi={H\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod}}}%
+        {{hash=39ce4316f24bdd3239ccaee927b71671}{%
+           family={Wright},
+           familyi={W\bibinitperiod},
+           given={Simon\bibnamedelima W.},
+           giveni={S\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=e194ef1a37178ba0d07eaa45aec9b185}{%
+           family={Carroll},
+           familyi={C\bibinitperiod},
+           given={Dustin},
+           giveni={D\bibinitperiod}}}%
+        {{hash=7e3a2b92835b4bad302bd8e940d0e9c5}{%
+           family={Law},
+           familyi={L\bibinitperiod},
+           given={Cliff},
+           giveni={C\bibinitperiod}}}%
+        {{hash=e1161b18f785a1dbe81e4d6a8f93180d}{%
+           family={Wongpan},
+           familyi={W\bibinitperiod},
+           given={Pat},
+           giveni={P\bibinitperiod}}}%
+        {{hash=6d03fa6c0af5cdcdd7bff601dfac7e94}{%
+           family={Gutiérrez-Rodriguez},
+           familyi={G\bibinithyphendelim R\bibinitperiod},
+           given={Andrés},
+           giveni={A\bibinitperiod}}}%
+        {{hash=a555a5aab3efdd737b7e50cc553cd5c6}{%
+           family={Pinkerton},
+           familyi={P\bibinitperiod},
+           given={Matthew\bibnamedelima H.},
+           giveni={M\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+      }
+      \strng{namehash}{56793346ba1d87ee61dd445bca600581}
+      \strng{fullhash}{041257b60890d623c590be1ef78f679e}
+      \strng{fullhashraw}{041257b60890d623c590be1ef78f679e}
+      \strng{bibnamehash}{56793346ba1d87ee61dd445bca600581}
+      \strng{authorbibnamehash}{56793346ba1d87ee61dd445bca600581}
+      \strng{authornamehash}{56793346ba1d87ee61dd445bca600581}
+      \strng{authorfullhash}{041257b60890d623c590be1ef78f679e}
+      \strng{authorfullhashraw}{041257b60890d623c590be1ef78f679e}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Research Square}
+      \field{title}{Climate driven shifts in Antarctic phytoplankton groups: Implications of widespread diatom decline}
+      \field{type}{Preprint}
+      \field{year}{2024}
+      \verb{doi}
+      \verb 10.21203/rs.3.rs-5188031/v1
+      \endverb
+    \endentry
+    \entry{adroli2026}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=bd34335dd52de20c81ccd110c21af159}{%
+           family={Adroli},
+           familyi={A\bibinitperiod},
+           given={Nurmalia},
+           giveni={N\bibinitperiod}}}%
+        {{hash=fb8bef137cee14d580ccd9577d9f72bd}{%
+           family={Hayward},
+           familyi={H\bibinitperiod},
+           given={Alexander},
+           giveni={A\bibinitperiod}}}%
+        {{hash=bd81129f47ba1f57b18174f1585d5f59}{%
+           family={Strutton},
+           familyi={S\bibinitperiod},
+           given={Peter},
+           giveni={P\bibinitperiod}}}%
+        {{hash=77d404870b2fceb11636bd8864b46a25}{%
+           family={Ellwood},
+           familyi={E\bibinitperiod},
+           given={Michael},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{af62d429f4e5e9708ccf75b453762167}
+      \strng{fullhash}{2996ffd41810527e17b2384d6a7b3aa9}
+      \strng{fullhashraw}{2996ffd41810527e17b2384d6a7b3aa9}
+      \strng{bibnamehash}{af62d429f4e5e9708ccf75b453762167}
+      \strng{authorbibnamehash}{af62d429f4e5e9708ccf75b453762167}
+      \strng{authornamehash}{af62d429f4e5e9708ccf75b453762167}
+      \strng{authorfullhash}{2996ffd41810527e17b2384d6a7b3aa9}
+      \strng{authorfullhashraw}{2996ffd41810527e17b2384d6a7b3aa9}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Nature Communications}
+      \field{month}{7}
+      \field{number}{1}
+      \field{title}{Southern Ocean regime shift: divergent trends in surface phytoplankton community composition using a diagnostic pigment framework}
+      \field{volume}{17}
+      \field{year}{2026}
+      \field{pages}{8607}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1038/s41467-026-75303-2
+      \endverb
+    \endentry
+    \entry{treguer1992}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=86d6c6fa98bc4b0e8aacd4882b474a62}{%
+           family={Tréguer},
+           familyi={T\bibinitperiod},
+           given={Paul},
+           giveni={P\bibinitperiod}}}%
+        {{hash=89ecf781d2784c1f3f7f2b699e6d60dd}{%
+           family={Jacques},
+           familyi={J\bibinitperiod},
+           given={Guy},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{387e73013ea514e609a1a274835ea0bc}
+      \strng{fullhash}{387e73013ea514e609a1a274835ea0bc}
+      \strng{fullhashraw}{387e73013ea514e609a1a274835ea0bc}
+      \strng{bibnamehash}{387e73013ea514e609a1a274835ea0bc}
+      \strng{authorbibnamehash}{387e73013ea514e609a1a274835ea0bc}
+      \strng{authornamehash}{387e73013ea514e609a1a274835ea0bc}
+      \strng{authorfullhash}{387e73013ea514e609a1a274835ea0bc}
+      \strng{authorfullhashraw}{387e73013ea514e609a1a274835ea0bc}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Polar Biology}
+      \field{number}{2}
+      \field{title}{Dynamics of nutrients and phytoplankton, and fluxes of carbon, nitrogen and silicon in the {A}ntarctic {O}cean}
+      \field{volume}{12}
+      \field{year}{1992}
+      \field{pages}{149\bibrangedash 162}
+      \range{pages}{14}
+      \verb{doi}
+      \verb 10.1007/BF00238255
+      \endverb
+    \endentry
+    \entry{heidemann2024drivers}{article}{}{}
+      \name{author}{8}{}{%
+        {{hash=14f2c39f7ce40715fc3b1650cfd1d36e}{%
+           family={Heidemann},
+           familyi={H\bibinitperiod},
+           given={Asta\bibnamedelima C.},
+           giveni={A\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=a795fe19284660cd5cbd5bf785259e62}{%
+           family={Westwood},
+           familyi={W\bibinitperiod},
+           given={Karen\bibnamedelima J.},
+           giveni={K\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=845388967a0909b8c55e6464a2e6aa3c}{%
+           family={Foppert},
+           familyi={F\bibinitperiod},
+           given={Annie},
+           giveni={A\bibinitperiod}}}%
+        {{hash=39ce4316f24bdd3239ccaee927b71671}{%
+           family={Wright},
+           familyi={W\bibinitperiod},
+           given={Simon\bibnamedelima W.},
+           giveni={S\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=572a56c7c7be82ec1c9aac5330e8cfb5}{%
+           family={Klocker},
+           familyi={K\bibinitperiod},
+           given={Andreas},
+           giveni={A\bibinitperiod}}}%
+        {{hash=3cba3afe1310d44542d5be4742ce1945}{%
+           family={Vives},
+           familyi={V\bibinitperiod},
+           given={Clara\bibnamedelima R.},
+           giveni={C\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=852d00b9889e071ddf098e58decd4a73}{%
+           family={Wotherspoon},
+           familyi={W\bibinitperiod},
+           given={Simon},
+           giveni={S\bibinitperiod}}}%
+        {{hash=4abc71305aa0e5d18c19957d8e4bf9b3}{%
+           family={Bestley},
+           familyi={B\bibinitperiod},
+           given={Sophie},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{9f3081e0b224621708264f1ce5a4aa92}
+      \strng{fullhash}{6c7d63203af37a7d84a6a4c825ad5c98}
+      \strng{fullhashraw}{6c7d63203af37a7d84a6a4c825ad5c98}
+      \strng{bibnamehash}{9f3081e0b224621708264f1ce5a4aa92}
+      \strng{authorbibnamehash}{9f3081e0b224621708264f1ce5a4aa92}
+      \strng{authornamehash}{9f3081e0b224621708264f1ce5a4aa92}
+      \strng{authorfullhash}{6c7d63203af37a7d84a6a4c825ad5c98}
+      \strng{authorfullhashraw}{6c7d63203af37a7d84a6a4c825ad5c98}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Frontiers in Marine Science}
+      \field{title}{Drivers of phytoplankton distribution, abundance and community composition off {East Antarctica}, from 55--80°E ({CCAMLR} Division 58.4.2 East)}
+      \field{volume}{11}
+      \field{year}{2024}
+      \field{pages}{1454421}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fmars.2024.1454421
+      \endverb
+    \endentry
+    \entry{delcastillo2019greener}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=f01d1d2350fd5b8540321f34b5d74ec6}{%
+           family={Del\bibnamedelima Castillo},
+           familyi={D\bibinitperiod\bibinitdelim C\bibinitperiod},
+           given={Carlos\bibnamedelima E.},
+           giveni={C\bibinitperiod\bibinitdelim E\bibinitperiod}}}%
+        {{hash=40a5ea6408c884fed2cace0bea32e2c5}{%
+           family={Signorini},
+           familyi={S\bibinitperiod},
+           given={Sergio\bibnamedelima R.},
+           giveni={S\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=ed27de24984ef71614eba6c44207a4eb}{%
+           family={Karaköylü},
+           familyi={K\bibinitperiod},
+           given={Erdem\bibnamedelima M.},
+           giveni={E\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=6bf64bbce0eecbff3808624691b30754}{%
+           family={Rivero-Calle},
+           familyi={R\bibinithyphendelim C\bibinitperiod},
+           given={Sara},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{8cabcd1371c6ea3c4f591e37b542b7bf}
+      \strng{fullhash}{a727089621dba4c7ca4b462eb2b84e58}
+      \strng{fullhashraw}{a727089621dba4c7ca4b462eb2b84e58}
+      \strng{bibnamehash}{8cabcd1371c6ea3c4f591e37b542b7bf}
+      \strng{authorbibnamehash}{8cabcd1371c6ea3c4f591e37b542b7bf}
+      \strng{authornamehash}{8cabcd1371c6ea3c4f591e37b542b7bf}
+      \strng{authorfullhash}{a727089621dba4c7ca4b462eb2b84e58}
+      \strng{authorfullhashraw}{a727089621dba4c7ca4b462eb2b84e58}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Geophysical Research Letters}
+      \field{number}{11}
+      \field{title}{Is the Southern Ocean Getting Greener?}
+      \field{volume}{46}
+      \field{year}{2019}
+      \field{pages}{6034\bibrangedash 6040}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1029/2019GL083163
+      \endverb
+    \endentry
+    \entry{krumhardt2022climate}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=09f355e741c5d5d619f91de97e104c09}{%
+           family={Krumhardt},
+           familyi={K\bibinitperiod},
+           given={Kristen\bibnamedelima M.},
+           giveni={K\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+        {{hash=3e4a4b351248a77c4878f1a16e039902}{%
+           family={Long},
+           familyi={L\bibinitperiod},
+           given={Matthew\bibnamedelima C.},
+           giveni={M\bibinitperiod\bibinitdelim C\bibinitperiod}}}%
+        {{hash=e44c482df80917935e181de6138c4e37}{%
+           family={Sylvester},
+           familyi={S\bibinitperiod},
+           given={Zephyr\bibnamedelima T.},
+           giveni={Z\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+        {{hash=86c95dff9c9bf580f99e9091cdbe7cd2}{%
+           family={Petrik},
+           familyi={P\bibinitperiod},
+           given={Colleen\bibnamedelima M.},
+           giveni={C\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
+      }
+      \strng{namehash}{4e387c4b69bd858b4b2fee42025b77cf}
+      \strng{fullhash}{89003e6642aaab2ef528a5b8eca72c63}
+      \strng{fullhashraw}{89003e6642aaab2ef528a5b8eca72c63}
+      \strng{bibnamehash}{4e387c4b69bd858b4b2fee42025b77cf}
+      \strng{authorbibnamehash}{4e387c4b69bd858b4b2fee42025b77cf}
+      \strng{authornamehash}{4e387c4b69bd858b4b2fee42025b77cf}
+      \strng{authorfullhash}{89003e6642aaab2ef528a5b8eca72c63}
+      \strng{authorfullhashraw}{89003e6642aaab2ef528a5b8eca72c63}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Frontiers in Marine Science}
+      \field{title}{Climate drivers of {Southern Ocean} phytoplankton community composition and potential impacts on higher trophic levels}
+      \field{volume}{9}
+      \field{year}{2022}
+      \field{pages}{916140}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.3389/fmars.2022.916140
+      \endverb
+    \endentry
+    \entry{sari2025influence}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=0c4e56761cc75d73019d62802bf2725d}{%
+           family={Sari\bibnamedelimb El\bibnamedelima Dine},
+           familyi={S\bibinitperiod\bibinitdelim E\bibinitperiod\bibinitdelim D\bibinitperiod},
+           given={Ziad},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=8b14bf810bd1fcc06e822cd4afda3b20}{%
+           family={Guinet},
+           familyi={G\bibinitperiod},
+           given={Christophe},
+           giveni={C\bibinitperiod}}}%
+        {{hash=00b90facfb9d84df3b7ce49dceea0b49}{%
+           family={Picard},
+           familyi={P\bibinitperiod},
+           given={Baptiste},
+           giveni={B\bibinitperiod}}}%
+        {{hash=679414ae2113e4441291074238ee2836}{%
+           family={Thyssen},
+           familyi={T\bibinitperiod},
+           given={Melilotus},
+           giveni={M\bibinitperiod}}}%
+        {{hash=d266b16138d1e9c1136bba1703c8b315}{%
+           family={Duforêt-Gaurier},
+           familyi={D\bibinithyphendelim G\bibinitperiod},
+           given={Lucile},
+           giveni={L\bibinitperiod}}}%
+        {{hash=a5a4a3c0335b8a807bbe508452cedbf3}{%
+           family={El\bibnamedelima Hourany},
+           familyi={E\bibinitperiod\bibinitdelim H\bibinitperiod},
+           given={Roy},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{8693dffe21355396f7f0da1072febb4d}
+      \strng{fullhash}{3f26f8d650e9b30f72ec97730982e9cc}
+      \strng{fullhashraw}{3f26f8d650e9b30f72ec97730982e9cc}
+      \strng{bibnamehash}{8693dffe21355396f7f0da1072febb4d}
+      \strng{authorbibnamehash}{8693dffe21355396f7f0da1072febb4d}
+      \strng{authornamehash}{8693dffe21355396f7f0da1072febb4d}
+      \strng{authorfullhash}{3f26f8d650e9b30f72ec97730982e9cc}
+      \strng{authorfullhashraw}{3f26f8d650e9b30f72ec97730982e9cc}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Communications Biology}
+      \field{number}{1}
+      \field{title}{Influence of the phytoplankton community structure on the southern elephant seals' foraging activity within the Southern Ocean}
+      \field{volume}{8}
+      \field{year}{2025}
+      \field{pages}{620}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1038/s42003-025-08049-0
+      \endverb
+    \endentry
+    \entry{mestre2020decadal}{article}{}{}
+      \name{author}{8}{}{%
+        {{hash=87d6f2e3743955288e75bbb0e3824abc}{%
+           family={Mestre},
+           familyi={M\bibinitperiod},
+           given={Julie},
+           giveni={J\bibinitperiod}}}%
+        {{hash=737db45f1172afda522a0729815be2e9}{%
+           family={Authier},
+           familyi={A\bibinitperiod},
+           given={Matthieu},
+           giveni={M\bibinitperiod}}}%
+        {{hash=5b4d3df407faddf913ee40165c214bcc}{%
+           family={Cherel},
+           familyi={C\bibinitperiod},
+           given={Yves},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=5a1c46e1796fd241e13c42960d4acc36}{%
+           family={Harcourt},
+           familyi={H\bibinitperiod},
+           given={Rob},
+           giveni={R\bibinitperiod}}}%
+        {{hash=c18eba9ef364b87413b6161c11f541be}{%
+           family={McMahon},
+           familyi={M\bibinitperiod},
+           given={Clive\bibnamedelima R.},
+           giveni={C\bibinitperiod\bibinitdelim R\bibinitperiod}}}%
+        {{hash=00bd0b43362ad3c043611771ceb647dc}{%
+           family={Hindell},
+           familyi={H\bibinitperiod},
+           given={Mark\bibnamedelima A.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod}}}%
+        {{hash=e1083fe55503e4b6cd60f7d3d9f6e37a}{%
+           family={Charrassin},
+           familyi={C\bibinitperiod},
+           given={Jean-Benoît},
+           giveni={J\bibinithyphendelim B\bibinitperiod}}}%
+        {{hash=8b14bf810bd1fcc06e822cd4afda3b20}{%
+           family={Guinet},
+           familyi={G\bibinitperiod},
+           given={Christophe},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{71840243599da0e651e742886a7500ce}
+      \strng{fullhash}{6fe070ebe5c10694eb0951ecd862fedb}
+      \strng{fullhashraw}{6fe070ebe5c10694eb0951ecd862fedb}
+      \strng{bibnamehash}{71840243599da0e651e742886a7500ce}
+      \strng{authorbibnamehash}{71840243599da0e651e742886a7500ce}
+      \strng{authornamehash}{71840243599da0e651e742886a7500ce}
+      \strng{authorfullhash}{6fe070ebe5c10694eb0951ecd862fedb}
+      \strng{authorfullhashraw}{6fe070ebe5c10694eb0951ecd862fedb}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Proceedings of the Royal Society B: Biological Sciences}
+      \field{number}{1933}
+      \field{title}{Decadal changes in blood {$\delta^{13}$C} values, at-sea distribution, and weaning mass of southern elephant seals from {Kerguelen Islands}}
+      \field{volume}{287}
+      \field{year}{2020}
+      \field{pages}{20201544}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1098/rspb.2020.1544
+      \endverb
+    \endentry
+    \entry{benoitbird2016ecological}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=be0a12b298a1ca4a804ef8228cd46d08}{%
+           family={Benoit-Bird},
+           familyi={B\bibinithyphendelim B\bibinitperiod},
+           given={Kelly\bibnamedelima J.},
+           giveni={K\bibinitperiod\bibinitdelim J\bibinitperiod}}}%
+        {{hash=825a2d29bf24f6e55be93e74df155a58}{%
+           family={Lawson},
+           familyi={L\bibinitperiod},
+           given={Gareth\bibnamedelima L.},
+           giveni={G\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+      }
+      \strng{namehash}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{fullhash}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{fullhashraw}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{bibnamehash}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{authorbibnamehash}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{authornamehash}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{authorfullhash}{d2521f3743fe827b6ecbe48247a47a1b}
+      \strng{authorfullhashraw}{d2521f3743fe827b6ecbe48247a47a1b}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Annual Review of Marine Science}
+      \field{number}{1}
+      \field{title}{Ecological Insights from Pelagic Habitats Acquired Using Active Acoustic Techniques}
+      \field{volume}{8}
+      \field{year}{2016}
+      \field{pages}{463\bibrangedash 490}
+      \range{pages}{28}
+      \verb{doi}
+      \verb 10.1146/annurev-marine-122414-034001
+      \endverb
+    \endentry
+    \entry{maclennan2002}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=9b74ed4b7a700f1412d24cbcc3c4cf0f}{%
+           family={MacLennan},
+           familyi={M\bibinitperiod},
+           given={David\bibnamedelima N.},
+           giveni={D\bibinitperiod\bibinitdelim N\bibinitperiod}}}%
+        {{hash=ea406d4de32dbab2382dec530fc42efb}{%
+           family={Fernandes},
+           familyi={F\bibinitperiod},
+           given={Paul\bibnamedelima G.},
+           giveni={P\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+        {{hash=2228de58c042a22370dcb8e4e0701c6f}{%
+           family={Dalen},
+           familyi={D\bibinitperiod},
+           given={John},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{fullhash}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{fullhashraw}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{bibnamehash}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{authorbibnamehash}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{authornamehash}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{authorfullhash}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \strng{authorfullhashraw}{52a2c0f38c8b54b4b6aa321c65fe7343}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{ICES Journal of Marine Science}
+      \field{number}{2}
+      \field{title}{A consistent approach to definitions and symbols in fisheries acoustics}
+      \field{volume}{59}
+      \field{year}{2002}
+      \field{pages}{365\bibrangedash 369}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1006/jmsc.2001.1158
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

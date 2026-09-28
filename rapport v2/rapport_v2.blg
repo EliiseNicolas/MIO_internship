@@ -1,0 +1,36 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is 'rapport_v2.blg'
+[134] biber:342> INFO - === lun. sept. 28, 2026, 11:54:09
+[160] Biber.pm:421> INFO - Reading 'rapport_v2.bcf'
+[293] Biber.pm:1002> INFO - Found 16 citekeys in bib section 0
+[323] Biber.pm:4487> INFO - Processing section 0
+[339] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
+[342] bibtex.pm:1713> INFO - LaTeX decoding ...
+[446] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[853] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'variable = shifted' with 'variable = non-ignorable'
+[853] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[854] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'fr-FR'
+[854] Biber.pm:4313> INFO - No sort tailoring available for locale 'fr-FR'
+[871] bbl.pm:676> INFO - Writing 'rapport_v2.bbl' with encoding 'UTF-8'
+[887] bbl.pm:779> INFO - Output to rapport_v2.bbl
+[888] Biber.pm:132> WARN - Duplicate entry key: 'maclennan2002' in file 'references.bib', skipping ...
+[888] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 2, warning: 13 characters of junk seen at toplevel
+[888] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 14, warning: 46 characters of junk seen at toplevel
+[888] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 43, warning: 43 characters of junk seen at toplevel
+[888] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 102, warning: 38 characters of junk seen at toplevel
+[888] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 135, warning: 17 characters of junk seen at toplevel
+[888] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 168, warning: 15 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 201, warning: 45 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 218, warning: 17 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 284, warning: 35 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 304, warning: 13 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 328, warning: 24 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 351, warning: 10 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 468, warning: 16 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 548, warning: 20 characters of junk seen at toplevel
+[889] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 573, warning: 21 characters of junk seen at toplevel
+[890] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 584, warning: 5 characters of junk seen at toplevel
+[890] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 596, warning: 10 characters of junk seen at toplevel
+[890] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 634, warning: 21 characters of junk seen at toplevel
+[890] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_BNzt/33e59b5ca9ec342068223d604c3f8d55_307564.utf8, line 658, warning: 16 characters of junk seen at toplevel
+[890] Biber.pm:134> INFO - WARNINGS: 20

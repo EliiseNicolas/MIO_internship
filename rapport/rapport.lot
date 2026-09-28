@@ -10,8 +10,8 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Valeurs propres et variance expliquée par les composantes principales.}}{50}{table.caption.35}%
-\contentsline {table}{\numberline {7.2}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - CART}}{55}{table.caption.42}%
-\contentsline {table}{\numberline {7.3}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - RF}}{55}{table.caption.43}%
-\contentsline {table}{\numberline {7.4}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - XGB}}{55}{table.caption.44}%
-\contentsline {table}{\numberline {7.5}{\ignorespaces Décalage standardisé train/test (type $d$ de Cohen) par covariable, par fold - test t de Welch - Bloc 1500$\times $1000 km, 38 kHz, RF}}{62}{table.caption.55}%
+\contentsline {table}{\numberline {7.1}{\ignorespaces Valeurs propres et variance expliquée par les composantes principales.}}{49}{table.caption.35}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - CART}}{54}{table.caption.42}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - RF}}{54}{table.caption.43}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - XGB}}{54}{table.caption.44}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces Décalage standardisé train/test (type $d$ de Cohen) par covariable, par fold - test t de Welch - Bloc 1500$\times $1000 km, 38 kHz, RF}}{61}{table.caption.55}%
