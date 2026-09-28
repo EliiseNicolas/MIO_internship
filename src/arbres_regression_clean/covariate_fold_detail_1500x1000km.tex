@@ -1,0 +1,21 @@
+\begin{table}[htbp]
+\centering
+\caption{D\'ecalage standardis\'e train/test (type $d$ de Cohen) par covariable, par fold -- test t de Welch (train vs test, dans chaque fold) -- Bloc 1500$\times$1000\,km, 38 kHz, RF}
+\label{tab:covariate_fold_detail_blocked_spatial_1500x1000km}
+\resizebox{\textwidth}{!}{%
+\tiny
+\begin{tabular}{lrrrrrrrrrrr}
+\toprule
+Fold & \texttt{ftle} & \texttt{Chla_total} & \texttt{Per_totpig} & \texttt{But_totpig} & \texttt{Fuco_totpig} & \texttt{Hex_totpig} & \texttt{Allo_totpig} & \texttt{Zea_totpig} & \texttt{Chlb_totpig} & \texttt{DvChla_totpig} & RMSE \\
+\midrule
+s_-1_-1 & 0.39*** & 0.07*** & 0.47*** & 0.47*** & 0.07*** & 0.26*** & 0.50*** & -0.29*** & 2.53*** & -0.36*** & 0.329 \\
+s_-1_1 & -0.10*** & -1.50*** & -3.07*** & -0.38*** & -2.06*** & -0.83*** & -0.10*** & 2.06*** & -0.21*** & 2.63*** & 0.248 \\
+s_0_-1 & -0.77*** & 0.70*** & 0.12*** & 0.06*** & 0.29*** & -0.37*** & -0.03*** & 0.06*** & -0.12*** & -0.13*** & 0.428 \\
+s_0_-2 & 0.30*** & 3.31*** & -0.14*** & 2.67*** & 1.77*** & -1.85*** & -0.09*** & -0.69*** & -0.19*** & -0.41*** & 0.874 \\
+s_1_-2 & -0.00 & 0.24*** & 1.36*** & -0.35*** & 0.55*** & 0.36*** & -0.09*** & -0.69*** & -0.19*** & -0.41*** & 0.801 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.3em}
+{\footnotesize D\'ecalage = (moyenne\_test - moyenne\_train) / \'ecart-type\_train. Chaque valeur est test\'ee INDIVIDUELLEMENT (test t de Welch, train vs test, DANS CE FOLD) : *** $p<0{,}001$ ; ** $p<0{,}01$ ; * $p<0{,}05$ ; . $p<0{,}10$ ; sans \'etoile : $p \geq 0{,}10$.}
+\end{table}

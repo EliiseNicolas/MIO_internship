@@ -1,0 +1,23 @@
+\begin{table}[htbp]
+\centering
+\caption{Meilleurs hyperparam\`etres retenus lors du tuning -- RF}
+\label{tab:tuning_summary_rf}
+\small
+\begin{tabularx}{\textwidth}{l l r r r r}
+\toprule
+Fr\'equence & Sch\'ema & \texttt{mtry} & \texttt{min.node.size} & \texttt{num.trees} & RMSE test \\
+\midrule
+38 kHz & Naive RS 80/20 &     4 &    20 &   300 & 0.1766 \\
+ & Bloc 1500$\times$1000\,km &     2 &     5 &   300 & 0.5705 \\
+ & Bloc 200$\times$200\,km &     4 &    20 &   500 & 0.3418 \\
+ & Bloc 20$\times$20\,km &     3 &    20 &   300 & 0.2591 \\
+ & Bloc temporel 1j &     2 &    20 &   500 & 0.4319 \\
+\midrule
+120 kHz & Naive RS 80/20 &     4 &    10 &   500 & 0.2078 \\
+ & Bloc 1500$\times$1000\,km &     2 &     5 &   300 & 0.3239 \\
+ & Bloc 200$\times$200\,km &     2 &     5 &   500 & 0.3218 \\
+ & Bloc 20$\times$20\,km &     2 &    20 &   500 & 0.3122 \\
+ & Bloc temporel 1j &     2 &     5 &   500 & 0.3482 \\
+\bottomrule
+\end{tabularx}
+\end{table}

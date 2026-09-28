@@ -1,0 +1,24 @@
+\begin{table}[htbp]
+\centering
+\caption{Test de corr\'elation de Pearson entre RMSE de test et d\'ecalage standardis\'e train/test (type $d$ de Cohen), covariable par covariable -- Bloc 1500$\times$1000\,km, 38 kHz, RF}
+\label{tab:covariate_distance_significance_blocked_spatial_1500x1000km}
+\small
+\begin{tabular}{lrrl}
+\toprule
+Covariable & $n$ folds & $r$ (Pearson) & $p$-valeur \\
+\midrule
+\texttt{But_totpig} & 5 & 0.646 & 0.239 \\
+\texttt{Hex_totpig} & 5 & 0.514 & 0.375 \\
+\texttt{DvChla_totpig} & 5 & -0.506 & 0.385 \\
+\texttt{Chla_total} & 5 & 0.440 & 0.458 \\
+\texttt{Per_totpig} & 5 & -0.414 & 0.488 \\
+\texttt{Chlb_totpig} & 5 & -0.403 & 0.502 \\
+\texttt{Allo_totpig} & 5 & -0.369 & 0.541 \\
+\texttt{Zea_totpig} & 5 & -0.275 & 0.655 \\
+\texttt{ftle} & 5 & -0.267 & 0.665 \\
+\texttt{Fuco_totpig} & 5 & 0.102 & 0.870 \\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+{\footnotesize Significativit\'e : *** $p<0{,}001$ ; ** $p<0{,}01$ ; * $p<0{,}05$ ; . $p<0{,}10$. Tri\'e par $|r|$ d\'ecroissant.}
+\end{table}

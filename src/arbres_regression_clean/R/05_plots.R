@@ -29,6 +29,31 @@ plot_learning_curve <- function(lc_summary, subtitle = "", ylim = NULL) {
 }
 
 # ---------------------------------------------------------------------
+# 1bis. Courbe d'apprentissage PAR FOLD (pas agregee) -- une facette par
+# fold, train ET test superposes. Complementaire de plot_learning_curve()
+# (qui moyenne les folds) : utile pour voir si l'hetereogeneite entre
+# folds (deja visible dans le ruban ± ecart-type de la version agregee)
+# vient de quelques folds atypiques ou d'une variabilite generale.
+# ---------------------------------------------------------------------
+plot_learning_curve_by_fold <- function(lc_detail, subtitle = "", ylim = NULL) {
+  long <- lc_detail %>%
+    select(fold_id, fraction, rmse_train, rmse_test) %>%
+    pivot_longer(cols = c(rmse_train, rmse_test), names_to = "type", values_to = "rmse") %>%
+    mutate(type = ifelse(type == "rmse_train", "Train", "Test"))
+
+  p <- ggplot(long, aes(x = fraction, y = rmse, color = type)) +
+    geom_line() +
+    geom_point(size = 0.8) +
+    scale_color_manual(values = c(Train = "steelblue", Test = "firebrick")) +
+    facet_wrap(~fold_id) +
+    labs(title = "Courbe d'apprentissage, par fold", subtitle = subtitle,
+         x = "Fraction du train utilisée", y = "RMSE", color = NULL) +
+    theme_pipeline
+  if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+  p
+}
+
+# ---------------------------------------------------------------------
 # 2. Courbe de validation (RMSE en fonction d'un hyperparamètre) --
 #    utile pendant le tuning pour visualiser le compromis biais/variance
 # ---------------------------------------------------------------------
@@ -145,8 +170,21 @@ plot_prediction_map <- function(grid_df, title, subtitle = "", limits = NULL,
                                  basemap = NULL, date_label = NULL) {
   full_title <- if (!is.null(date_label)) paste0(title, " -- ", date_label) else title
 
+  # geom_tile() plutot que geom_raster() : geom_raster suppose un
+  # espacement PARFAITEMENT regulier entre pixels, ce qui declenche un
+  # warning ("Raster pixels are placed at uneven horizontal intervals")
+  # des la moindre imprecision flottante dans la grille source, et
+  # decale legerement les pixels pour compenser -- risque de
+  # desalignement subtil. On calcule explicitement la resolution
+  # (largeur/hauteur de tuile) a partir de la grille, ce qui rend
+  # geom_tile() insensible a ces micro-irregularites.
+  lon_vals <- sort(unique(grid_df$lon))
+  lat_vals <- sort(unique(grid_df$lat))
+  lon_res  <- if (length(lon_vals) > 1) stats::median(diff(lon_vals)) else NA_real_
+  lat_res  <- if (length(lat_vals) > 1) stats::median(diff(lat_vals)) else NA_real_
+
   p <- ggplot(grid_df, aes(x = lon, y = lat, fill = NASC_pred)) +
-    geom_raster()
+    geom_tile(width = lon_res, height = lat_res)
 
   if (!is.null(basemap)) {
     lon_range <- range(grid_df$lon, na.rm = TRUE)
@@ -308,6 +346,72 @@ plot_points_colored_by_fold <- function(scheme, subtitle = "") {
 # =====================================================================
 
 # ---------------------------------------------------------------------
+# 11bis. Performance (RMSE ou R²) : CART vs RF vs XGB, pour un meme
+# schema -- LA comparaison manquante pour juger objectivement quel
+# modele est le plus performant, schema par schema (pas juste sur le
+# naive comme le fait 18_run_noise_robustness_test.R pour le bruit).
+# Barres groupees (x = schema, fill = modele) + barre d'erreur
+# (ecart-type inter-fold). Memes unites entre modeles (RMSE et R² sont
+# comparables entre CART/RF/XGB, contrairement a l'importance des
+# variables) -- comparaison directe legitime.
+# ---------------------------------------------------------------------
+plot_model_comparison <- function(metrics_all, metric = "rmse_test", subtitle = "", ylim = NULL) {
+  summary_df <- metrics_all %>%
+    group_by(model, scheme) %>%
+    summarise(mean_val = mean(.data[[metric]], na.rm = TRUE),
+              sd_val   = sd(.data[[metric]], na.rm = TRUE), .groups = "drop")
+
+  y_lab <- if (metric == "rmse_test") "RMSE test" else if (metric == "r2_test") "R\u00b2 test" else metric
+
+  p <- ggplot(summary_df, aes(x = scheme, y = mean_val, fill = toupper(model))) +
+    geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+    geom_errorbar(aes(ymin = mean_val - sd_val, ymax = mean_val + sd_val),
+                  position = position_dodge(width = 0.8), width = 0.2) +
+    labs(title = paste0(y_lab, " : CART vs RF vs XGB, par schema"), subtitle = subtitle,
+         x = NULL, y = y_lab, fill = "Modele") +
+    theme_pipeline + theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "bottom")
+  if (metric == "r2_test") p <- p + geom_hline(yintercept = 0, linetype = "dashed", color = "black")
+  if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+  p
+}
+
+# ---------------------------------------------------------------------
+# 11ter. Performance (RMSE ou R²) : CART vs RF vs XGB, MOYENNEE SUR TOUS
+# LES SCHEMAS DE VALIDATION CROISEE -- vue d'ensemble, complementaire de
+# plot_model_comparison() (qui detaille schema par schema). Agregation
+# en DEUX temps : (1) moyenne par modele x schema (comme ci-dessus),
+# (2) moyenne ET ecart-type de ces moyennes A TRAVERS LES SCHEMAS -- ce
+# qui donne un poids EGAL a chaque schema (naive compte pour 1, 20x20km
+# compte pour 1, meme si ce dernier a 30 folds contre 5 pour 1500x1000km)
+# plutot que de regrouper tous les folds bruts (ce qui laisserait les
+# schemas a beaucoup de folds dominer la moyenne). L'ecart-type resultant
+# reflete donc la VARIABILITE ENTRE TYPES DE CV, pas juste le bruit
+# d'echantillonnage inter-fold.
+# ---------------------------------------------------------------------
+plot_model_overall_comparison <- function(metrics_all, metric = "rmse_test", subtitle = "", ylim = NULL) {
+  by_scheme <- metrics_all %>%
+    group_by(model, scheme) %>%
+    summarise(mean_val = mean(.data[[metric]], na.rm = TRUE), .groups = "drop")
+
+  overall <- by_scheme %>%
+    group_by(model) %>%
+    summarise(mean_overall = mean(mean_val, na.rm = TRUE),
+              sd_overall   = sd(mean_val, na.rm = TRUE), .groups = "drop")
+
+  y_lab <- if (metric == "rmse_test") "RMSE test" else if (metric == "r2_test") "R\u00b2 test" else metric
+
+  p <- ggplot(overall, aes(x = toupper(model), y = mean_overall, fill = toupper(model))) +
+    geom_col(width = 0.6, show.legend = FALSE) +
+    geom_errorbar(aes(ymin = mean_overall - sd_overall, ymax = mean_overall + sd_overall), width = 0.15) +
+    labs(title = paste0(y_lab, " moyen, tous schemas de validation croisee confondus"),
+         subtitle = subtitle, x = "Modele", y = y_lab) +
+    theme_pipeline
+  if (metric == "r2_test") p <- p + geom_hline(yintercept = 0, linetype = "dashed", color = "black")
+  if (!is.null(ylim)) p <- p + coord_cartesian(ylim = ylim)
+  p
+}
+
+# ---------------------------------------------------------------------
 # 12. Importance des variables : naive vs blocage (le classement change-t-il ?)
 # Detecte si une variable domine seulement grace a l'autocorrelation
 # spatio-temporelle exploitee par la CV naive (raccourci, "Clever Hans"),
@@ -369,8 +473,13 @@ plot_rmse_vs_distance <- function(metrics_all, distance_col = "mean_geo_dist_km"
 # schemas, ou strategies de gestion du NA differentes)
 # ---------------------------------------------------------------------
 plot_map_difference <- function(grid_df, diff_col = "diff", title = "", subtitle = "", limits = NULL) {
+  lon_vals <- sort(unique(grid_df$lon))
+  lat_vals <- sort(unique(grid_df$lat))
+  lon_res  <- if (length(lon_vals) > 1) stats::median(diff(lon_vals)) else NA_real_
+  lat_res  <- if (length(lat_vals) > 1) stats::median(diff(lat_vals)) else NA_real_
+
   ggplot(grid_df, aes(x = lon, y = lat, fill = .data[[diff_col]])) +
-    geom_raster() +
+    geom_tile(width = lon_res, height = lat_res) +
     scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limits = limits) +
     coord_quickmap() +
     theme_pipeline +

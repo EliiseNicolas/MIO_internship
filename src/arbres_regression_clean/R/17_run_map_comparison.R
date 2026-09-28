@@ -14,6 +14,10 @@
 # 14_run_rfsrc_reconstruction.R (ce script lit leurs sorties .rds, ne
 # refait AUCUNE prediction lui-meme).
 #
+# Sorties, sous outputs_pipeline/map_comparison/ :
+#   - rf_comparison_38_120kHz.png (RF uniquement, un panel de frequence
+#     par ligne, colonnes = schema, ECHELLE DE COULEUR INDEPENDANTE par
+#     frequence -- sinon 120kHz serait ecrase visuellement par 38kHz)
 # Sorties, sous outputs_pipeline/map_comparison/<freq>kHz/ :
 #   - correlation_matrix.csv, correlation_heatmap.png
 #   - pairwise_rmse.csv (RMSE + n pixels communs, TOUTES les paires)
@@ -50,6 +54,47 @@ rfsrc_layers <- purrr::map_dfr(FREQS, function(f) {
 all_layers <- bind_rows(predictions_all, rfsrc_layers)
 cat(sprintf("Cartes chargees : %d lignes, %d couches (layer_id) distinctes\n",
             nrow(all_layers), length(unique(all_layers$layer_id))))
+
+# ---------------------------------------------------------------------
+# Comparaison RF seule, 38kHz ET 120kHz sur LA MEME image (une ligne de
+# panels par frequence, colonnes = schema) -- chaque frequence garde SA
+# PROPRE echelle de couleur (sinon 120kHz, dont la plage de NASC est
+# plus etroite, serait ecrasee visuellement par 38kHz -- cf. probleme
+# deja rencontre avec SHARED_SCALE_SCOPE = "global"). Impossible d'avoir
+# deux plages differentes sur UNE SEULE scale_fill_viridis_c() -- on
+# construit donc deux ggplot separes (un par frequence, chacun avec sa
+# propre echelle/legende) et on les empile avec patchwork, plutot que
+# facet_grid(freq ~ scheme) qui forcerait une echelle commune.
+# ---------------------------------------------------------------------
+rf_only <- predictions_all %>% filter(model == "RF (sans NA)")
+if (nrow(rf_only) > 0) {
+  lon_res_rf <- stats::median(diff(sort(unique(rf_only$lon))))
+  lat_res_rf <- stats::median(diff(sort(unique(rf_only$lat))))
+
+  freq_panels <- lapply(FREQS, function(f) {
+    sub_f <- rf_only %>% filter(freq == f)
+    if (nrow(sub_f) == 0) return(NULL)
+    lims_f <- range(sub_f$NASC_pred, na.rm = TRUE)  # echelle propre a CETTE frequence
+    ggplot(sub_f, aes(x = lon, y = lat, fill = NASC_pred)) +
+      geom_tile(width = lon_res_rf, height = lat_res_rf) +
+      scale_fill_viridis_c(limits = lims_f) +
+      coord_quickmap() +
+      facet_wrap(~scheme, nrow = 1) +
+      theme_bw() +
+      labs(subtitle = paste0(f, " kHz"), x = "Longitude", y = "Latitude", fill = "log10(NASC)")
+  })
+  freq_panels <- Filter(Negate(is.null), freq_panels)
+
+  if (length(freq_panels) > 0) {
+    p_rf_freq <- Reduce(`/`, freq_panels) +  # empilement vertical (patchwork), une echelle par panel
+      plot_annotation(title = paste0("NASC predit - RF - comparaison 38 kHz vs 120 kHz -- ", format(TARGET_DATE_SINGLE)),
+                       subtitle = "Chaque frequence garde sa propre echelle de couleur (non comparables entre elles)")
+    ggsave(file.path(out_root, "rf_comparison_38_120kHz.png"), p_rf_freq, width = 14, height = 10, dpi = 150)
+    cat("  -> rf_comparison_38_120kHz.png (lignes = frequence, echelles independantes, RF uniquement)\n")
+  }
+} else {
+  cat("  [!] aucune couche RF trouvee dans predictions_all_combined.rds\n")
+}
 
 # ---------------------------------------------------------------------
 # Fonctions de comparaison

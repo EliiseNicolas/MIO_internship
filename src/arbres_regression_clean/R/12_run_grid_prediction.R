@@ -211,8 +211,12 @@ if (nrow(predictions_all) > 0) {
     sub <- predictions_all %>% filter(freq == f)
     if (nrow(sub) == 0) next
     lims <- get_limits_for_freq(f)
+    lon_vals <- sort(unique(sub$lon))
+    lat_vals <- sort(unique(sub$lat))
+    lon_res  <- if (length(lon_vals) > 1) stats::median(diff(lon_vals)) else NA_real_
+    lat_res  <- if (length(lat_vals) > 1) stats::median(diff(lat_vals)) else NA_real_
     p_compare <- ggplot(sub, aes(x = lon, y = lat, fill = NASC_pred)) +
-      geom_raster() +
+      geom_tile(width = lon_res, height = lat_res) +
       scale_fill_viridis_c(limits = lims) +
       coord_quickmap() +
       facet_grid(model ~ scheme) +

@@ -40,10 +40,12 @@
 #
 # Sorties, sous outputs_pipeline/training/<freq>kHz/<model>/<schema>/ :
 #   - models.rds, metrics_par_fold.csv, obs_pred_all.csv, importance_all.csv
-#   - learning_curve_summary.csv, covariate_stats.csv, fod_dist.csv, numeric_dist.csv
+#   - learning_curve_summary.csv, learning_curve_detail.csv
+#   - covariate_stats.csv, fod_dist.csv, numeric_dist.csv
 #   - tous les plots (voir Phase 1 / Phase 2 ci-dessous)
 
 source("R/00_config.R")
+FREQS <- c(120)
 source("R/01_data_prep.R")
 source("R/02_folds.R")
 source("R/03_models.R")
@@ -57,7 +59,7 @@ dir.create(training_dir, showWarnings = FALSE, recursive = TRUE)
 MODEL_SCHEMES <- c("naive_RS_80_20",
                    paste0("blocked_spatial_", map_chr(SPATIAL_RESOLUTIONS, "label")),
                    paste0("blocked_temporal_", map_chr(TEMPORAL_RESOLUTIONS, "label")))
-MODELS <- c("cart", "rf", "xgb")
+MODELS <- c("rf")
 
 # Si TRUE (defaut) : une combinaison (freq/modele/schema) deja entrainee
 # avec succes lors d'un run precedent (tous ses fichiers de sortie
@@ -119,6 +121,13 @@ for (freq in FREQS) {
         importance_df <- read.csv(file.path(out_dir, "importance_all.csv"))
         lc_summary_df <- read.csv(file.path(out_dir, "learning_curve_summary.csv"))
 
+        # Detail de la courbe d'apprentissage par fold : optionnel (absent
+        # sur les runs anterieurs a son ajout) -- meme logique de repli
+        # gracieux que les tables de metadonnees ci-dessous.
+        lc_detail_path <- file.path(out_dir, "learning_curve_detail.csv")
+        has_lc_detail  <- file.exists(lc_detail_path)
+        if (has_lc_detail) lc_detail_df <- read.csv(lc_detail_path)
+
         # Tables de metadonnees : presentes si le run date d'apres l'ajout
         # de leur persistance CSV -- sinon, plots 11-15 sautes avec avis
         # (retrainer une fois avec SKIP_EXISTING_TRAINING <- FALSE pour
@@ -152,6 +161,7 @@ for (freq in FREQS) {
         write.csv(cv_res$obs_pred,        file.path(out_dir, "obs_pred_all.csv"), row.names = FALSE)
         write.csv(cv_res$importance,      file.path(out_dir, "importance_all.csv"), row.names = FALSE)
         write.csv(lc$summary,             file.path(out_dir, "learning_curve_summary.csv"), row.names = FALSE)
+        write.csv(lc$detail,              file.path(out_dir, "learning_curve_detail.csv"), row.names = FALSE)
         write.csv(cv_res$covariate_stats, file.path(out_dir, "covariate_stats.csv"), row.names = FALSE)
         write.csv(cv_res$fod_dist,        file.path(out_dir, "fod_dist.csv"), row.names = FALSE)
         write.csv(cv_res$numeric_dist,    file.path(out_dir, "numeric_dist.csv"), row.names = FALSE)
@@ -160,6 +170,8 @@ for (freq in FREQS) {
         obs_pred_df   <- cv_res$obs_pred
         importance_df <- cv_res$importance
         lc_summary_df <- lc$summary
+        lc_detail_df  <- lc$detail
+        has_lc_detail <- TRUE
         covariate_stats_df <- cv_res$covariate_stats
         fod_dist_df        <- cv_res$fod_dist
         numeric_dist_df     <- cv_res$numeric_dist
@@ -203,7 +215,8 @@ for (freq in FREQS) {
         freq = freq, model = model, scheme = scheme_name, out_dir = out_dir,
         n_folds = length(scheme$folds),
         metrics = metrics_df, obs_pred = obs_pred_df,
-        importance = importance_df, lc_summary = lc_summary_df
+        importance = importance_df, lc_summary = lc_summary_df,
+        lc_detail = if (has_lc_detail) lc_detail_df else NULL
       )
     }
   }
@@ -271,6 +284,13 @@ for (sk in scope_keys) {
     }
 
     save_plot(plot_learning_curve(run$lc_summary, subtitle = label, ylim = range_rmse), "01_learning_curve.png")
+    if (!is.null(run$lc_detail)) {
+      save_plot(plot_learning_curve_by_fold(run$lc_detail, subtitle = label, ylim = range_rmse),
+                "01b_learning_curve_par_fold.png", 10, 8)
+    } else {
+      cat("  [!] detail learning curve absent (run anterieur a sa persistance) pour", label,
+          "-- relancer avec SKIP_EXISTING_TRAINING <- FALSE une fois pour le regenerer.\n")
+    }
     save_plot(plot_obs_vs_pred_scatter(run$obs_pred, subtitle = label, axis_limits = range_obs_pred),
               "02_obs_vs_pred_scatter.png")
     save_plot(plot_obs_vs_pred_hist(run$obs_pred, subtitle = label), "03_obs_vs_pred_hist.png")

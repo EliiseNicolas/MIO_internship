@@ -1,9 +1,14 @@
 # =====================================================================
 # 16_run_cross_scheme_analysis.R -- SCRIPT 6 : diagnostics inter-schemas
 # =====================================================================
-# Regroupe 4 axes de comparaison au-dela du RMSE global (cf. discussion
+# Regroupe 5 axes de comparaison au-dela du RMSE global (cf. discussion
 # ViT/CNN), a partir des sorties DEJA enregistrees par 11_run_training.R
 # (pas de reentrainement, juste de l'agregation + du tracer) :
+#
+# 0) PERFORMANCE CART vs RF vs XGB, PAR SCHEMA -- quel modele est le
+#    plus performant, et est-ce coherent entre naive et blocage ? (RMSE
+#    et R² sont directement comparables entre modeles, contrairement a
+#    l'importance des variables -- comparaison legitime).
 #
 # 1) IMPORTANCE NAIVE vs BLOQUE -- le modele regarde-t-il la bonne chose,
 #    ou exploite-t-il un raccourci d'autocorrelation ? Une variable
@@ -26,6 +31,8 @@
 #    predictif.
 #
 # Sorties, sous outputs_pipeline/cross_scheme_analysis/<freq>kHz/ :
+#   - model_comparison_rmse.png, model_comparison_r2.png
+#   - model_overall_comparison_rmse.png, model_overall_comparison_r2.png
 #   - importance_comparison.png
 #   - calibration_<model>.png (une par modele, facette par schema)
 #   - residual_vs_latitude.png
@@ -57,6 +64,25 @@ for (freq in FREQS) {
   if (nrow(configs_freq) == 0) {
     cat("  [!] aucune configuration pour cette frequence -- saute.\n")
     next
+  }
+
+  # ---- 0) Performance CART vs RF vs XGB, par schema ----
+  metrics_all <- load_tagged_csv(configs_freq, "metrics_par_fold.csv")
+  if (nrow(metrics_all) > 0) {
+    range_rmse <- range(c(0, metrics_all$rmse_test), na.rm = TRUE)
+    p_model_rmse <- plot_model_comparison(metrics_all, "rmse_test", subtitle = sprintf("%d kHz", freq), ylim = range_rmse)
+    ggsave(file.path(out_dir, "model_comparison_rmse.png"), p_model_rmse, width = 9, height = 6, dpi = 150)
+
+    p_model_r2 <- plot_model_comparison(metrics_all, "r2_test", subtitle = sprintf("%d kHz", freq))
+    ggsave(file.path(out_dir, "model_comparison_r2.png"), p_model_r2, width = 9, height = 6, dpi = 150)
+    cat("  -> model_comparison_rmse.png, model_comparison_r2.png\n")
+
+    p_model_rmse_overall <- plot_model_overall_comparison(metrics_all, "rmse_test", subtitle = sprintf("%d kHz", freq), ylim = range_rmse)
+    ggsave(file.path(out_dir, "model_overall_comparison_rmse.png"), p_model_rmse_overall, width = 6, height = 6, dpi = 150)
+
+    p_model_r2_overall <- plot_model_overall_comparison(metrics_all, "r2_test", subtitle = sprintf("%d kHz", freq))
+    ggsave(file.path(out_dir, "model_overall_comparison_r2.png"), p_model_r2_overall, width = 6, height = 6, dpi = 150)
+    cat("  -> model_overall_comparison_rmse.png, model_overall_comparison_r2.png\n")
   }
 
   # ---- 1) Importance naive vs bloque ----
@@ -104,7 +130,6 @@ for (freq in FREQS) {
   }
 
   # ---- 4) RMSE vs distance test->train (fuite spatio-temporelle) ----
-  metrics_all <- load_tagged_csv(configs_freq, "metrics_par_fold.csv")
   if (nrow(metrics_all) > 0) {
     p_geo <- plot_rmse_vs_distance(metrics_all, "mean_geo_dist_km", subtitle = sprintf("%d kHz", freq))
     ggsave(file.path(out_dir, "rmse_vs_geo_distance.png"), p_geo, width = 9, height = 6, dpi = 150)

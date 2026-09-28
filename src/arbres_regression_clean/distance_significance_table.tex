@@ -1,0 +1,19 @@
+\begin{table}[htbp]
+\centering
+\caption{Test de corr\'elation de Pearson entre RMSE de test et distance g\'eographique moyenne au train, par fold, pour chaque combinaison fr\'equence $\times$ mod\`ele $\times$ sch\'ema}
+\label{tab:distance_significance}
+\small
+\begin{tabular}{llrrrl}
+\toprule
+Fr\'equence & Sch\'ema & Mod\`ele & $n$ folds & $r$ (Pearson) & $p$-valeur \\
+\midrule
+ & Bloc 1500$\times$1000\,km & RF & 5 & 0.594 & 0.291 \\
+ & Bloc 200$\times$200\,km & RF & 7 & 0.864* & 0.012 \\
+\midrule
+ & Bloc 1500$\times$1000\,km & RF & 5 & 0.539 & 0.348 \\
+ & Bloc 200$\times$200\,km & RF & 7 & -0.035 & 0.941 \\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+{\footnotesize Significativit\'e : *** $p<0{,}001$ ; ** $p<0{,}01$ ; * $p<0{,}05$ ; . $p<0{,}10$. ``n/a'' : moins de 4 folds disponibles, test non r\'ealis\'e.}
+\end{table}

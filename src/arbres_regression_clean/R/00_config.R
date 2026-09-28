@@ -33,7 +33,7 @@ N_CV           <- 10           # nb de folds pour l'entraînement final (naive E
 # d'origine -- chemins Windows locaux).
 PATH_TEMPLATE <- function(freq) {
   paste0(
-    "F:/data_elise/ds_NASC_pig_ftle_fod/ds_NASC_per_esu_all/",
+    "/run/media/mmolinet/KER22/",
     "new_ratio_ds_NASC_per_esu_pig_ftle_fod_2018_2021_2022_2023_transect_",
     freq, "kHz_mask9.rds"
   )
@@ -155,7 +155,17 @@ NAIVE_CV_METHOD <- "monte_carlo"
 #     Plus défendable scientifiquement si les deux fréquences ont des
 #     gammes de NASC différentes -- à envisager si les plots "global"
 #     donnent l'impression qu'une fréquence "écrase" l'autre visuellement.
-SHARED_SCALE_SCOPE <- "global"
+SHARED_SCALE_SCOPE <- "per_freq"
+
+# ---- Fond de carte (continents/Kerguelen) sur les cartes de prédiction ----
+# TRUE (défaut) : tente de charger/télécharger le fond de carte
+# (10_basemap.R) -- échoue proprement (timeout court, cf. 10_basemap.R)
+# si pas d'accès réseau vers Natural Earth, les cartes sont alors
+# générées sans fond de carte. Mets à FALSE pour désactiver complètement
+# la tentative (aucun appel réseau du tout) -- utile si tu sais déjà
+# que ce poste n'a pas accès à internet, pour ne pas perdre de temps à
+# chaque script à attendre le timeout.
+BASEMAP_ENABLED <- TRUE
 
 # ---- Colorbar des cartes de prédiction NASC : override manuel par fréquence ----
 # Par défaut (NULL), la colorbar est calculée automatiquement (union de
@@ -165,7 +175,7 @@ SHARED_SCALE_SCOPE <- "global"
 # adaptée pour une fréquence donnée).
 PREDICTION_COLOR_LIMITS_OVERRIDE <- list(
   "38"  = NULL,
-  "120" = c(0, 3)
+  "120" = NULL
 )
 
 get_prediction_color_limits <- function(freq, auto_limits) {

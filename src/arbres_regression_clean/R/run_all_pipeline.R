@@ -20,15 +20,15 @@
 # ---------------------------------------------------------------------
 RUN_TUNING               <- FALSE  # 10_run_tuning.R -- deja fait, on saute
 RUN_TRAINING             <- FALSE   # 11_run_training.R
-RUN_PREDICTION_SINGLE    <- TRUE   # 12_run_grid_prediction.R      (1 date)
+RUN_PREDICTION_SINGLE    <- FALSE   # 12_run_grid_prediction.R      (1 date)
 RUN_PREDICTION_MULTIDATE <- TRUE   # 13_run_grid_prediction_multidate.R (133 dates -- LONG)
-RUN_RFSRC_RECONSTRUCTION <- TRUE   # 14_run_rfsrc_reconstruction.R
-RUN_TRANSFER_TUNING_TEST <- TRUE   # 15_run_transfer_tuning_test.R (cout de ne pas re-tuner)
+RUN_RFSRC_RECONSTRUCTION <- FALSE   # 14_run_rfsrc_reconstruction.R
+RUN_TRANSFER_TUNING_TEST <- FALSE   # 15_run_transfer_tuning_test.R (cout de ne pas re-tuner)
 RUN_CROSS_SCHEME_ANALYSIS <- TRUE  # 16_run_cross_scheme_analysis.R (importance/calibration/fuite)
 RUN_MAP_COMPARISON       <- TRUE   # 17_run_map_comparison.R (necessite 12_ ET 14_ deja lances)
 RUN_NOISE_ROBUSTNESS_TEST <- TRUE  # 18_run_noise_robustness_test.R (robustesse au bruit gaussien)
 RUN_VARIOGRAM_ANALYSIS   <- TRUE   # 19_run_variogram_analysis.R (variogrammes, aide au choix des buffers)
-RUN_REGULARIZATION_STRESS_TEST <- TRUE  # 20_run_regularization_stress_test.R (sur-regularise ou plafond d'info ?)
+RUN_REGULARIZATION_STRESS_TEST <- FALSE  # 20_run_regularization_stress_test.R (sur-regularise ou plafond d'info ?)
 RUN_MONTHLY_COMPOSITE    <- TRUE   # 21_run_monthly_composite.R (moyenne + purete mensuelle)
 
 # ---------------------------------------------------------------------

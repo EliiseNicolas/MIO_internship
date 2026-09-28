@@ -1,27 +1,30 @@
 [0] Config.pm:328> INFO - This is Biber 2.21
 [0] Config.pm:331> INFO - Logfile is 'rapport.blg'
-[132] biber:342> INFO - === jeu. sept. 10, 2026, 11:52:01
-[156] Biber.pm:421> INFO - Reading 'rapport.bcf'
-[283] Biber.pm:1002> INFO - Found 39 citekeys in bib section 0
-[310] Biber.pm:4487> INFO - Processing section 0
-[324] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
-[326] bibtex.pm:1713> INFO - LaTeX decoding ...
-[404] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
-[1159] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'variable = shifted' with 'variable = non-ignorable'
-[1159] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[1159] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'fr-FR'
-[1159] Biber.pm:4313> INFO - No sort tailoring available for locale 'fr-FR'
-[1201] bbl.pm:676> INFO - Writing 'rapport.bbl' with encoding 'UTF-8'
-[1233] bbl.pm:779> INFO - Output to rapport.bbl
-[1233] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 3, warning: 13 characters of junk seen at toplevel
-[1233] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 123, warning: 45 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 136, warning: 17 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 201, warning: 35 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 221, warning: 13 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 243, warning: 24 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 285, warning: 10 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 391, warning: 16 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 471, warning: 20 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 497, warning: 16 characters of junk seen at toplevel
-[1234] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_bGfq/33e59b5ca9ec342068223d604c3f8d55_37263.utf8, line 509, warning: 10 characters of junk seen at toplevel
-[1234] Biber.pm:134> INFO - WARNINGS: 11
+[161] biber:342> INFO - === dim. sept. 13, 2026, 18:49:32
+[191] Biber.pm:421> INFO - Reading 'rapport.bcf'
+[357] Biber.pm:1002> INFO - Found 51 citekeys in bib section 0
+[392] Biber.pm:4487> INFO - Processing section 0
+[411] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
+[414] bibtex.pm:1713> INFO - LaTeX decoding ...
+[528] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[1917] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'variable = shifted' with 'variable = non-ignorable'
+[1917] UCollate.pm:68> INFO - Overriding locale 'fr-FR' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[1917] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'fr-FR'
+[1917] Biber.pm:4313> INFO - No sort tailoring available for locale 'fr-FR'
+[2019] bbl.pm:676> INFO - Writing 'rapport.bbl' with encoding 'UTF-8'
+[2084] bbl.pm:779> INFO - Output to rapport.bbl
+[2085] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 2, warning: 13 characters of junk seen at toplevel
+[2085] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 170, warning: 45 characters of junk seen at toplevel
+[2085] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 183, warning: 17 characters of junk seen at toplevel
+[2085] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 270, warning: 35 characters of junk seen at toplevel
+[2085] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 290, warning: 13 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 312, warning: 24 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 346, warning: 10 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 461, warning: 16 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 541, warning: 20 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 566, warning: 21 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 577, warning: 5 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - BibTeX subsystem: /tmp/biber_tmp_c4gY/33e59b5ca9ec342068223d604c3f8d55_60548.utf8, line 589, warning: 10 characters of junk seen at toplevel
+[2086] Biber.pm:132> WARN - I didn't find a database entry for 'bibid' (section 0)
+[2087] Biber.pm:132> WARN - I didn't find a database entry for 'boyce2017environnemental' (section 0)
+[2087] Biber.pm:134> INFO - WARNINGS: 14

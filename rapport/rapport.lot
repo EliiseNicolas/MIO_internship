@@ -1,0 +1,17 @@
+\babel@toc {french}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Pigments photosynthétiques analysés et groupes phytoplanctoniques hypothétiquement associés (PFD et PSC) dans le secteur de Kerguelen en été austral, d'après \blx@tocontentsinit {0}\cite {Lasbleiz2014}, \blx@tocontentsinit {0}\cite {sari2025influence}}}{7}{table.caption.4}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Schémas de validation croisée et nombre de folds retenus (38 kHz)}}{16}{table.caption.10}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Grilles d'hyperparamètres testées lors du tuning}}{16}{table.caption.11}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {4.1}{\ignorespaces Comparaison RMSE et $R^2$ entre 38\,kHz et 120\,kHz, par schéma de validation croisée (Random Forest)}}{21}{table.caption.15}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {7.1}{\ignorespaces Valeurs propres et variance expliquée par les composantes principales.}}{50}{table.caption.35}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - CART}}{55}{table.caption.42}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - RF}}{55}{table.caption.43}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces Meilleurs hyperparam\`etres retenus lors du tuning - XGB}}{55}{table.caption.44}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces Décalage standardisé train/test (type $d$ de Cohen) par covariable, par fold - test t de Welch - Bloc 1500$\times $1000 km, 38 kHz, RF}}{62}{table.caption.55}%
