@@ -2402,23 +2402,25 @@
     <bcf:citekey order="24" intorder="1">flotteoceanographique_campagnes</bcf:citekey>
     <bcf:citekey order="25" intorder="1">flotteoceanographique_campagnes</bcf:citekey>
     <bcf:citekey order="26" intorder="1">flotteoceanographique_campagnes</bcf:citekey>
-    <bcf:citekey order="27" intorder="1">Alvain2005</bcf:citekey>
-    <bcf:citekey order="28" intorder="1">Li2023DLPPCE</bcf:citekey>
-    <bcf:citekey order="29" intorder="1">Waga2026CSD</bcf:citekey>
-    <bcf:citekey order="30" intorder="1">Lasbleiz2014</bcf:citekey>
-    <bcf:citekey order="31" intorder="1">sari2025influence</bcf:citekey>
-    <bcf:citekey order="32" intorder="1">Lasbleiz2014</bcf:citekey>
-    <bcf:citekey order="33" intorder="1">sari2025influence</bcf:citekey>
-    <bcf:citekey order="34" intorder="1">sari2026regional</bcf:citekey>
-    <bcf:citekey order="35" intorder="1">sari2026regional</bcf:citekey>
-    <bcf:citekey order="36" intorder="1">sari2026regional</bcf:citekey>
-    <bcf:citekey order="37" intorder="1">sari2025influence</bcf:citekey>
-    <bcf:citekey order="38" intorder="1">heidemann2024drivers</bcf:citekey>
-    <bcf:citekey order="39" intorder="1">Georges2014</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">sari2026regional</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">sari2026regional</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">sari2026regional</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">sari2026regional</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">sari2026regional</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">sari2025influence</bcf:citekey>
+    <bcf:citekey order="33" intorder="1">heidemann2024drivers</bcf:citekey>
+    <bcf:citekey order="34" intorder="1">Georges2014</bcf:citekey>
+    <bcf:citekey order="35" intorder="1">Lasbleiz2014</bcf:citekey>
+    <bcf:citekey order="36" intorder="1">sari2025influence</bcf:citekey>
+    <bcf:citekey order="37" intorder="1">Lasbleiz2014</bcf:citekey>
+    <bcf:citekey order="38" intorder="1">sari2025influence</bcf:citekey>
+    <bcf:citekey order="39" intorder="1">cmems_glorys12</bcf:citekey>
     <bcf:citekey order="40" intorder="1">copernicus2026services</bcf:citekey>
-    <bcf:citekey order="41" intorder="1">shadden2005definition</bcf:citekey>
-    <bcf:citekey order="42" intorder="1">dovidio2004mixing</bcf:citekey>
-    <bcf:citekey order="43" intorder="1">shadden2005definition</bcf:citekey>
+    <bcf:citekey order="41" intorder="1">fonvieille2024</bcf:citekey>
+    <bcf:citekey order="42" intorder="1">fonvieille2024</bcf:citekey>
+    <bcf:citekey order="43" intorder="1">fonvieille2024</bcf:citekey>
+    <bcf:citekey order="44" intorder="1">shadden2005definition</bcf:citekey>
+    <bcf:citekey order="45" intorder="1">dovidio2004mixing</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">
