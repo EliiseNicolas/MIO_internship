@@ -1,14 +1,61 @@
 \babel@toc {french}{}\relax 
-\contentsline {chapter}{\numberline {1}Introduction}{2}{chapter.1}%
-\contentsline {chapter}{\numberline {2}Matériel et pré-traitement des données }{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Zone d'étude et plan d'échantillonnage}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Données d'acoustique active (OBSAUSTRAL) et construction du Nautical Area Scattering Coefficient (NASC)}{4}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Données d'acoustique active}{4}{subsection.2.2.1}%
-\contentsline {subsection}{\numberline {2.2.2}Construction du Nautical Area Scattering Coefficient (NASC)}{6}{subsection.2.2.2}%
-\contentsline {section}{\numberline {2.3}Concentrations de pigments photosynthétiques (PIGMeANN)}{7}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Données modèles de température et salinité (CMEMS) et calcul des Domaines Océanographiques Fonctionnels (FOD)}{9}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}Données modèles de température et salinité (CMEMS)}{9}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Calcul des Domaines Océanographiques Fonctionnels (FOD)}{10}{subsection.2.4.2}%
-\contentsline {section}{\numberline {2.5}Champs de courants modèles (CMEMS) et calcul du Finite Time Lyapunov Exponent (FTLE)}{12}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Données de Champs de courants modèles (CMEMS)}{12}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}Calcul du Finite-Time Lyapunov Exponent}{12}{subsection.2.5.2}%
+\contentsline {chapter}{\numberline {1}Introduction}{3}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Matériel et pré-traitement des données }{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Zone d'étude et plan d'échantillonnage}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Données d'acoustique active (OBSAUSTRAL) et construction du Nautical Area Scattering Coefficient (NASC)}{5}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Données d'acoustique active}{5}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Construction du Nautical Area Scattering Coefficient (NASC)}{7}{subsection.2.2.2}%
+\contentsline {section}{\numberline {2.3}Concentrations de pigments photosynthétiques (PIGMeANN)}{8}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Données modèles de température et salinité (CMEMS) et calcul des Domaines Océanographiques Fonctionnels (FOD)}{10}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Données modèles de température et salinité (CMEMS)}{10}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Calcul des Domaines Océanographiques Fonctionnels (FOD)}{11}{subsection.2.4.2}%
+\contentsline {section}{\numberline {2.5}Champs de courants modèles (CMEMS) et calcul du Finite Time Lyapunov Exponent (FTLE)}{13}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Données de Champs de courants modèles (CMEMS)}{13}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Calcul du Finite-Time Lyapunov Exponent}{13}{subsection.2.5.2}%
+\contentsline {chapter}{\numberline {3}Méthode}{15}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Forêts Aléatoires}{15}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Algorithme}{15}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Forêts aléatoires et sur-apprentissage}{15}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Schéma de validation}{15}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Ajustement des hyperparamètres}{15}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Validation}{15}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}validation des données}{15}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}validation du protocole}{15}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}validation du modèle}{15}{subsection.3.4.3}%
+\contentsline {section}{\numberline {3.5}Evaluation du modèle}{15}{section.3.5}%
+\contentsline {section}{\numberline {3.6}Interprétation post-hoc}{15}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Importance des variables}{15}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Source du biais}{15}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}Suffisances des informations contenues par les covariables}{15}{subsection.3.6.3}%
+\contentsline {chapter}{\numberline {4}Méthode}{16}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Forêts aléatoires}{16}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Algorithme}{16}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Complexité, sur-apprentissage et erreur OOB}{16}{subsection.4.1.2}%
+\contentsline {section}{\numberline {4.2}Validation des données}{16}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Biais d'échantillonnage (dont densité jour/nuit)}{16}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Décalage de distribution entre jeux de données}{16}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Protocole et découpage des données}{16}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Prévention des fuites de données}{16}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Validation croisée par blocs (autocorrélation)}{16}{subsection.4.3.2}%
+\contentsline {section}{\numberline {4.4}Ajustement des hyperparamètres}{16}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Évaluation des performances}{16}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Métriques et biais des prédictions}{16}{subsection.4.5.1}%
+\contentsline {section}{\numberline {4.6}Validation du modèle}{16}{section.4.6}%
+\contentsline {subsection}{\numberline {4.6.1}Sur-apprentissage et robustesse}{16}{subsection.4.6.1}%
+\contentsline {subsection}{\numberline {4.6.2}Recherche de raccourcis (shortcut learning)}{16}{subsection.4.6.2}%
+\contentsline {subsection}{\numberline {4.6.3}Domaine d'applicabilité}{16}{subsection.4.6.3}%
+\contentsline {section}{\numberline {4.7}Interprétation post-hoc}{16}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Importance des variables (covariables corrélées)}{16}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}Analyse des résidus et suffisance des covariables}{16}{subsection.4.7.2}%
+\contentsline {chapter}{\numberline {5}Résultats}{17}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Structure et validation des données}{17}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Performances du modèle}{17}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Validité du modèle}{17}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Prédictions}{17}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Interprétation}{17}{section.5.5}%
+\contentsline {chapter}{\numberline {6}Discussion}{18}{chapter.6}%
+\contentsline {section}{\numberline {6.1}L'échantillonage permet-il de répondre à la problématique ?}{18}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Les variables mesurées représentent elles correctement les construits ?}{18}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Prédiction ou explicabilité ?}{18}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Contrainte des modèles prédictifs}{18}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Mise en relation des résultats associatifs avec la théorie de causalité et hypothèses}{18}{section.6.5}%

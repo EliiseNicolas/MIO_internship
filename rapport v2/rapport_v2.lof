@@ -1,11 +1,15 @@
 \babel@toc {french}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Carte des transects effectués par le Marion Dufresnes II lors des campagnes océanographiques OBSAUSTRAL/THEMISTO 2018, 2021, 2022 et 2023.}}{5}{figure.caption.2}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Exemple d'échogramme obtenu le 2023-01-28 entre 18h et 00h aux fréquences (a) 38 kHz et (b) 120 kHz}}{6}{figure.caption.3}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces NASC en fonction du temps le 2023-01-28, données d'acoustique active (transect) issues de la campagne océanographique OBSAUSTRAL 2023 \blx@tocontentsinit {0}\cite {flotteoceanographique_campagnes}.}}{7}{figure.caption.4}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Carte de prédiction de la concentration de Chlorophylle-a le 2023-01-26 sur le secteur indient du SO, prédictions issue de l'alorithme PIGMeANN développé par Sari el Dine \blx@tocontentsinit {0}\cite {sari2026regional}. La présence de nuages gène grandement la prédiction sur la zone totale.}}{8}{figure.caption.6}%
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Profil de Température et de Salinité issue de GLORYS (CMEMS), tronqués en deçà de 20m et au delà de 500m aux coordonnés (50°E, 60°S).}}{10}{figure.caption.8}%
-\contentsline {figure}{\numberline {2.6}{\ignorespaces Carte des Domaines Océanographiques Fonctionnels du 2023-01-26 générée par la méthode développée par Fonvieille N. et Nerini D. \blx@tocontentsinit {0}\cite {fonvieille2024}.}}{11}{figure.caption.9}%
-\contentsline {figure}{\numberline {2.7}{\ignorespaces \relax }}{11}{figure.caption.10}%
-\contentsline {figure}{\numberline {2.8}{\ignorespaces Advection Lagrangienne FTLE backward (30j) du 2023-01-26. Les valeurs élevées de FTLE délimitent des crêtes correspondant à des frontières de transport de l'écoulement (de fronts ou de tourbillons) le long desquelles convergent les masses d'eau (structures cohérentes lagrangiennes attractives)}}{13}{figure.caption.11}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Carte des transects effectués par le Marion Dufresnes II lors des campagnes océanographiques OBSAUSTRAL/THEMISTO 2018, 2021, 2022 et 2023.\relax }}{6}{figure.caption.2}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Exemple d'échogramme obtenu le 2023-01-28 entre 18h et 00h aux fréquences (a) 38 kHz et (b) 120 kHz\relax }}{7}{figure.caption.3}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces NASC en fonction du temps le 2023-01-28, données d'acoustique active (transect) issues de la campagne océanographique OBSAUSTRAL 2023 \blx@tocontentsinit {0}\cite {flotteoceanographique_campagnes}.\relax }}{8}{figure.caption.4}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Carte de prédiction de la concentration de Chlorophylle-a le 2023-01-26 sur le secteur indient du SO, prédictions issue de l'alorithme PIGMeANN développé par Sari el Dine \blx@tocontentsinit {0}\cite {sari2026regional}. La présence de nuages gène grandement la prédiction sur la zone totale.\relax }}{9}{figure.caption.6}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Profil de Température et de Salinité issue de GLORYS (CMEMS), tronqués en deçà de 20m et au delà de 500m aux coordonnés (50°E, 60°S).\relax }}{11}{figure.caption.8}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Carte des Domaines Océanographiques Fonctionnels du 2023-01-26 générée par la méthode développée par Fonvieille N. et Nerini D. \blx@tocontentsinit {0}\cite {fonvieille2024}.\relax }}{12}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces \relax }}{12}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Advection Lagrangienne FTLE backward (30j) du 2023-01-26. Les valeurs élevées de FTLE délimitent des crêtes correspondant à des frontières de transport de l'écoulement (de fronts ou de tourbillons) le long desquelles convergent les masses d'eau (structures cohérentes lagrangiennes attractives)\relax }}{14}{figure.caption.11}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }

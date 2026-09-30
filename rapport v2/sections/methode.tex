@@ -1,25 +1,62 @@
+
 \chapter{Méthode}
-
-Cette section décris la modélisation réalisée du NASC par Forêts Aléatoires en fonction du FOD, FTLE et des ratios de concentrations pigmentaires : $NASC \sim FOD + FTLE + R_1, \ldots, R_9$. 
-
-\section{Forêts Aléatoires}
+\section{Forêts aléatoires}
 	\subsection{Algorithme}
-	Une Forêt Aléatoire (Random Forest, RF) \cite{breiman2001random} est un ensemble de $B$ arbres CART (définis en Annexe \ref{}) entraînés indépendamment et dont les prédictions sont moyennées. Deux sources de randomisation permettent de décorréler les arbres entre eux :
-	\begin{itemize}
-		\item \textbf{Bagging} (bootstrap aggregating) : chaque arbre est entraîné sur un échantillon bootstrap (tirage aléatoire avec remise) du jeu d'entraînement, de même taille que celui-ci.
-		\item \textbf{Sous-échantillonnage des variables} : à chaque split, seul un sous-ensemble de \texttt{mtry} variables (tirées aléatoirement parmi l'ensemble des covariables) est considéré comme candidat à la division, plutôt que la totalité des variables disponibles.
-	\end{itemize}
+	\subsection{Complexité, sur-apprentissage et erreur OOB}
+\section{Validation des données}
+	\subsection{Biais d'échantillonnage (dont densité jour/nuit)}
+	\subsection{Décalage de distribution entre jeux de données}
+\section{Protocole et découpage des données}
+	\subsection{Prévention des fuites de données}
+	\subsection{Validation croisée par blocs (autocorrélation)}
+\section{Ajustement des hyperparamètres}
+\section{Évaluation des performances}
+	\subsection{Métriques et biais des prédictions}
+\section{Validation du modèle}
+	\subsection{Sur-apprentissage et robustesse}
+	\subsection{Recherche de raccourcis (shortcut learning)}
+	\subsection{Domaine d'applicabilité}
+\section{Interprétation post-hoc}
+	\subsection{Importance des variables (covariables corrélées)}
+	\subsection{Analyse des résidus et suffisance des covariables}
 	
-	Cette double randomisation maximise la diversité entre arbres et empêche l'obtention d'une forêt d'arbres quasi identiques et fortement corrélés, ce qui serait le cas si chaque arbre avait accès à l'intégralité des données et des variables à chaque split. Or, la réduction de variance obtenue en moyennant $B$ estimateurs n'a lieu que si ces estimateurs sont peu corrélés entre eux : moyenner des arbres corrélés apporte un gain de variance bien plus limité que moyenner des arbres indépendants. Random Forest permet ainsi de conserver le faible biais propre aux arbres de décision profonds tout en réduisant fortement leur variance individuelle. Les hyperparamètres \texttt{mtry} (nombre de variables candidates par split) et \texttt{min.node.size} (taille minimale des feuilles) contrôlent la profondeur/complexité de chaque arbre individuel, tandis que \texttt{num.trees} fixe la taille de l'ensemble. Un nombre d'arbres insuffisant ne permet pas à la réduction de variance par moyennage de converger, tandis qu'au-delà d'un certain seuil, l'ajout d'arbres supplémentaires n'apporte plus de gain significatif.
 	
+	
+	\chapter{Méthode}
+	
+	Cette section décris la modélisation réalisée du NASC par Forêts Aléatoires en fonction du FOD, FTLE et des ratios de concentrations pigmentaires : $NASC \sim FOD + FTLE + R_1, \ldots, R_9$. 
+	
+	
+	\section{Forêts Aléatoires}
+	\subsection{Algorithme}
 	\subsection{Forêts aléatoires et sur-apprentissage}
 	
 	
-\section{Schéma de validation}
-\section{Ajustement des hyperparamètres}
-\section{Validation du modèle}
-\section{Evaluation du modèle}
-\section{Interprétation post-hoc}
+	\section{Schéma de validation}
+	\section{Ajustement des hyperparamètres}
+	\section{Validation}
+	\subsection{validation des données}
+	Le biais d'échantillonnage et le covariate shift portent sur les données : on peut les mesurer sans même avoir de modèle, en comparant les données d'entraînement à celles de la population cible ou de la production. C'est de la validation des données.
+	\subsection{validation du protocole}
+	La fuite de données porte sur le protocole : elle vient de la façon dont on a construit les variables, séparé les jeux d'entraînement et de test, ou choisi les informations disponibles au moment de prédire. La vérifier, c'est valider la conception de l'expérience.
+	\subsection{validation du modèle}
+	Valider un modèle, c'est établir qu'il est adapté à son usage prévu : que ses hypothèses tiennent, qu'il s'appuie sur des relations légitimes, qu'il reste fiable dans les conditions où il sera employé, et dans quel domaine il est applicable. Chercher à savoir à savoir si sa performance est fiable et si elle tiendra dans les conditions réelles.
+	
+	Le shortcut learning porte sur le modèle lui-même : il faut regarder ce qu'il a réellement appris, avec des outils d'interprétabilité ou des tests où l'on neutralise la variable suspecte. C'est de la validation du modèle au sens strict.
+	
+	Une fuite ou un biais d'échantillonnage dans les données est souvent ce qui rend possible un raccourci dans le modèle, et un décalage de distribution est ce qui fait apparaître ce raccourci en production.
+	
+	vérifier que le modèle n'overfit pas : robustesse au bruit
+	vérifier que le modèle ne fais pas shortcut learning
+	vérifier que le modèle est capable d'extrapoler 
+	
+	
+	\section{Evaluation du modèle}
+	vérifier que le modèle prédit de manière fiable et non biaisé
+	
+	\section{Interprétation post-hoc}
 	\subsection{Importance des variables}
-	\subsection{Source du biais}
-	\subsection{Suffisances des informations contenues par les covariables}
+	\subsection{Source du biais} % mais ça en fait ca se fait avant sur la validation des données non ?
+	\subsection{Suffisances des informations contenues par les covariables} % mais ça en fait ca se fait avant sur la validation des données non ?
+	
+	
