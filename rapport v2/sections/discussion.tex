@@ -1,6 +1,35 @@
 \chapter{Discussion}
 \section{L'échantillonage permet-il de répondre à la problématique ?}
+- biais d'échantillonage et régions/années moins représentées => perf du modèle diminuées dans certaine régions
+- distribution shift => un modèle n'est pas sufisant pour prédire toute la ROI (sauf peut être s'il apprend la causalité).
+- valeurs manquantes MNAR et biais de sélection (couverture nuageuse)
+
 \section{Les variables mesurées représentent elles correctement les construits ?}
+incertitudes liées aux données :
+- NASC et acoustique active
+- classes de phyto a partir des pigments
+
 \section{Prédiction ou explicabilité ?}
+
 \section{Contrainte des modèles prédictifs}
+- nécessité d'avoir une métrique rigoureuse d'évaluation des performances du modèle (CV blocage)
+- nécessité de robustesse façe à l'extrapolation 
+- en découle la nécessité de limiter le shortcut learning
+- apprendre la causalité permet la robustesse face à extrapolation 
+
+\section{Pertinence des forêts aléatoires}
+- surapprentissage et RF : surapprentissage possible par profondeur des arbres
+- diminution de la variance utile pour le trade-off biais-variance de la prédiction
+- extrapolation difficile étant donné que RF est fonction continue par morceau 
+- importance des variables sur echantillon OOB mais OOB est leaked/fortement correlé/biais d'echantillonage
+
 \section{Mise en relation des résultats associatifs avec la théorie de causalité et hypothèses}
+- liens entre mésoéchelle et distrib phyto 
+- liens trophiques entre phyto et NTI mais délai
+- liens avec importance des variables
+- liens entre connaissance des distribs de euphausiaces et prédictions
+- liens entre connaissance inversion 18/38 et observations + distributions des poissons 38 et prédictions
+
+\section{Domaine d'applicabilité du modèles et précautions d'interprétations}
+
+\section{perspectives}
