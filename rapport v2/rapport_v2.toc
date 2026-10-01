@@ -19,8 +19,8 @@
 \contentsline {paragraph}{Distribution et nature des valeurs manquantes}{15}{subsection.3.1.1}%
 \contentsline {subsection}{\numberline {3.1.2}Autocorrélation spatio-temporelle}{16}{subsection.3.1.2}%
 \contentsline {subsection}{\numberline {3.1.3}Décalage de distribution (\textit {Distribution shift})}{16}{subsection.3.1.3}%
-\contentsline {section}{\numberline {3.2}Arbre de Régréssion et Forêt Aléatoire}{17}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Bagging}{17}{subsection.3.2.1}%
+\contentsline {section}{\numberline {3.2}Arbre de Régréssion et Forêt Aléatoire}{16}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Bagging}{16}{subsection.3.2.1}%
 \contentsline {subsection}{\numberline {3.2.2}Arbres de classification et de régression (CART)}{17}{subsection.3.2.2}%
 \contentsline {paragraph}{Partitionnement et critère de coupure}{17}{figure.caption.12}%
 \contentsline {paragraph}{Prédiction d'un arbre}{18}{equation.3.3}%
