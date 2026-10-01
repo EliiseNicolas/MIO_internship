@@ -1,0 +1,127 @@
+\section{Validation des données} % Analyse exploratoire des données (Exploratory Data Analysis, EDA)
+	Les variables $NASC$, $FTLE$, $FOD$ et $R_1, \ldots, R_9$ sont des séries spatio-temporelles, acquises le long des trajets des campagnes océanographiques. Plusieurs de leurs propriétés peuvent compromettre l'apprentissage ou fausser l'évaluation du modèle : un échantillonnage déséquilibré ou informatif, des différences de distribution entre sous-ensembles de données, et une dépendance entre observations voisines. Cette section vise à caractériser ces propriétés indépendamment de tout modèle, afin (1) de justifier les choix de prétraitement, (2) de construire un schéma de validation croisée adapté et (3) de délimiter le domaine dans lequel les estimations du modèle pourront être interprétées.
+	
+	\paragraph{Notations}
+		Les données sont constituées de $n$ unités élémentaires d'échantillonnage (\textit{Elementary Sampling Units}, ESU). Pour chaque ESU $i \in \{1, \dots, n\}$, on note :
+		\begin{itemize}
+			\item $Y_i \in \mathbb{R}_+$ la valeur du $NASC$ (variable cible) ;
+			\item $X_i = (X_i^{(1)}, \dots, X_i^{(d)}) \in \mathbb{R}^d$ le vecteur des covariables ($FOD$, $FTLE$ et $R_1, \dots, R_9$, soit $d = 11$) ;
+			\item $s_i \in \mathbb{R}^2$ la position de l'ESU, exprimée en degré de latitude et longitude ;
+			\item $\tau_i \in \mathbb{R}$ l'instant d'acquisition ;
+			\item $c_i \in \mathcal{C}$ la campagne océanographique d'acquisition.
+		\end{itemize}
+		Une partition naturelle des données est une partition $\{G_1, \dots, G_K\}$ de l'ensemble des indices $\{1, \dots, n\}$, dont chaque élément $G_k$ est appelé modalité. On considérera deux types de partitions : spatiale, où $G_k = \{i : s_i \in C_k\}$ pour une cellule $C_k$ d'une grille régulière couvrant la zone d'étude, et temporelle, où $G_k = \{i : c_i = c\}$ pour une campagne $c \in \mathcal{C}$. On note $n_k = |G_k|$ l'effectif de la modalité $k$.
+	
+	\subsection{Biais d'échantillonnage}
+		Un biais d'échantillonnage peut affecter l'apprentissage de plusieurs manières. Par exemple : (1) une densité d'échantillonnage déséquilibrée conduit à un sous-apprentissage des conditions peu échantillonnées, et donc à une dégradation des performances prédictives dans ces conditions ; (2) lorsque la présence d'une observation dépend d'autres variables, voire de la valeur de la cible elle-même, les données disponibles ne sont plus représentatives de la population totale, ce qui induit un biais de sélection. Il est donc nécessaire d'identifier ces biais afin d'interpréter correctement les estimations du modèle et d'en encadrer la portée.
+		
+		Formellement, soit $S \in \{0, 1\}$ l'indicatrice d'échantillonnage d'un point $(s, \tau)$ du domaine d'étude. Les données observées sont issues de la loi conditionnelle $P(X, Y \mid S = 1)$, et non de la loi $P(X, Y)$ de la population. L'échantillonnage est dit \textit{ignorable} pour l'estimation de $f(x) = \mathbb{E}[Y \mid X = x]$ si $S$ est indépendant de $Y$ conditionnellement à $X$ :
+		\begin{equation}\label{eq:ignorable}
+			P(S = 1 \mid X, Y) = P(S = 1 \mid X).
+		\end{equation}
+		Dans ce cas, $\mathbb{E}[Y \mid X, S = 1] = \mathbb{E}[Y \mid X]$ et la relation apprise reste valable dans la population, même si la loi des covariables $P(X \mid S = 1)$ diffère de $P(X)$. Si au contraire la probabilité d'échantillonnage dépend de $Y$ (échantillonnage \textit{informatif}), l'estimateur appris est biaisé.
+		
+		Les données de $NASC$ sont des données \textit{in situ}, acquises lors des campagnes océanographiques OBSAUSTRAL/THEMISTO. % À compléter : origine des covariables (FTLE, FOD, ratios pigmentaires) et unité d'échantillonnage (ESU)
+		On s'intéressera au déséquilibre de l'échantillonnage selon les deux partitions naturelles définies plus haut : spatiale et temporelle. Pour chacune, on étudiera (1) la densité d'échantillonnage et (2) la distribution et la nature des valeurs manquantes.
+		
+		\paragraph{Densité d'échantillonnage}
+			Le déséquilibre spatial sera décrit par les effectifs $n_k$ des cellules de deux grilles de résolutions différentes ($20 \times 20$~km et $1500 \times 1000$~km), représentés sous forme de cartes de densité d'échantillonnage. Le déséquilibre temporel sera décrit par les effectifs $n_c = |\{i : c_i = c\}|$ des campagnes $c \in \mathcal{C}$.
+			
+			Les deux partitions seront ensuite croisées. Pour une cellule $C_k$ et une campagne $c$, on note $n_{k,c} = |\{i : s_i \in C_k,\; c_i = c\}|$ et $\pi_{c \mid k} = n_{k,c} / n_k$ la proportion des ESU de la cellule $k$ issues de la campagne $c$. Une cellule telle que $\pi_{c \mid k} = 1$ n'a été échantillonnée que lors de la campagne $c$ : les effets de la zone et de la campagne y sont alors confondus et indiscernables pour le modèle.
+			
+			On évaluera ensuite le caractère informatif de l'échantillonnage. Pour chaque ESU, on définit la densité locale d'échantillonnage
+			\begin{equation}\label{eq:densite}
+				\delta_i = \bigl|\{ i' \ne i : \|s_{i'} - s_i\| \le h,\; |\tau_{i'} - \tau_i| \le \Delta \}\bigr|,
+			\end{equation}
+			c'est-à-dire le nombre d'ESU acquises dans un voisinage spatial de rayon $h$ et temporel de demi-largeur $\Delta$. L'association entre $Y$ et $\delta$ sera quantifiée par le coefficient de corrélation de rang de Spearman $r_S$ entre $(Y_1, \dots, Y_n)$ et $(\delta_1, \dots, \delta_n)$, ainsi que par la comparaison des distributions du $NASC$ entre ESU de forte et de faible densité (au-dessus et en dessous de la médiane de $\delta$). Une association marquée signalerait une violation possible de \eqref{eq:ignorable} : l'échantillonnage porte alors de l'information sur la cible, et le modèle risque d'effectuer un \textit{shortcut learning}.
+		
+		\paragraph{Distribution et nature des valeurs manquantes}
+			Pour chaque ESU $i$ et chaque variable $j$, on note $M_i^{(j)} = \mathds{1}_{\{X_i^{(j)} \text{ manquante}\}}$ l'indicatrice de valeur manquante, et $M_i = (M_i^{(1)}, \dots, M_i^{(d)}) \in \{0, 1\}^d$ le motif de valeurs manquantes de l'ESU. On quantifiera d'abord le taux de valeurs manquantes par variable et par modalité :
+			\begin{equation}
+				\overline{M}_k^{(j)} = \frac{1}{n_k} \sum_{i \in G_k} M_i^{(j)}.
+			\end{equation}
+			On cherchera ensuite à déterminer si certaines variables manquent conjointement, en dénombrant les ESU partageant chaque motif $m \in \{0, 1\}^d$ ; cette structure sera représentée par un graphique UpSet.
+			
+			Enfin, on caractérisera le mécanisme de non-réponse selon la typologie de Rubin \cite{rubin1976}. Les données sont dites manquantes complètement au hasard (MCAR) si $P(M \mid X, Y) = P(M)$, manquantes au hasard (MAR) si $M$ ne dépend que des valeurs observées, et manquantes non au hasard (MNAR) si $M$ dépend des valeurs non observées elles-mêmes. L'hypothèse MCAR sera examinée en comparant, pour chaque variable $j$, les distributions de $Y$ et des autres covariables entre les ESU telles que $M_i^{(j)} = 1$ et celles telles que $M_i^{(j)} = 0$ : une différence marquée exclut le mécanisme MCAR, et la suppression des ESU incomplètes introduirait alors un biais de sélection.
+	
+	\subsection{Processus spatio-temporels et évaluation de l'autocorrélation spatio-temporelle}
+		Les observations acquises le long d'un trajet sont d'autant plus semblables qu'elles sont proches dans l'espace et dans le temps. Cette dépendance a trois conséquences : (1) elle réduit le nombre effectif d'observations indépendantes, ce qui rend optimistes les tests statistiques classiques ; (2) elle compromet l'évaluation du modèle : lors du tirage bootstrap des Forêts Aléatoires, comme lors d'une validation croisée aléatoire, une observation de test a presque toujours des voisines dans le jeu d'entraînement, ce qui conduit à surestimer les performances (erreur \textit{out-of-bag} optimiste) ; (3) elle favorise la mémorisation de la localisation : lorsque les covariables varient lentement dans l'espace, leur combinaison identifie une zone, et le modèle peut restituer le $NASC$ observé dans cette zone plutôt qu'apprendre une relation entre variables (\textit{shortcut learning}).
+		
+		On commencera par définir les processus spatio-temporels, le calcul des moments d'ordre 1 et 2, la notion de stationnarité de 1er et second ordre (stationnarité faible/forte) puis la méthode de calcul de l'autocovariance et auto-correlation, enfin le calcul des variogrammes semi-empiriques
+		
+		\paragraph{Champs aléatoire spatio-temporels}
+		- champ aléatoire 
+		- champ alatoire spatio-temporel
+		- 
+		Dans la suite, $Z_i$ désigne indifféremment $Y_i$ ou l'une des covariables $X_i^{(j)}$ : les analyses seront conduites pour le $NASC$ et pour chacune des covariables, dont les échelles de structuration peuvent différer.
+		
+		\paragraph{Autocorrélation spatiale}
+		L'autocorrélation spatiale sera caractérisée par le semi-variogramme empirique
+		\begin{equation}\label{eq:variogramme}
+			\hat\gamma(h) = \frac{1}{2 |N(h)|} \sum_{(i, i') \in N(h)} \bigl(Z_i - Z_{i'}\bigr)^2,
+		\end{equation}
+		où $N(h) = \bigl\{(i, i') : h - \tfrac{\varepsilon}{2} \le \|s_i - s_{i'}\| < h + \tfrac{\varepsilon}{2}\bigr\}$ est l'ensemble des paires d'ESU séparées d'une distance proche de $h$, à la tolérance $\varepsilon$ près. Pour séparer les effets spatial et temporel, le semi-variogramme sera calculé à l'intérieur de chaque campagne. Un modèle paramétrique (sphérique ou exponentiel) sera ajusté à $\hat\gamma$ ; sa portée $a$ est la distance au-delà de laquelle $\hat\gamma$ atteint son palier, c'est-à-dire au-delà de laquelle deux observations ne sont plus corrélées.
+		
+		L'indice de Moran fournira un résumé global de l'autocorrélation spatiale :
+		\begin{equation}\label{eq:moran}
+			I = \frac{n}{W} \,
+			\frac{\sum_{i=1}^{n} \sum_{i'=1}^{n} w_{ii'} \, (Z_i - \overline{Z})(Z_{i'} - \overline{Z})}
+			{\sum_{i=1}^{n} (Z_i - \overline{Z})^2},
+			\qquad
+			W = \sum_{i=1}^{n} \sum_{i'=1}^{n} w_{ii'},
+		\end{equation}
+		où $w_{ii'} = \mathds{1}_{\{0 < \|s_i - s_{i'}\| \le h\}}$ pondère les paires d'ESU voisines. En l'absence d'autocorrélation, $\mathbb{E}[I] = -1/(n - 1) \approx 0$ ; une valeur positive indique que des ESU voisines ont des valeurs semblables.
+		
+		\paragraph{Autocorrélation temporelle}
+		Le long d'un trajet, les ESU sont ordonnées et régulièrement espacées. Pour une série $Z_1, \dots, Z_T$ ainsi ordonnée, la fonction d'autocorrélation empirique au décalage $\ell$ est
+		\begin{equation}\label{eq:acf}
+			\hat\rho(\ell) = \frac{\sum_{t=1}^{T - \ell} (Z_t - \overline{Z})(Z_{t + \ell} - \overline{Z})}
+			{\sum_{t=1}^{T} (Z_t - \overline{Z})^2},
+			\qquad \ell = 0, 1, \dots
+		\end{equation}
+		La portée temporelle sera estimée par le plus petit décalage $\ell$ tel que $|\hat\rho(\ell)|$ passe sous le seuil de significativité $1{,}96 / \sqrt{T}$. Le navire se déplaçant au cours de l'acquisition, un décalage le long du trajet correspond à la fois à une durée et à une distance : l'autocorrélation temporelle ainsi mesurée mêle donc les deux composantes.
+		
+		\paragraph{Conséquence pour la validation croisée}
+		Les portées spatiale et temporelle serviront à dimensionner les blocs de la validation croisée, dont la taille devra leur être au moins égale, éventuellement complétée par une zone tampon de largeur $a$ entre blocs d'entraînement et de test.
+	
+	\subsection{Décalage de distribution (\textit{Distribution shift})}
+	Un modèle entraîné sur une partie des données puis appliqué à une autre (extrapolation) suppose que les deux sont issues d'une même distribution. Lorsque ce n'est pas le cas (\textit{distribution shift}), les performances mesurées sur les données d'entraînement ne sont pas représentatives des performances en conditions d'application. On étudiera ce décalage entre les modalités des partitions naturelles correspondant à l'usage visé du modèle, à savoir les campagnes et les zones géographiques.
+	
+	Pour deux modalités $k$ et $k'$, on note $P_k$ et $P_{k'}$ les lois jointes de $(X, Y)$ dans chacune d'elles. Les décompositions $P(X, Y) = P(X) \, P(Y \mid X) = P(Y) \, P(X \mid Y)$ conduisent à distinguer trois types de décalage \cite{morenotorres2012} :
+	\begin{itemize}
+		\item le décalage des covariables (\textit{covariate shift}) : $P_k(X) \ne P_{k'}(X)$, mais $P_k(Y \mid X) = P_{k'}(Y \mid X)$ ;
+		\item le décalage de la cible (\textit{label shift}) : $P_k(Y) \ne P_{k'}(Y)$, mais $P_k(X \mid Y) = P_{k'}(X \mid Y)$ ;
+		\item le décalage de concept (\textit{concept shift}) : $P_k(Y \mid X) \ne P_{k'}(Y \mid X)$, c'est-à-dire que la relation entre covariables et cible elle-même change.
+	\end{itemize}
+	Les deux premiers peuvent être étudiés sur les données seules ; le troisième, qui ne peut être évalué sans modèle, sera étudié lors de la validation du modèle.
+	
+	\paragraph{Décalage des covariables}
+	Pour chaque variable $j$, les distributions seront comparées entre modalités par des densités superposées et par la statistique de Kolmogorov-Smirnov
+	\begin{equation}\label{eq:ks}
+		D_{k,k'}^{(j)} = \sup_{x \in \mathbb{R}} \bigl|\hat F_k^{(j)}(x) - \hat F_{k'}^{(j)}(x)\bigr|,
+	\end{equation}
+	où $\hat F_k^{(j)}$ est la fonction de répartition empirique de $X^{(j)}$ dans la modalité $k$.
+	
+	Une attention particulière sera portée aux plages de valeurs couvertes : les Forêts Aléatoires n'extrapolant pas au-delà de la plage observée à l'entraînement, une modalité dont les covariables sortent de cette plage se situe hors du domaine d'applicabilité du modèle. Pour un ensemble d'entraînement $G_{\text{train}}$ et une modalité d'application $G_k$, on mesurera la proportion d'ESU hors plage
+	\begin{equation}\label{eq:horsplage}
+		\pi_k^{\text{out}} = \frac{1}{n_k} \sum_{i \in G_k}
+		\mathds{1}_{\bigl\{\exists j : X_i^{(j)} \notin [x_{\min}^{(j)},\, x_{\max}^{(j)}]\bigr\}},
+	\end{equation}
+	où $x_{\min}^{(j)} = \min_{i' \in G_{\text{train}}} X_{i'}^{(j)}$ et $x_{\max}^{(j)} = \max_{i' \in G_{\text{train}}} X_{i'}^{(j)}$ délimitent la plage de la variable $j$ observée à l'entraînement.
+	
+	Le décalage multivarié sera ensuite évalué par validation adversariale. Pour deux modalités $k$ et $k'$, on attribue à chaque ESU $i \in G_k \cup G_{k'}$ l'étiquette $A_i = \mathds{1}_{\{i \in G_k\}}$, et on entraîne un classifieur $\hat g : \mathbb{R}^d \to [0, 1]$ estimant $P(A = 1 \mid X)$ à partir des seules covariables. Sa capacité à séparer les deux modalités est mesurée par l'aire sous la courbe ROC, estimée par
+	\begin{equation}\label{eq:auc}
+		\widehat{\mathrm{AUC}} = \frac{1}{n_k \, n_{k'}} \sum_{i \in G_k} \sum_{i' \in G_{k'}}
+		\Bigl( \mathds{1}_{\{\hat g(X_i) > \hat g(X_{i'})\}} + \tfrac{1}{2} \, \mathds{1}_{\{\hat g(X_i) = \hat g(X_{i'})\}} \Bigr),
+	\end{equation}
+	c'est-à-dire la probabilité qu'une ESU de $G_k$ tirée au hasard reçoive un score plus élevé qu'une ESU de $G_{k'}$. Une valeur proche de $0{,}5$ indique des distributions indiscernables, une valeur proche de $1$ des distributions disjointes. Les scores $\hat g(X_i)$ seront calculés hors échantillon, par une validation croisée par blocs spatiaux : avec une validation croisée aléatoire, l'autocorrélation permettrait au classifieur de reconnaître des ESU voisines de celles vues à l'entraînement, et gonflerait l'AUC. L'importance des variables de ce classifieur identifie celles qui portent le décalage.
+	
+	\paragraph{Décalage de la cible}
+	Le décalage sera également examiné sur la variable cible, en comparant les distributions du $NASC$ entre modalités par la statistique \eqref{eq:ks} appliquée à $Y$, ainsi que par la proportion de valeurs nulles $\frac{1}{n_k} \sum_{i \in G_k} \mathds{1}_{\{Y_i = 0\}}$ dans chaque modalité.
+	
+	\paragraph{Taille des effets}
+	Compte tenu du nombre d'observations et de leur autocorrélation \eqref{eq:neff}, les tests statistiques seront presque systématiquement significatifs ; l'interprétation reposera donc sur la taille des effets plutôt que sur les $p$-valeurs : la statistique $D_{k,k'}^{(j)}$, l'AUC adversariale et le coefficient de recouvrement des densités
+	\begin{equation}\label{eq:ovl}
+		\mathrm{OVL}_{k,k'}^{(j)} = \int_{\mathbb{R}} \min\bigl(\hat p_k^{(j)}(x), \hat p_{k'}^{(j)}(x)\bigr) \, dx \in [0, 1],
+	\end{equation}
+	où $\hat p_k^{(j)}$ est une estimation à noyau de la densité de $X^{(j)}$ dans la modalité $k$. Les décalages identifiés serviront à définir les blocs de la validation croisée, de sorte que l'évaluation reproduise les conditions de transfert réalistes, ainsi qu'à délimiter le domaine d'applicabilité du modèle.

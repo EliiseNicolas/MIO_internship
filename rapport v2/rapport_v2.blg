@@ -1,2 +1,22 @@
 [0] Config.pm:328> INFO - This is Biber 2.21
-[1] Config.pm:331> INFO - Logfile is 'rapport_v2.blg'
+[0] Config.pm:331> INFO - Logfile is 'rapport_v2.blg'
+[253] biber-MSWIN64:342> INFO - === 
+[365] Biber.pm:421> INFO - Reading 'rapport_v2.bcf'
+[522] Biber.pm:1002> INFO - Found 33 citekeys in bib section 0
+[560] Biber.pm:4487> INFO - Processing section 0
+[576] Biber.pm:4678> INFO - Looking for bibtex file 'references.bib' for section 0
+[704] bibtex.pm:1713> INFO - LaTeX decoding ...
+[752] bibtex.pm:1519> INFO - Found BibTeX data source 'references.bib'
+[902] Utils.pm:479> ERROR - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 252, syntax error: found "@article", expected end of entry ("}" or ")") (skipping to next "@")
+[902] Biber.pm:132> WARN - Duplicate entry key: 'maclennan2002' in file 'references.bib', skipping ...
+[902] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 2, warning: 13 characters of junk seen at toplevel
+[902] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 14, warning: 46 characters of junk seen at toplevel
+[902] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 43, warning: 43 characters of junk seen at toplevel
+[902] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 102, warning: 38 characters of junk seen at toplevel
+[902] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 135, warning: 17 characters of junk seen at toplevel
+[902] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 168, warning: 15 characters of junk seen at toplevel
+[903] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 201, warning: 45 characters of junk seen at toplevel
+[903] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 224, warning: 17 characters of junk seen at toplevel
+[903] Biber.pm:132> WARN - BibTeX subsystem: C:\Users\mmolinet\AppData\Local\Temp\biber_tmp_7Rq1\33e59b5ca9ec342068223d604c3f8d55_24304.utf8, line 236, warning: 35 characters of junk seen at toplevel
+[903] Biber.pm:134> INFO - WARNINGS: 10
+[903] Biber.pm:137> INFO - ERRORS: 1

@@ -1,128 +1,42 @@
 \chapter{Méthode}
+Ce chapitre décris le protocole de validation des données et de modélisation du NASC par Forêts Aléatoires en fonction du FOD, FTLE et des ratios de concentrations pigmentaires : $NASC \sim FOD + FTLE + R_1, \ldots, R_9$. On décrira dans un premier temps le protocole de validation des données, puis, dans un second temps, le protocole d'apprentissage par Forêt Aléatoire (méthode, validation croisée, ajustement des hyperparamètres) suivi par l’évaluation du modèle, sa validation et enfin son interprétation.
+	\input{sections/subsections_methode/validation_donnees}
+	\input{sections/subsections_methode/RF}
 	
-	Ce chapitre décris le protocole de validation des données et de modélisation du NASC par Forêts Aléatoires en fonction du FOD, FTLE et des ratios de concentrations pigmentaires : $NASC \sim FOD + FTLE + R_1, \ldots, R_9$. On décrira dans un premier temps le protocole de validation des données, puis, dans un second temps, le protocole d'apprentissage par Forêt Aléatoire (méthode, validation croisée, ajustement des hyperparamètres) suivi par l’évaluation du modèle, sa validation et enfin son interprétation.
 	
-	\section{Validation des données} % Analyse exploratoire des données (Exploratory Data Analysis, EDA)
-	Les variables $NASC$, $FTLE$, $FOD$ et $R_1, \ldots, R_9$ sont des séries spatio-temporelles, acquises le long des trajets des campagnes océanographiques. Plusieurs de leurs propriétés peuvent compromettre l'apprentissage ou fausser l'évaluation du modèle : un échantillonnage déséquilibré ou informatif, des différences de distribution entre sous-ensembles de données, et une dépendance entre observations voisines. Cette section vise à caractériser ces propriétés indépendamment de tout modèle, afin (1) de justifier les choix de prétraitement, (2) de construire un schéma de validation croisée adapté et (3) de délimiter le domaine dans lequel les estimations du modèle pourront être interprétées.
 	
-		\subsection{Biais d'échantillonnage}
-			Un biais d'échantillonnage peut affecter l'apprentissage de plusieurs manières. Par exemple : (1) une densité d'échantillonnage déséquilibrée conduit à un sous-apprentissage des conditions peu échantillonnées, et donc à une dégradation des performances prédictives dans ces conditions ; (2) lorsque la présence d'une observation dépend d'autres variables, voire de la valeur de la cible elle-même, les données disponibles ne sont plus représentatives de la population totale, ce qui induit un biais de sélection. Il est donc nécessaire d'identifier ces biais afin d'interpréter correctement les estimations du modèle et d'en encadrer la portée.
-			
-			Les données de $NASC$ sont des données \textit{in situ}, acquises lors des campagnes océanographiques OBSAUSTRAL/THEMISTO. % À compléter : origine des covariables (FTLE, FOD, ratios pigmentaires) et unité d'échantillonnage (ESU)
-			On s'intéressera au déséquilibre de l'échantillonnage selon deux partitions naturelles des données : (1) la localisation spatiale et (2) la campagne océanographique (année et mois). Pour chacune de ces partitions, on étudiera (1) la densité d'échantillonnage et (2) la distribution et la nature des valeurs manquantes.
 	
-		\paragraph{Densité d'échantillonnage}
-			Dans un premier temps, on produira des cartes de densité d'échantillonnage sur des grilles spatiales de résolutions différentes ($20 \times 20$~km et $1500 \times 1000$~km) afin d'identifier les déséquilibres spatiaux à différentes échelles. Le déséquilibre temporel sera décrit par des histogrammes du nombre d'unités élémentaires d'échantillonnage (\textit{Elementary Sampling Units}, ESU) par campagne océanographique. Les partitions seront ensuite croisées (par exemple, proportion d'ESU par zone et par campagne) : une modalité d'une partition échantillonnée exclusivement dans une modalité d'une autre rendrait leurs effets indiscernables pour le modèle.
-			
-			On évaluera ensuite le caractère informatif de la densité d'échantillonnage, c'est-à-dire l'association entre le $NASC$ et la densité locale d'échantillonnage, calculée dans les fenêtres spatiales et temporelles considérées. Cette association sera quantifiée par une corrélation de rang de Spearman et par la comparaison des distributions du $NASC$ entre zones de forte et de faible densité. Une association marquée indiquerait que l'échantillonnage porte de l'information sur la cible, et donc qu'il existe un risque que le modèle effectue un \textit{shortcut learning}.
-		
-		\paragraph{Distribution et nature des valeurs manquantes}
-			On quantifiera d'abord le taux de valeurs manquantes par variable et par partition naturelle des données. On cherchera ensuite à déterminer si certaines variables manquent conjointement, cette structure sera représentée par un graphique UpSet.
 	
-	\subsection{Autocorrélation spatio-temporelle}
-		Les observations acquises le long d'un trajet sont d'autant plus semblables qu'elles sont proches dans l'espace et dans le temps. Cette dépendance a trois conséquences : (1) elle réduit le nombre effectif d'observations indépendantes, ce qui rend optimistes les tests statistiques classiques; (2) elle compromet l'évaluation du modèle : lors du tirage bootstrap des Forêts Aléatoires, comme lors d'une validation croisée aléatoire, une observation de test a presque toujours des voisines dans le jeu d'entraînement, ce qui conduit à surestimer les performances (erreur \textit{out-of-bag} optimiste); (3) Elle favorise la mémorisation de la localisation : lorsque les covariables varient lentement dans l'espace, leur combinaison identifie une zone, et le modèle peut restituer le $NASC$ observé dans cette zone plutôt qu'apprendre une relation entre variables (\textit{shortcut learning}).
-		
-		L'autocorrélation spatiale sera caractérisée par des variogrammes empiriques, et l'autocorrélation temporelle par la fonction d'autocorrélation le long des trajets ; l'indice de Moran fournira un résumé global. Ces analyses seront conduites pour le $NASC$ et pour chacune des covariables, dont les échelles de structuration peuvent différer. On en déduira la portée, c'est-à-dire la distance et la durée au-delà desquelles deux observations ne sont plus corrélées. Cette portée servira à dimensionner les blocs de la validation croisée, dont la taille devra lui être au moins égale, éventuellement complétée par une zone tampon entre blocs d'entraînement et de test.
 	
-	\subsection{Décalage de distribution (\textit{Distribution shift})}
-		Un modèle entraîné sur une partie des données puis appliqué à une autre (extrapolation) suppose que les deux sont issues d'une même distribution. Lorsque ce n'est pas le cas (\textit{distribution shift}), les performances mesurées sur les données d'entraînement ne sont pas représentatives des performances en conditions d'application. On étudiera ce décalage entre les modalités des partitions naturelles correspondant à l'usage visé du modèle, à savoir les campagnes et les zones géographiques.
-		
-		Le décalage sera d'abord examiné sur les covariables. Pour chaque variable, les distributions seront comparées entre modalités (densités superposées, test de Kolmogorov-Smirnov), en portant une attention particulière aux plages de valeurs couvertes : les Forêts Aléatoires n'extrapolant pas au-delà de la plage observée à l'entraînement, une modalité dont les covariables sortent de cette plage se situerait hors du domaine d'applicabilité du modèle. Le décalage multivarié sera ensuite évalué par validation adversariale : un classifieur est entraîné à distinguer deux modalités à partir des seules covariables, et son aire sous la courbe ROC (AUC) mesure leur séparabilité, une valeur proche de $0{,}5$ indiquant des distributions indiscernables. L'importance des variables de ce classifieur identifie celles qui portent le décalage.
-		
-		Le décalage sera également examiné sur la variable cible, en comparant les distributions du $NASC$ entre modalités (\textit{label shift}). La stabilité de la relation entre covariables et $NASC$, qui ne peut être évaluée sans modèle, sera étudiée lors de la validation du modèle.
-		
-		Compte tenu du nombre d'observations et de leur potentielle autocorrélation, les tests statistiques seront presque systématiquement significatifs ; l'interprétation reposera donc sur la taille des effets (AUC, recouvrement des distributions) plutôt que sur les $p$-valeurs. Les décalages identifiés serviront à définir les blocs de la validation croisée, de sorte que l'évaluation reproduise les conditions de transfert réalistes, ainsi qu'à délimiter le domaine d'applicabilité du modèle.
+	
+	
+	
+	
+	
 	
 		
-	\section{Arbre de Régréssion et Forêt Aléatoire}
-		\subsection{Bagging}
-			Le \textit{bagging}, ou \textit{bootstrap aggregrating} est un ensemble de méthodes d'apprentissage qui combinent différents estimateurs entraînés sur des échantillons \textit{bootstrap} \footnote{Tirage aléatoire avec remise}. Une \textit{forêt aléatoire} est une méthode de bagging consistant à entraîner un ensemble de $B$ arbres de classification ou de régression (Classification And Regression Trees, CART) et à prédire la moyenne des prédictions des $B$ arbres.
-		
-		\subsection{Arbres de classification et de régression (CART)}
-			Un Arbre de Classification ou de Régression (Classification And Regression Trees, CART) \cite{breiman1984classification} est construit par partitionnement binaire récursif de l'espace des variables explicatives (voir figure \ref{fig:partitioncart}). À chaque nœud, l'algorithme sélectionne la variable et le seuil de coupure qui minimisent le plus la variance intra-groupe des sous-ensembles résultants. Ce processus est répété récursivement jusqu'à ce qu'un critère d'arrêt soit atteint. La prédiction d'une nouvelle observation correspond, dans le cas d'une régression, à la moyenne des valeurs observées dans la feuille terminale où elle est routée.
-			
-			\begin{figure}[H]
-				\centering
-				\includegraphics[width=0.8\linewidth]{images/03_methode/partition_cart}
-				\caption{Schéma du partitionnement de l'espace des covariable par CART \cite{fischer2026}.}
-				\label{fig:partitioncart}
-			\end{figure}
-			
-			De manière plus formelle, on dispose d'un échantillon $\mathcal{D}_n = \{(X_1,Y_1),\dots,(X_n,Y_n)\}$ de couples indépendants et de même loi que $(X,Y)$, où $X = (X^{(1)},\dots,X^{(d)}) \in \mathbb{R}^d$ et $Y \in \mathbb{R}$. L'objectif est d'estimer la fonction de régression $f(x) = \mathbb{E}[Y \mid X = x]$. \\
-			
-			\paragraph{Partitionnement et critère de coupure}
-			Un arbre partitionne récursivement l'espace des variables $\mathbb{R}^d$ en rectangles, chaque rectangle correspondant à un noeud de l'arbre. Soit $\mathcal{D}$ l'échantillon utilisé pour construire l'arbre, $R \subseteq \mathbb{R}^d$ un noeud et $n_R = \sum_{i}^n \mathds{1}_{\{X_i \in R\}}$ le nombre d'observations de $\mathcal{D}$ qui tombent dans $R$.\\
 
-			Une coupure est un couple $(j,t) \in \{1,\dots,d\} \times \mathbb{R}$, avec $j \in d$ la variable et $t \in \mathbb{R}$ le seuil de coupure. Elle partitionne le noeud $R$ en deux noeuds fils $R_1 (j,t)$ et $R_2(j,t)$ :
-			\[
-			R_1(j,t) = \{x \in R : x_j < t\}
-			\qquad\text{et}\qquad
-			R_2(j,t) = \{x \in R : x_j \ge t\},
-			\]
-			d'effectifs respectifs $n_1(j,t) = n_{R_1(j,t)}$ et $n_2(j,t) = n_{R_2(j,t)}$, avec $n_1(j,t) + n_2(j,t) = n_R$. 
-			
-						
-			On souhaite trouver une manière de partitionner les variables telle que les deux nouvelles régions $R_1 (j, t)$ et $R_2(j, t)$ issues de cette partition soient les plus homogènes possibles. Cela revient à, dans le cas de la régression, minimiser la variance de chaque noeud $R$ (critère d'impureté) :
-			
-			\begin{equation}\label{eq:variance}
-				V(R) = \frac{1}{n_R} \sum_{i : X_i \in R} \bigl(Y_i - \overline{Y}_R\bigr)^2
-				\qquad\text{où}\qquad
-				\overline{Y}_R = \frac{1}{n_R} \sum_{i : X_i \in R} Y_i .
-			\end{equation}
-			
-			La qualité d'une coupure $(j,t)$ admissible est mesurée par la diminution d'impureté qu'elle produit, ou gain d'information (Information Gain, IG) :
-			\begin{equation}\label{eq:gain}
-				\text{IG}_R(j,t) = V(R)
-				- \frac{n_1(j,t)}{n_R}\, V\bigl(R_1(j,t)\bigr)
-				- \frac{n_2(j,t)}{n_R}\, V\bigl(R_2(j,t)\bigr).
-			\end{equation}
-			
-			Les variances des fils sont pondérées par la proportion d'observations qu'ils
-			contiennent, de sorte que $	\text{IG}_R(j,t) \ge 0$ (décomposition de la variance
-			totale en variances intra- et inter-groupes). La meilleure coupure parmi un
-			ensemble de variables candidates $\mathcal{M} \subseteq \{1,\dots,d\}$ est
-			\begin{equation}\label{eq:meilleure}
-				(j^\star, t^\star) \in
-				\text{argmax}_{j \in \mathcal{M},\; t \in \mathcal{T}_j(R)} 	\text{IG}_R(j,t).
-			\end{equation}
-			
-			\paragraph{Prédiction d'un arbre}
-			
-			Pour $x \in \mathbb{R}^d$, on note $R(x)$ la feuille de l'arbre $\hat f$ contenant $x$ et $n_{R(x)}$ le nombre de points de $\mathcal{D}_m$  qui y tombent. La prédiction de
-			l'arbre est la moyenne des réponses de cette feuille :
-			\begin{equation}
-				\label{eq:arbre}
-				\hat f(x) = \overline{Y}_{R(x)}
-				= \frac{1}{n_{R(x)}}
-				\sum_{(X_i,Y_i) \in \mathcal{D}_m} Y_i \, \mathds{1}_{\{X_i \in R(x)\}}
-			\end{equation}
-			
-		\subsection{Forêt Aléatoire} 
-	 	Une forêt aléatoire \cite{breiman2001} est une méthode de bagging consistant à tirer $B$ échantillons bootstrap à partir de $\mathcal{D}_n$, puis construire un arbre CART sur chacun d'eux et enfin agréger les prédictions des $B$ arbres. Les CART construits sont cependant légèremment différents : à chaque noeud, la meilleure coupure n'est pas cherchée parmi les $d$ variables, mais parmi un sous-ensemble de $p \le d$ variables tirées au hasard.
-	 
-	 	\paragraph{Construction de la forêt}
-	 	Pour $b = 1, \dots, B$, on tire avec remise un échantillon bootstrap $\mathcal{D}_m^{(b)}$ de taille $m$ dans $\mathcal{D}_n$, puis on construit un arbre $\hat f^{(b)}$ sur $\mathcal{D}_m^{(b)}$ par partitionnement récursif. À chaque noeud $R$, on tire uniformément et sans remise un ensemble $\mathcal{M} \subseteq \{1,\dots,d\}$ de $p$ variables, et on coupe $R$ selon la coupure $(j^\star, t^\star)$ définie par \eqref{eq:meilleure}. Le tirage de $\mathcal{M}$ est effectué indépendamment à chaque noeud. 
-	 	
-	 	\paragraph{Prédiction de la forêt}
-	 	Pour chaque arbre $b \in [1, \ldots, B]$, la prédiction $\hat f^{(b)}(x)$ est donnée par \eqref{eq:arbre} (en remplaçant $\mathcal{D}_m$ par $\mathcal{D}_m^{(b)}$). La forêt prédit la moyenne des $B$ arbres :
-	 	\begin{equation}\label{eq:foret}
-	 		\hat f_B(x) = \frac{1}{B} \sum_{b=1}^{B} \hat f^{(b)}(x).
-	 	\end{equation}
-	 	
-	 	\paragraph{Hyperparamètres}
-	 	La construction de forêts aléatoires dépend donc de quatre hyperparamètres : 
-	 	\begin{itemize}
-	 		\item $B$ le nombre d'arbres (\texttt{num.trees}),
-	 		\item $m$ la taille des échantillons bootstrap (\texttt{sample.fraction}),
-	 		\item $p$ le nombre de variables candidates pour chaque split (\texttt{mtry}),
-	 		\item $n_{\min}$ l'effectif minimal des feuilles (\texttt{min.node.size})
-	 	\end{itemize}  
 
 
 	
 	\section{Protocole de validation croisée}
+		\label{section:CV}
 		\subsection{Prévention des fuites de données}
-		\subsection{Validation croisée par blocs (autocorrélation)}
+			Les données environnementales et biologiques présentent une structuration dépendante de la latitude : leurs propriétés statistiques varient donc selon la position dans l'espace. Les hypothèses de stationnarité d'ordre 1 (moyenne constante dans l'espace) et d'ordre 2 (structure de covariance invariante par translation, ne dépendant que de la distance entre points) ne sont donc pas respectées.
+			
+			De plus, lors des campagnes océanographiques, une onde acoustique est émise toutes les 3 à 4 secondes. La conséquence de cette proximité spatio-temporelle est la présence de pseudo-duplicatas dans le jeu de données. 
+			
+			Ces deux éléments, non-stationnarité spatiale et auto-corrélation, doivent être pris en compte lors de la construction du schéma de validation croisée, afin d'éviter toute fuite d'information entre les jeux d'entraînement et de validation (data leakage).
+		\subsection{Validation croisée}
+		
+			% la description de la validation croisée est incomplète : il manque le pourquoi on fait ça !!
+			La validation croisée est une méthode permettant consistant à diviser l'ensemble des données en $K$ sous-ensemble de taille à peu près identiques, appelés \textit{plis} (ou \textit{folds}). Un plis sert d'\textit{ensemble de validation} (ou \textit{ensemble test}) et les $K-1$ plis restants servent d'\textit{ensemble d'entraînement}. On obtient donc $K$ prédictions pour un même modèle. 
+			
+			Il existe différentes manières de sous-échantillonner les données pour construire les plis. Dans notre étude, nous avons testés différentes méthodes : validation croisée Monte-Carlo (Monte-Carlo Cross Validation, MC-CV) et la validation croisée par blocage spatio-temporel.
+			\paragraph{Validation croisée Monte-Carlo (MC-CV)}
+				Les analyses d'auto-correlation effectuée en section \ref{}
+			\paragraph{Validation croisée par blocage spatio-temporel}
+			
 	\section{Ajustement des hyperparamètres}
 	\section{Évaluation des performances}
 		\subsection{Métriques et biais des prédictions}
